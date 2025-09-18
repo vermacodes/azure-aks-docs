@@ -302,10 +302,10 @@ Node auto provisioning can only be disabled when:
 [vm-overview]: /azure/virtual-machines/sizes/overview
 [nap-main-doc]: /azure/aks/node-autoprovision
 [nap-disruption-doc]: /azure/aks/node-autoprovision-disruption
-[nap-nodepool-doc]: /azure/aks/node-autoprovision-node-pool
+[nap-nodepool-doc]: /azure/aks/node-autoprovision-node-pools
 [nap-networking-doc]: /azure/aks/node-autoprovision-networking
 [nap-observability]: /azure/aks/node-autoprovision#node-auto-provisioning-metrics
-[cluster-autoscaler]: /azure/aks/cluster-autoscale
+[cluster-autoscaler]: /azure/aks/cluster-autoscaler
 
 <!-- LINKS - external -->
 [aks-karpenter-provider]: https://github.com/Azure/karpenter-provider-azure
