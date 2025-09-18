@@ -300,12 +300,12 @@ Node auto provisioning can only be disabled when:
 [node-os-upgrade-channel]: /azure/aks/auto-upgrade-node-os-image#available-node-os-upgrade-channels
 [azure-support]: /azure/azure-portal/supportability/how-to-create-azure-support-request
 [vm-overview]: /azure/virtual-machines/sizes/overview
-[nap-main-doc]: /azure/aks/node-autoprovision.md
-[nap-disruption-doc]: /azure/aks/node-autoprovision-disruption.md
-[nap-nodepool-doc]: /azure/aks/node-autoprovision-node-pool.md
-[nap-networking-doc]: /azure/aks/node-autoprovision-networking.md
+[nap-main-doc]: /azure/aks/node-autoprovision
+[nap-disruption-doc]: /azure/aks/node-autoprovision-disruption
+[nap-nodepool-doc]: /azure/aks/node-autoprovision-node-pool
+[nap-networking-doc]: /azure/aks/node-autoprovision-networking
 [nap-observability]: /azure/aks/node-autoprovision#node-auto-provisioning-metrics
-[cluster-autoscaler]: /azure/aks/cluster-autoscale.md
+[cluster-autoscaler]: /azure/aks/cluster-autoscale
 
 <!-- LINKS - external -->
 [aks-karpenter-provider]: https://github.com/Azure/karpenter-provider-azure
