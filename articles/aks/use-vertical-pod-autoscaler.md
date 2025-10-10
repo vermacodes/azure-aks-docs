@@ -26,6 +26,11 @@ For more information, see the [Vertical Pod Autoscaler overview](./vertical-pod-
     az aks get-credentials --name <cluster-name> --resource-group <resource-group-name>
     ```
 
+> [!NOTE]
+> Vertical Pod Autoscaler 1.4.2 is enabled with AKS Kubernetes version 1.34: 
+> - The [`InPlaceOrRecreate` feature gate](https://kubernetes.io/blog/2025/05/16/kubernetes-v1-33-in-place-pod-resize-beta/) is enabled which allows you to use the [`InPlaceOrRecreate` update mode](./vertical-pod-autoscaler.md#vpa-object-operation-modes) in your VPA objects.
+> - The Vertical Pod Autoscaling component vpa-recommender and vpa-updater are highly available, they have 2 replicas by default.
+
 ## Deploy the Vertical Pod Autoscaler on a new cluster
 
 * Create a new AKS cluster with the VPA enabled using the [`az aks create`][az-aks-create] command with the `--enable-vpa` flag.
