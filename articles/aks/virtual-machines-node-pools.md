@@ -57,7 +57,7 @@ Depending on your workload needs, there are multiple compute scaling experiences
 
 
 ### Limitations
-
+- VM Sizes specified in the pool must be of the same type. For example, GPU and non-GPU or x86 and ARM64 virtual machines cannot be in the same node pool.
 - [InifiniBand][InifiniBand] isn't available.
 - [Node pool snapshot][node pool snapshot] isn't supported.
 - All VM sizes selected in a node pool need to be from a similar virtual machine family. For example, you can't mix an N-Series virtual machine type with a D-Series virtual machine type in the same node pool.
