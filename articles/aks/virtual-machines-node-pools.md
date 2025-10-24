@@ -278,11 +278,11 @@ az aks nodepool update \
 If your Virtual Machine node pool has multiple manual scale profiles, you must remove all manual scale profiles except for the selected size you want for autoscaling purposes. See the following example that deletes the manual scale profile in node pool "myvmpool" for VM size `Standard_D8s_v3`:
 
 ```azurecli-interactive
-    az aks nodepool manual-scale delete \
-        --resource-group myResourceGroup \
-        --cluster-name myAKSCluster \
-        --name myvmpool \
-        --current-vm-sizes "Standard_D8s_v3"
+az aks nodepool manual-scale delete \
+    --resource-group myResourceGroup \
+    --cluster-name myAKSCluster \
+    --name myvmpool \
+    --current-vm-sizes "Standard_D8s_v3"
 ```
 
 The following example updates Virtual Machines node pool *myvmpool* in the cluster named *myAKSCluster* from `Manual` mode to `Auto` mode:
