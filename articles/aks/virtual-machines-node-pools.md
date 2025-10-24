@@ -285,7 +285,7 @@ If your Virtual Machine node pool has multiple manual scale profiles, you must r
         --current-vm-sizes "Standard_D8s_v3"
 ```
 
-The following example updates VIrtual Machines node pool *myvmpool* in the cluster named *myAKSCluster* from `Manual` mode to `Auto` mode:
+The following example updates Virtual Machines node pool *myvmpool* in the cluster named *myAKSCluster* from `Manual` mode to `Auto` mode:
 
 ```azurecli-interactive
     az aks nodepool update \
