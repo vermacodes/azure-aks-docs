@@ -244,13 +244,13 @@ az aks create \
 The following example adds Virtual Machines node pool *myvmpool* to a cluster named *myAKSCluster* using virtual machine size of "Standard_D4s_v3":
 
 ```azurecli-interactive
-    az aks nodepool add \
-        --resource-group myResourceGroup \
-        --cluster-name myAKSCluster \
-        --name myvmpool \
-        --vm-set-type "VirtualMachines" \
-        --node-vm-size "Standard_D4s_v3" \
-        --enable-cluster-autoscaler
+az aks nodepool add \
+    --resource-group myResourceGroup \
+    --cluster-name myAKSCluster \
+    --name myvmpool \
+    --vm-set-type "VirtualMachines" \
+    --node-vm-size "Standard_D4s_v3" \
+    --enable-cluster-autoscaler
 ```
 
 ### Update cluster autoscaler settings for a Virtual Machines node pool with cluster autoscaler enabled
