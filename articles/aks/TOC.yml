@@ -320,6 +320,8 @@
           href: upgrade.md
         - name: Upgrade options and recommendations
           href: upgrade-cluster.md
+        - name: How AKS cluster upgrades work
+          href: how-does-upgrade-happen.md
         - name: AKS component versioning
           href: aks-component-versioning.md
         - name: Upgrade scenarios hub
@@ -434,6 +436,12 @@
               href: concepts-managed-namespaces.md
             - name: Use managed namespaces
               href: managed-namespaces.md  
+        - name: Scheduler profile configuration
+          items:
+            - name: Overview
+              href: concepts-scheduler-configuration.md
+            - name: Configure a scheduler profile
+              href: configure-aks-scheduler.md
     - name: Configure backup
       items:
         - name: Prerequisites
@@ -810,6 +818,8 @@
             href: cis-azure-linux.md
           - name: CIS Azure Linux 3.0 benchmark
             href: cis-azure-linux-v3.md
+          - name: CIS Ubuntu benchmark
+            href: cis-ubuntu.md
           - name: CIS Windows Server benchmark
             href: cis-windows.md
         - name: Payment Card Industry Data Security Standard (PCI DSS)
@@ -998,8 +1008,10 @@
       href: /azure/copilot/work-aks-clusters?toc/azure/aks/toc.json&bc=/azure/aks/breadcrumb/toc.json
     - name: GPUs
       items:
-        - name: Use Linux GPUs
+        - name: Use NVIDIA GPUs
           href: use-nvidia-gpu.md
+        - name: Use managed GPU nodes
+          href: aks-managed-gpu-nodes.md
         - name: Use Windows GPUs
           href: use-windows-gpu.md
         - name: Use AMD GPUs
