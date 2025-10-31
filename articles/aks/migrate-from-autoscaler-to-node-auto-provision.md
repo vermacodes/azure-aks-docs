@@ -37,11 +37,11 @@ Node auto provisioning is based on the open source [Karpenter](https://karpenter
 
 ## Pre-migration checklist
 
-- Confirm cluster eligibility for node auto provisioning
+- Confirm cluster eligibility for node auto provisioning. For more on NAP requirements visit our [Overview of NAP documentation](/azure/aks/node-auto-provisioning?tabs=azure-cli#prerequisites)
 - Right-size workloads for consolidation
   - Set proper resource requests/limits, replicas, and pod disruption budgets (PDBs) to allow for a gradual migration. This migration method will require properly set PDBs to ensure well-managed disruption of your workloads. 
 - Verify your system node pool
-  - AKS requires a system node pool for system components (such as CoreDNS, Karpenter, etc.)
+  - AKS requires a system node pool for system components (such as CoreDNS, Karpenter, etc.), when NAP is enabled, it will be responsible for autoscaling the system pool. 
 
 ### Disable cluster autoscaler safely
 
@@ -64,7 +64,7 @@ az aks nodepool update \
 
 You can also set the node count of your node pool to a pinned count, as you begin the migration to node auto provisioning. The following az aks nodepool scale command pins the node count of node pool `mypool1` in cluster `myAKSCluster` to five (5). 
 
-```
+```azurecli-interactive
 # (Optional) Pin to a safe desired count before the switch
 az aks nodepool scale \
   --resource-group myResourceGroup \
@@ -79,13 +79,13 @@ az aks nodepool scale \
 
 - Enable node autoprovisioning on an existing cluster using the `az aks update` command and set `--node-provisioning-mode` to `Auto`.
 
-    ```azurecli-interactive
-    az aks update --name $CLUSTER_NAME --resource-group $RESOURCE_GROUP_NAME --node-provisioning-mode Auto
-    ```
+```azurecli-interactive
+az aks update --name $CLUSTER_NAME --resource-group $RESOURCE_GROUP_NAME --node-provisioning-mode Auto
+```
 
 ### Define your first NodePool and AKSNodeClass
 
-After enabling node autoprovisioning on your cluster, you can create a basic NodePool and AKSNodeClass to start provisioning nodes. Here's a simple example:
+After enabling node autoprovisioning on your cluster, you can create a basic NodePool and AKSNodeClass to start provisioning nodes. These customer resource definition (CRD) files are used by NAP to define the types of nodes provisioned for your workloads. Here's a simple example:
 
 ```yaml
 #nodepool-default.yaml
@@ -118,9 +118,9 @@ kind: AKSNodeClass
 metadata:
   name: default
   annotations:
-    kubernetes.io/description: "General purpose AKSNodeClass for running Ubuntu2204 nodes"
+    kubernetes.io/description: "General purpose AKSNodeClass for running Ubuntu nodes"
 spec:
-  imageFamily: Ubuntu2204
+  imageFamily: Ubuntu
 ```
 
 This example creates a basic NodePool that:
@@ -135,6 +135,7 @@ You can now deploy the custom resources to your cluster with the following `kube
 kubectl apply -f nodepool-default.yaml
 ```
 
+For more on configuring your cluster specifications for NAP, visit our [NodePool documentation](./node-auto-provisioning-node-pools.md) and [AKSNodeClass documentation](./node-auto-provisioning-aksnodeclass.md).
 
 ## Migrate workloads from fixed pools to node auto provisioning managed nodes
 
@@ -153,6 +154,22 @@ As pods evict, node auto provisioning provisions replacement nodes per your Node
 
 >[!NOTE]
 > We recommend a gradual scale down in waves, and watch replicas/PDBs to avoid dips in availability.
+
+### Confirm new NAP-managed nodes are being created
+
+To ensure that NAP is properly provisioning new nodes in response to pending pod pressure, verify that the new nodes are being created. Node auto provisioning produces cluster events that can be used to monitor deployment and scheduling decisions being made. You can view events through the Kubernetes events stream.
+
+```
+kubectl get events -A --field-selector source=karpenter -w
+```
+
+Alternatively you can view the NodeClaims that represent the nodes being created: 
+
+```
+kubectl get nodeclaims
+```
+
+You should see a list of nodes being created by NAP. This confirms that NAP is provisioning nodes in response to pending pod pressure.
 
 ### Clean up old autoscaling 
 
