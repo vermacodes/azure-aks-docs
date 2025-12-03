@@ -1,5 +1,5 @@
 ---
-title: Azure Kubernetes Service (AKS) application routing add-on with the Kubernetes Gateway API - Preview
+title: Azure Kubernetes Service (AKS) application routing add-on with the Kubernetes Gateway API (preview)
 description: Use the application routing add-on to manage ingress traffic on Azure Kubernetes Service (AKS) using the Kubernetes Gateway API.
 ms.subservice: aks-networking
 ms.custom: devx-track-azurecli, biannual
@@ -10,13 +10,15 @@ ms.author: nshankar
 # Customer intent: As a cloud engineer, I want to deploy and configure ingress on Azure Kubernetes Service with the Kubernetes Gateway API using the application routing add-on, so that I can efficiently manage HTTP/HTTPS traffic to my applications.
 ---
 
-# Configure ingress with the Kubernetes Gateway API via the application routing add-on - Preview
+# Configure ingress with the Kubernetes Gateway API via the application routing add-on (preview)
 
 [!INCLUDE [preview features callout](~/reusable-content/ce-skilling/azure/includes/aks/includes/preview/preview-callout.md)]
 
-The application routing add-on now supports the Kubernetes Gateway API for ingress traffic management. If you are using [managed NGINX][app-routing-nginx] with the legacy Ingress API, we strongly recommend migrating to using the Kubernetes Gateway API implementation. 
+The application routing add-on now supports the Kubernetes Gateway API for ingress traffic management. If you are using [managed NGINX][app-routing-nginx] with the legacy Ingress API, migrating to using the Kubernetes Gateway API implementation is strongly recommended.
 
-The application routing add-on Kubernetes Gateway API implementation deploys an Istio control plane to reconcile Kubernetes Gateway API resources. Unlike the [Istio service mesh add-on for AKS][istio-addon], the application routing add-on's Istio control plane does not support sidecar injection or other Istio Custom Resource Definitions (CRDs). Additionally, the application routing add-on's Istio control plane is not revisioned and is upgraded in-place for both minor and patch version updates. Note that you cannot have both the application routing Kubernetes Gateway API implementation and the Istio add-on enabled simultaneously on your cluster.
+The application routing add-on Kubernetes Gateway API implementation deploys an Istio control plane to reconcile Kubernetes Gateway API resources. However, it differs from the [Istio service mesh add-on for AKS][istio-addon] in the following ways:
+* The application routing add-on's Istio control plane does not support sidecar injection or other Istio Custom Resource Definitions (CRDs). It only reconciles Gateway API resources.
+* The application routing add-on's Istio control plane is not [revisioned][istio-revisions] and is upgraded in-place for both minor and patch version updates.
 
 ## Limitations
 
@@ -213,7 +215,7 @@ openssl x509 -req -sha256 -days 365 -CA httpbin_certs/example.com.crt -CAkey htt
 
 1. Create Azure Key Vault
 
-    You need an [Azure Key Vault resource][akv-quickstart] to supply the certificate and key inputs to the Istio add-on.
+    You need an [Azure Key Vault resource][akv-quickstart] to supply the certificate and key inputs to the application routing add-on.
 
     ```bash
     export AKV_NAME=<azure-key-vault-resource-name>  
@@ -502,10 +504,13 @@ kubectl delete secretproviderclass httpbin-credential-spc
 [aks-lts]: long-term-support.md
 [akv-rbac-guide]: /azure/key-vault/general/rbac-guide#using-azure-rbac-secret-key-and-certificate-permissions-with-key-vault
 [azure-internal-lb]: ./internal-lb.md
-[aks-release-notes]: https://github.com/azure/aks/releases
 [aks-release-tracker]: ./release-tracker.md
-[istio-addon]: about-istio.md
+[istio-addon]: istio-about.md
 [istio-gateway-resource-customization]: istio-gateway-api.md#resource-customizations
 [resource-customization-allowlist]: istio-gateway-api.md#resource-customization-allowlist
 [managed-gateway-api]: managed-gateway-api.md
 [istio-release-calendar]: istio-support-policy.md#service-mesh-add-on-release-calendar
+
+<!-- LINKS - external -->
+[aks-release-notes]: https://github.com/azure/aks/releases
+[istio-revisions]: https://istio.io/latest/blog/2021/revision-tags/

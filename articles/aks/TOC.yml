@@ -528,7 +528,7 @@
         items:
           - name: Overview
             href: concepts-network-ingress.md
-          - name: Ingress with the Kubernetes Gateway API
+          - name: Ingress with the Kubernetes Gateway API (preview)
             href: managed-gateway-api.md
           - name: Use Application Gateway for Containers
             items:
@@ -540,7 +540,7 @@
             items:
               - name: Application routing add-on overview
                 href: app-routing.md
-              - name: Kubernetes Gateway API with application routing
+              - name: Kubernetes Gateway API with application routing (preview)
                 href: app-routing-gateway-api.md
               - name: Advanced application routing add-on configurations (NGINX)
                 href: app-routing-nginx-configuration.md
