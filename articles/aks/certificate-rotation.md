@@ -178,13 +178,16 @@ Each node with the feature enabled is automatically given the label `kubernetes.
 
 ## Disable kubelet serving certificate rotation
 
-- Disable kubelet serving certificate rotation by updating the node pool using the [`az aks nodepool update`][az-aks-nodepool-update] command with the `aks-disable-kubelet-serving-certificate-rotation=true` tag.
+> [!CAUTION]
+>  Starting on March 30, 2026 the node pool tag, `aks-disable-kubelet-serving-certificate-rotation=true` will no longer be supported. New node pools can be created with the node pool tag, but AKS will not respect the node pool tag. For new node pools, that means that they will be created with Kubelet Serving Certificate Rotation (KSCR) enabled, despite the node pool tag. For existing node pools, this means that KSCR will be automatically enabled on their next reimage operation.
+
+1. Disable kubelet serving certificate rotation by updating the node pool using the [`az aks nodepool update`][az-aks-nodepool-update] command with the `aks-disable-kubelet-serving-certificate-rotation=true` tag.
 
     ```azurecli-interactive
     az aks nodepool update --cluster-name <cluster-name> --resource-group <resource-group> --name <node-pool-name> --tags aks-disable-kubelet-serving-certificate-rotation=true
     ```
 
-1. Reimage your nodes using a [node image upgrade][node-image-upgrade] or by scaling the pool to _zero_ instances and then back up to the desired value.
+2.  Reimage your nodes using a [node image upgrade][node-image-upgrade] or by scaling the pool to _zero_ instances and then back up to the desired value.
 
 ## Certificate autorotation
 
