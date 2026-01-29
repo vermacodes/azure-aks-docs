@@ -450,11 +450,9 @@ openssl x509 -req -sha256 -days 365 -CA httpbin_certs/example.com.crt -CAkey htt
 
 The application routing Gateway API implementation deploys and upgrades the Istio control plane based on the AKS cluster Kubernetes version **for both minor version and patch version upgrades**.
 
-The Istio version is the maximum supported Istio minor version for the AKS version, which can be found in the following table. For instance, if you are on AKS version `1.29`, the maximum supported Istio minor version that is installed is `1.27`. Keep in mind that the maximum supported Istio version for a given Kubernetes version could differ between [Long-Term Support (LTS) clusters][aks-lts] and non-LTS clusters.
+The Istio version is the maximum supported Istio minor version for the AKS Kubernetes version. For instance, if you are on AKS version `1.29`, the maximum supported Istio minor version that is installed is `1.27`. Keep in mind that the maximum supported Istio version for a given Kubernetes version could differ between [Long-Term Support (LTS) clusters][aks-lts] and non-LTS clusters.
 
-| Istio version | Upstream release | AKS release | End of life | Compatible AKS versions | Compatible AKS LTS versions |
-|--------------|-------------------|--------------|---------|-------------|-----------------------|-----------------------|
-| 1.27 | Aug 2025 | Sept 2025 | ~May 2026 (expected) | 1.29, 1.30, 1.31, 1.32, 1.33, 1.34 | 1.29, 1.30, 1.31, 1.32, 1.33, 1.34 |
+To find the maximum supported Istio minor version for your AKS Kubernetes version, you can check the [service mesh add-on release calendar][istio-release-calendar]. While the application routing Gateway API implementation is not revisioned, the Istio control plane minor version corresponds to the given service mesh add-on revision (ex: for service mesh add-on `asm-1-27`, the application routing Istio control plane minor version would be `1.27`). You can also see the Istio minor version by checking the patch version in the `istiod` deployment image: `kubectl get deployment istiod -o=jsonpath="{.spec.template.spec.containers[*].image}" -n aks-istio-system`.
 
 ### Upgrades
 
@@ -466,7 +464,7 @@ Upgrades of Istio control plane for the application routing Gateway API implemen
 It's possible that traffic disruptions could occur during the upgrade process. To minimize disruptions during upgrades, the application routing add-on deploys a Horizontal Pod Autoscaler (HPA) with 2 minimum replicas and a PodDisruptionBudget (PDB) with a minimum availability of 1 for each `Gateway`. You can [customize these resources](#resource-customizations) to modify these settings.
 
 > [!NOTE]
-> Patch version upgrades of the Istio control plane are triggered automatically. Minor version upgrades can be triggered either automatically or manually depending on the AKS version and timing of Istio minor version releases.
+> Patch version upgrades of the Istio control plane are triggered automatically as part of AKS releases. Minor version upgrades can be triggered either automatically or manually depending on the AKS Kubernetes version and timing of Istio minor version releases.
 
 ## Resource customizations
 

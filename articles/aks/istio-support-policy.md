@@ -101,3 +101,4 @@ The Istio-based service mesh add-on for AKS designates features and [configurati
 [istio-meshconfig]: ./istio-meshconfig.md#allowed-supported-and-blocked-meshconfig-values
 [aks-lts]: ./long-term-support.md
 [az-aks-mesh-get-revisions]: /cli/azure/aks/mesh#az-aks-mesh-get-revisions
+[app-routing-gateway-api]: ./app-routing-gateway-api.md
