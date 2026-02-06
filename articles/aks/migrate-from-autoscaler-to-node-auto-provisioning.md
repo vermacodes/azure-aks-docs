@@ -44,13 +44,13 @@ The following table maps Cluster Autoscaler profile settings to Node Auto Provis
 | `scale-down-utilization-threshold` | Node utilization threshold for scale down (default: 0.5) | `consolidationPolicy` | Policy for consolidation: `WhenEmpty` or `WhenEmptyOrUnderUtilized` | **CLI:**<br>`az aks update --resource-group <rg> --name <cluster> --cluster-autoscaler-profile scale-down-utilization-threshold=0.5`<br>**YAML:**<br>`disruption:`<br>`  consolidationPolicy: WhenEmptyOrUnderUtilized` |
 | `max-graceful-termination-sec` | Max seconds to wait for pod termination during scale down (default: 600s) | `terminationGracePeriod` | Explicitly sets termination grace period for NAP nodes | **CLI:**<br>`az aks update --resource-group <rg> --name <cluster> --cluster-autoscaler-profile max-graceful-termination-sec=600`<br>**YAML:**<br>`disruption:`<br>`  terminationGracePeriod: 600s` |
 | `scan-interval` | How often autoscaler reevaluates cluster (default: 10s) | N/A | NAP doesn't use periodic scans; decisions are event-driven | **CLI:**<br>`az aks update --resource-group <rg> --name <cluster> --cluster-autoscaler-profile scan-interval=10s`<br>**YAML:**<br>`# Not applicable in NAP` |
-| `max-empty-bulk-delete` | Max empty nodes deleted at once (default: 10) | `budgets` | Rate limits voluntary disruptions (percentage or absolute nodes) | **CLI:**<br>`az aks update --resource-group <rg> --name <cluster> --cluster-autoscaler-profile max-empty-bulk-delete=10`<br>**YAML:**<br>`disruption:`<br>`  budgets:`<br>`    nodes: 10` |
+| `max-empty-bulk-delete` | Max empty nodes deleted at once (default: 10) | `budgets` | Rate limits voluntary disruptions (percentage or absolute nodes) | **CLI:**<br>`az aks update --resource-group <rg> --name <cluster> --cluster-autoscaler-profile max-empty-bulk-delete=10`<br>**YAML:**<br>`disruption:`<br>`  budgets:`<br>`  - nodes: "10"` |
 | `skip-nodes-with-local-storage` | Prevents deleting nodes with local storage | Annotation: `karpenter.sh/do-not-disrupt` | Blocks disruption for specific nodes or pods | **CLI:**<br>`az aks update --resource-group <rg> --name <cluster> --cluster-autoscaler-profile skip-nodes-with-local-storage=true`<br>**YAML:**<br>`metadata:`<br>`  annotations:`<br>`    karpenter.sh/do-not-disrupt: "true"` |
 | `skip-nodes-with-system-pods` | Prevents deleting nodes with system pods | Annotation: `karpenter.sh/do-not-disrupt` | Same behavior for NAP | **CLI:**<br>`az aks update --resource-group <rg> --name <cluster> --cluster-autoscaler-profile skip-nodes-with-system-pods=true`<br>**YAML:**<br>`metadata:`<br>`  annotations:`<br>`    karpenter.sh/do-not-disrupt: "true"` |
 | `balance-similar-node-groups` | Balances node pools across zones | N/A | NAP uses Karpenter’s provisioning logic; no direct equivalent | **CLI:**<br>`az aks update --resource-group <rg> --name <cluster> --cluster-autoscaler-profile balance-similar-node-groups=true`<br>**YAML:**<br>`# Not applicable in NAP` |
 | `expander` | Strategy for selecting node pool for scale-up | N/A | NAP dynamically provisions optimal VM sizes; no expander concept | **CLI:**<br>`az aks update --resource-group <rg> --name <cluster> --cluster-autoscaler-profile expander=least-waste`<br>**YAML:**<br>`# Not applicable in NAP` |
 | `max-node-provision-time` | Max time to wait for node provisioning (default: 15m) | N/A | NAP provisions nodes immediately based on pending pods | **CLI:**<br>`az aks update --cluster-autoscaler-profile max-node-provision-time=15m`<br>**YAML:**<br>`# Not applicable in NAP` |
-| `ok-total-unready-count` / `max-total-unready-percentage` | Limits unready nodes during autoscaling | `budgets` | Can enforce disruption limits during maintenance windows | **CLI:**<br>`az aks update --cluster-autoscaler-profile ok-total-unready-count=3`<br>**YAML:**<br>`disruption:`<br>`  budgets:`<br>`    percentage: 20%` |
+| `ok-total-unready-count` / `max-total-unready-percentage` | Limits unready nodes during autoscaling | `budgets` | Can enforce disruption limits during maintenance windows | **CLI:**<br>`az aks update --cluster-autoscaler-profile ok-total-unready-count=3`<br>**YAML:**<br>`disruption:`<br>`  budgets:`<br>`    - nodes: "20%"` |
 
 
 >[!NOTE]
@@ -66,18 +66,13 @@ The following table maps Cluster Autoscaler profile settings to Node Auto Provis
 
 ### Limitations
 
-- You can't enable node autoprovisioning in a cluster where node pools have cluster autoscaler enabled
-- NAP currently doesn't support
-   - Windows node pools
-   - IPv6 clusters
-   - Service Principals
-   - HTTP Proxy
+Visit our [NAP Documentation](./azure/aks/node-auto-provisioning.md#limitations-and-unsupported-features) for requirements and limitations.
 
 ## Disable cluster autoscaler
 
 ### Pre-migration checklist
 
-- Confirm cluster eligibility for node auto provisioning. For more on NAP requirements, visit our [Overview of NAP documentation](/azure/aks/node-auto-provisioning?tabs=azure-cli#prerequisites)
+- Confirm cluster eligibility for node auto provisioning. For more on NAP requirements, visit our [Overview of NAP documentation](/azure/aks/node-auto-provisioning.md#prerequisites)
 - Right-size workloads for consolidation
   - Set proper [resource requests/limits](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container), replicas, and [pod disruption budgets (PDBs)](https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget) to allow for a gradual migration. This migration method requires properly set PDBs to ensure well-managed disruption of your workloads. 
 - Verify your system node pool is active
@@ -393,27 +388,26 @@ For more information on node auto-provisioning in AKS, see the following article
 
 ---
 <!-- LINKS - internal -->
-[aks-view-master-logs]: monitor-aks.md#aks-control-planeresource-logs
-[azure-cli-extensions]: /cli/azure/azure-cli-extensions-overview
-[azure cli]: /cli/azure/get-started-with-azure-cli
-[az-extension-add]: /cli/azure/extension#az-extension-add
-[az-extension-update]: /cli/azure/extension#az-extension-update
-[planned-maintenance#schedule-configuration-types-for-planned-maintenance]: /azure/aks/planned-maintenance#schedule-configuration-types-for-planned-maintenance
-[az-aks-create]: /cli/azure/aks#az-aks-create
-[az-aks-get-credentials]: /cli/azure/aks#az-aks-get-credentials
-[az-aks-install-cli]: /cli/azure/aks#az-aks-install-cli
-[auto-upgrade]: /azure/aks/auto-upgrade-cluster#cluster-auto-upgrade-channels
-[auto-mode]: /azure/templates/microsoft.containerservice/managedclusters?pivots=deployment-language-bicep#managedclusternodeprovisioningprofile
-[node-os-upgrade-channel]: /azure/aks/auto-upgrade-node-os-image#available-node-os-upgrade-channels
-[azure-support]: /azure/azure-portal/supportability/how-to-create-azure-support-request
-[vm-overview]: /azure/virtual-machines/sizes/overview
-[nap-main-doc]: /azure/aks/node-autoprovision
-[nap-disruption-doc]: /azure/aks/node-autoprovision-disruption
-[nap-nodepool-doc]: /azure/aks/node-autoprovision-node-pools
-[nap-networking-doc]: /azure/aks/node-autoprovision-networking
-[nap-observability]: /azure/aks/node-autoprovision#node-auto-provisioning-metrics
-[cluster-autoscaler]: /azure/aks/cluster-autoscaler
-[use-nap-doc]: /azure/aks/use-node-auto-provisioning
+[aks-view-master-logs]: ./monitor-aks.md#aks-control-planeresource-logs
+[azure-cli-extensions]: ./cli/azure/azure-cli-extensions-overview.md
+[azure cli]: ./cli/azure/get-started-with-azure-cli.md
+[az-extension-add]: ./cli/azure/extension.md#az-extension-add
+[az-extension-update]: ./cli/azure/extension.md#az-extension-update
+[planned-maintenance#schedule-configuration-types-for-planned-maintenance]: ./azure/aks/planned-maintenance.md#schedule-configuration-types-for-planned-maintenance
+[az-aks-create]: ./cli/azure/aks.md#az-aks-create
+[az-aks-get-credentials]: ./cli/azure/aks.md#az-aks-get-credentials
+[az-aks-install-cli]: ./cli/azure/aks#az-aks-install-cli
+[auto-upgrade]: ./azure/aks/auto-upgrade-cluster.md#cluster-auto-upgrade-channels
+[node-os-upgrade-channel]: ./azure/aks/auto-upgrade-node-os-image.md#available-node-os-upgrade-channels
+[azure-support]: ./azure/azure-portal/supportability/how-to-create-azure-support-request.md
+[vm-overview]: ./azure/virtual-machines/sizes/overview.md
+[nap-main-doc]: ./azure/aks/node-autoprovision.md
+[nap-disruption-doc]: ./azure/aks/node-autoprovision-disruption.md
+[nap-nodepool-doc]: ./azure/aks/node-autoprovision-node-pools.md
+[nap-networking-doc]: ./azure/aks/node-autoprovision-networking.md
+[nap-observability]: ./azure/aks/node-autoprovision#node-auto-provisioning-metrics.md
+[cluster-autoscaler]: ./azure/aks/cluster-autoscaler.md
+[use-nap-doc]: ./azure/aks/use-node-auto-provisioning.md
 
 <!-- LINKS - external -->
 [aks-karpenter-provider]: https://github.com/Azure/karpenter-provider-azure
