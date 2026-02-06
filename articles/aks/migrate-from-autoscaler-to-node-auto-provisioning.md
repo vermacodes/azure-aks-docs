@@ -300,6 +300,8 @@ You can now deploy the custom resources to your cluster with the following `kube
 kubectl apply -f nodepool-default.yaml
 ```
 
+---
+
 ## Migrate workloads from fixed pools to node auto provisioning managed nodes
 
 >[!NOTE]
@@ -361,7 +363,7 @@ You should see a list of nodes NAP is provisioning. This confirms that NAP is pr
 - If you're using managed AKS cluster autoscaler only, cluster autoscaler is already disabled with the above steps. 
 - If you're using self-hosted cluster autoscaler installed in kube-system, scale the cluster autoscaler pods to zero and remove.
 
-```
+```bash
 kubectl -n kube-system scale deploy/cluster-autoscaler --replicas=0
 kubectl -n kube-system delete deploy/cluster-autoscaler
 ```
