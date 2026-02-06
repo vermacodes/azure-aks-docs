@@ -6,6 +6,7 @@ ms.custom: devx-track-azurecli
 ms.date: 1/30/2026
 ms.author: wilsondarko
 author: wdarko1
+ai-usage: ai-assisted
 
 #Customer intent: As a cluster operator or developer, I want to automatically provision and manage the optimal VM configuration for my AKS workloads, so that I can efficiently scale my cluster while minimizing resource costs and complexities.
 
@@ -66,16 +67,16 @@ The following table maps Cluster Autoscaler profile settings to Node Auto Provis
 
 ### Limitations
 
-Visit our [NAP Documentation](./azure/aks/node-auto-provisioning.md#limitations-and-unsupported-features) for requirements and limitations.
+Visit our [NAP Documentation](./node-auto-provisioning.md#limitations-and-unsupported-features) for requirements and limitations.
 
 ## Disable cluster autoscaler
 
 ### Pre-migration checklist
 
-- Confirm cluster eligibility for node auto provisioning. For more on NAP requirements, visit our [Overview of NAP documentation](/azure/aks/node-auto-provisioning.md#prerequisites)
-- Right-size workloads for consolidation
+- Confirm cluster eligibility for node auto provisioning. For more on NAP requirements, visit our [Overview of NAP documentation](/azure/aks/node-auto-provisioning.md#prerequisites).
+- Right-size workloads for consolidation.
   - Set proper [resource requests/limits](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container), replicas, and [pod disruption budgets (PDBs)](https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget) to allow for a gradual migration. This migration method requires properly set PDBs to ensure well-managed disruption of your workloads. 
-- Verify your system node pool is active
+- Verify your system node pool is active.
   - AKS requires a system node pool for system components (such as CoreDNS, Karpenter, etc.). When NAP is enabled, AKS is responsible for autoscaling the system pool. 
 
 ### Disable cluster autoscaler safely
@@ -126,7 +127,7 @@ After enabling node autoprovisioning on your cluster, you can create a basic Nod
 
 This example creates a basic NodePool that:
 - Supports both spot and on-demand instances
-- Uses D-series VMs
+- Uses D, E, and F series VMs
 - Sets a CPU limit of 100
 - Enables consolidation when nodes are empty or underutilized
 
@@ -184,7 +185,7 @@ This example creates an advanced NodePool that:
 - Supports both spot and on-demand instances
 - Uses D, E, and F-series VMs
 - Sets a CPU limit of 100
-- Selects a 
+- Sets nodes to never expire
 - Enables consolidation when nodes are empty or underutilized
 
 ```yaml
@@ -202,7 +203,7 @@ spec:
       requirements:
         - key: karpenter.sh/capacity-type
           operator: In
-          values: [spot]
+          values: [spot, on-demand]
         - key: karpenter.azure.com/sku-family
           operator: In
           values: [D, E, F]
@@ -210,7 +211,7 @@ spec:
   disruption:
     consolidationPolicy: WhenEmptyOrUnderutilized
     consolidateAfter: 0s
-    spec:
+ spec:
       nodeClassRef:
         apiVersion: karpenter.azure.com/v1beta1
         kind: AKSNodeClass
@@ -374,7 +375,7 @@ After you have completed your migration, there are more capabilities to fine tun
 
 - **Manage disruption behavior** - Tune disruption `consolidationPolicy` and `consolidateAfter` windows to balance cost vs. virtual machine churn. To learn more, visit our [NAP Disruption documentation][nap-disruption-doc]
 - **Multiple NodePools** - Split by workload class (for example, Spot vs On-Demand, GPU vs CPU) and use requirements, weights, and taints to control placement. To learn more, visit our [NAP NodePool documentation][nap-nodepool-doc]
-- **Networking** - For more information of managing networking experiences like custom virtual networks, visit our [NAP networking documentation][nap-networking-doc]
+- **Networking** - For more information on managing networking experiences like custom virtual networks, visit our [NAP networking documentation][nap-networking-doc]
 - **Observability** - Stream Karpenter events and expose NAP control-plane metrics via Azure Monitor managed Prometheus. For more visit our [NAP public documentation][nap-observability]
 
 ## Next steps
@@ -391,25 +392,25 @@ For more information on node auto-provisioning in AKS, see the following article
 ---
 <!-- LINKS - internal -->
 [aks-view-master-logs]: ./monitor-aks.md#aks-control-planeresource-logs
-[azure-cli-extensions]: ./cli/azure/azure-cli-extensions-overview.md
+[azure-cli-extensions]: /cli/azure/azure-cli-extensions-overview.md
 [azure cli]: ./cli/azure/get-started-with-azure-cli.md
-[az-extension-add]: ./cli/azure/extension.md#az-extension-add
-[az-extension-update]: ./cli/azure/extension.md#az-extension-update
+[az-extension-add]: /cli/azure/extension#az-extension-add
+[az-extension-update]: /cli/azure/extension#az-extension-update
 [planned-maintenance#schedule-configuration-types-for-planned-maintenance]: ./azure/aks/planned-maintenance.md#schedule-configuration-types-for-planned-maintenance
-[az-aks-create]: ./cli/azure/aks.md#az-aks-create
-[az-aks-get-credentials]: ./cli/azure/aks.md#az-aks-get-credentials
-[az-aks-install-cli]: ./cli/azure/aks#az-aks-install-cli
-[auto-upgrade]: ./azure/aks/auto-upgrade-cluster.md#cluster-auto-upgrade-channels
-[node-os-upgrade-channel]: ./azure/aks/auto-upgrade-node-os-image.md#available-node-os-upgrade-channels
-[azure-support]: ./azure/azure-portal/supportability/how-to-create-azure-support-request.md
-[vm-overview]: ./azure/virtual-machines/sizes/overview.md
-[nap-main-doc]: ./azure/aks/node-autoprovision.md
-[nap-disruption-doc]: ./azure/aks/node-autoprovision-disruption.md
-[nap-nodepool-doc]: ./azure/aks/node-autoprovision-node-pools.md
-[nap-networking-doc]: ./azure/aks/node-autoprovision-networking.md
-[nap-observability]: ./azure/aks/node-autoprovision#node-auto-provisioning-metrics.md
-[cluster-autoscaler]: ./azure/aks/cluster-autoscaler.md
-[use-nap-doc]: ./azure/aks/use-node-auto-provisioning.md
+[az-aks-create]: /cli/azure/aks#az-aks-create
+[az-aks-get-credentials]: /cli/azure/aks#az-aks-get-credentials
+[az-aks-install-cli]: /cli/azure/aks#az-aks-install-cli
+[auto-upgrade]: /azure/aks/auto-upgrade-cluster.md#cluster-auto-upgrade-channels
+[node-os-upgrade-channel]: /azure/aks/auto-upgrade-node-os-image.md#available-node-os-upgrade-channels
+[azure-support]: /azure/azure-portal/supportability/how-to-create-azure-support-request.md
+[vm-overview]: /azure/virtual-machines/sizes/overview.md
+[nap-main-doc]: /azure/aks/node-autoprovision.md
+[nap-disruption-doc]: /azure/aks/node-autoprovision-disruption.md
+[nap-nodepool-doc]: /azure/aks/node-autoprovision-node-pools.md
+[nap-networking-doc]: /azure/aks/node-autoprovision-networking.md
+[nap-observability]: /azure/aks/node-autoprovision.md#node-auto-provisioning-metrics
+[cluster-autoscaler]: /azure/aks/cluster-autoscaler.md
+[use-nap-doc]: /azure/aks/use-node-auto-provisioning.md
 
 <!-- LINKS - external -->
 [aks-karpenter-provider]: https://github.com/Azure/karpenter-provider-azure
