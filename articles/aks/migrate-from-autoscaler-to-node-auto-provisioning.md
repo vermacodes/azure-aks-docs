@@ -306,7 +306,7 @@ kubectl apply -f nodepool-default.yaml
 ## Migrate workloads from fixed pools to node auto provisioning managed nodes
 
 >[!NOTE]
-> Consider setting node affinity to ensure that your workloads can tolerate NAP and are scheduled to the NAP-managed nodes when desired.
+> Consider setting node affinity to ensure that your workloads can tolerate NAP and are scheduled to the NAP-managed nodes when desired. Visit the [AKS node selector and affinity documentaiton](./operator-best-practices-advanced-scheduler#control-pod-scheduling-using-node-selectors-and-affinity) on best practices. 
 
 Now scale down user pools gradually (keep the system pool):
 
