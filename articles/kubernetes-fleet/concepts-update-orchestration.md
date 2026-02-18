@@ -1,7 +1,7 @@
 ---
 title: "Update Kubernetes and node images across multiple member clusters"
 description: This article describes the concept of update orchestration across multiple clusters.
-ms.date: 09/10/2025
+ms.date: 02/17/2026
 author: sjwaight
 ms.author: simonwaight
 ms.service: azure-kubernetes-fleet-manager
@@ -24,12 +24,11 @@ The following image visualizes an upgrade run containing two update stages, each
 :::image type="content" source="./media/conceptual-update-orchestration-inline.png" alt-text="A diagram showing an upgrade run containing two update stages, each containing two update groups with two member clusters." lightbox="./media/conceptual-update-orchestration.png":::
 
 * **Update run**: An update run represents an update being applied to a collection of AKS clusters, consisting of the update goal and sequence. The update goal describes the desired updates (for example, upgrading to Kubernetes version 1.28.3). The update sequence describes the exact order to apply the update to multiple member clusters, expressed using stages and groups. If unspecified, all the member clusters are updated one by one sequentially. An update run can be stopped and started.
-* **Update stage**: Update runs are divided into stages, which are applied sequentially. For example, a first update stage might update test environment member clusters, and a second update stage would then later update production environment member clusters. A wait time can be specified to delay between the application of subsequent update stages.
-* **Update group**: Each update stage contains one or more update groups, which are used to select the member clusters to be updated. Update groups are also used to order the application of updates to member clusters. Within an update stage, updates are applied to all the different update groups in parallel; within an update group, member clusters update sequentially. Each member cluster of the fleet can only be a part of one update group.
+* **Maximum Concurrency (preview)**: 
+Control how many clusters can upgrade concurrently within an update stage or update group. For more information, see [MaxConcurrency](#maxconcurrency-preview).
+* **Update stage**: Update runs that use an update strategy are divided into stages, which are applied sequentially. For example, a first update stage might update test environment member clusters, and a second update stage would then later update production environment member clusters. A wait time can be specified to delay between the application of subsequent update stages.
+* **Update group**: Each update stage contains one or more update groups, which are used to select the member clusters to be updated. Update groups are also used to order the application of updates to member clusters. Within an update stage, updates are applied to all the different update groups in parallel; within an update group, member clusters update sequentially by default. You can change this default behavior by configuring [MaxConcurrency](#maxconcurrency-preview) at the stage or group level to control how many clusters upgrade concurrently. Each member cluster of the fleet can only be a part of one update group.
 * **Approval gates (preview)**: Can be configured before or after each stage or group. Approvals pause the update run, allowing either you or automations that you've set up to check that it's OK to proceed. After you or your automation grants approval, the update run will continue.
-* **Max Concurrency (preview)**: 
-You can optionally configure `MaxConcurrency` at the stage level and/or the group level which controls how many clusters can upgrade concurrently. For more information, see [MaxConcurrency](#maxconcurrency-preview).
-
 * **Update strategy**: An update strategy describes the update sequence with stages and groups and allows you to reuse an update run configuration instead of defining the sequence repeatedly in each run. An update strategy doesn't include desired Kubernetes or node image versions.
 
 > [!NOTE]
@@ -167,8 +166,16 @@ Examples:
 - **Stage level**: Defines the maximum number of clusters that can upgrade at the same time across all groups in a stage. Acts as a global ceiling for the stage.
 - **Group level**: Defines the maximum number of clusters that can upgrade concurrently within a specific group.
 
+[!INCLUDE [preview features note](./includes/preview/preview-callout.md)]
+
 > [!NOTE]
-> When no `MaxConcurrency` value is specified, the system will default MaxConcurrency values to `stage.maxConcurrency = 10`, `group.maxConcurrency = 1`.
+> When no `MaxConcurrency` value is specified, the system will default MaxConcurrency values to `stage.maxConcurrency = 10`, `group.maxConcurrency = 1`. Existing update strategies and update runs that were created before this feature was available will automatically receive these default values on the next PUT operation on the resource.
+
+> [!IMPORTANT]
+> The following upper limits apply to `MaxConcurrency` values:
+>
+> * **Stage level**: Can't exceed the system limit of **10**.
+> * **Group level**: Can't exceed the stage-level `MaxConcurrency` value, and can't exceed the number of clusters that exist in the group.
 
 `MaxConcurrency` accepts two value forms:
 
@@ -177,13 +184,13 @@ Examples:
 
 The update strategy stores `MaxConcurrency` values as strings (for example, `"3"` or `"25%"`). When an update run is created from the strategy, these string values are resolved into concrete integers based on the actual cluster counts at that time. The resolved integer values are visible on the update run, so you can see exactly how many clusters are allowed to upgrade concurrently. For example, a strategy value of `"25%"` applied to a stage with 20 clusters resolves to `5` on the update run.
 
-### Concurrency control suggestions:
-If you want to Upgrade with safety (less speed, but less likely to end with multiple broken clusters): set MaxConcurrency to a lower value.
-If you want to Upgrade with speed (more speed, but more likely end with multiple broken clusters): set MaxConcurrency to a higher value.
+### Concurrency control suggestions
+If you want to upgrade with safety (less speed, but less likely to end with multiple broken clusters): set maximum concurrency to a smaller value.
+If you want to upgrade with speed (more speed, but more likely end with multiple broken clusters): set maximum concurrency to a larger value.
 
 ### How stage and group limits interact
 
-The stage-level `MaxConcurrency` always acts as the overall ceiling. Even if individual groups allow higher concurrency, the stage limit takes precedence. Group-level concurrency might be lower than configured due to the stage-level limit, group size, or member-specific conditions.
+The stage-level Maximum concurrency always acts as the overall ceiling. Even if individual groups allow higher concurrency, the stage limit takes precedence. Group-level concurrency might be lower than configured due to the stage-level limit, group size, or member-specific conditions.
 
 #### Example 1: Fixed limits
 
@@ -216,8 +223,6 @@ A stage has 20 clusters across two groups: Group A (8 clusters) and Group B (12 
 | `groupB.maxConcurrency` | `"25%"` | 3 |
 
 Result: Up to five concurrent upgrades total, distributed across groups according to their individual limits.
-
-[!INCLUDE [preview features note](./includes/preview/preview-callout.md)]
 
 ### Minor version skipping behavior
 
