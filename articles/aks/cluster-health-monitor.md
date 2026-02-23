@@ -34,15 +34,7 @@ The checker evaluates the following signals:
 
 Cluster Health Monitor exposes check results as Prometheus metrics on port `9800`, so you can scrape and alert on these signals in your existing monitoring pipeline.
 
-For CoreDNS-specific checks, Cluster Health Monitor can automatically remediate a stuck or unhealthy pod by deleting one unhealthy CoreDNS pod. Kubernetes then recreates the pod.
-
-AKS applies remediation only in specific scenarios to reduce disruption:
-
-- Exactly one CoreDNS pod is continuously unhealthy for at least five minutes. This condition helps avoid deleting multiple pods during a broader incident.
-- At least one other CoreDNS pod is healthy. This condition helps preserve DNS availability while remediation runs.
-- No prior alert firing happened in the last one hour. This cool-down period helps prevent repeated delete and recreate loops.
-
-These conditions help improve DNS resiliency while reducing unnecessary restarts.
+For DNS-specific checks, Cluster Health Monitor can automatically remediate a CoreDNS pod that it detects as stuck or unhealthy by deleting that pod. Kubernetes then recreates the pod. Cluster Health Monitor applies this remediation only under specific safeguard conditions to reduce disruption. For details, see [How CoreDNS remediation works](#how-coredns-remediation-works).
 
 ## Before you begin
 
@@ -59,7 +51,7 @@ These conditions help improve DNS resiliency while reducing unnecessary restarts
 	az extension update --name aks-preview
 	```
 
-- Use the AKS preview managed clusters API version X.XX for this feature.
+- Use the AKS preview managed clusters API version 2026.01.02-preview for this feature.
 
 ## Enable Cluster Health Monitor
 
@@ -103,31 +95,43 @@ After you enable the feature, you can verify the deployment status and metric en
 To disable Cluster Health Monitor, you can use the following command:
 
 ```azurecli-interactive
-XX
+az aks update -g myResourceGroup -n myCluster --disable-continuous-control-plane-monitor
 ```
 
 ```azurecli-interactive
-XX
+az aks update -g myResourceGroup -n myCluster --disable-ondemand-control-plane-monitor
 ```
 
 ## Understand metrics exposed by Cluster Health Monitor
 
 Cluster Health Monitor exposes metrics on port `9800`. You can scrape these metrics with Prometheus and use them to detect add-on health issues.
 
-| Check | What it checks | Error codes |
-|---|---|---|
-| APIServer | Kubernetes API server availability and response times. | `Healthy`, `APIServerGetTimeout` |
-| ExternalCoreDNS | External DNS resolution through CoreDNS. | `Healthy` |
-| ExternalLocalDNS | External DNS resolution through [LocalDNS](./localdns-custom.md). | `Healthy` |
-| InternalCoreDNS | Internal cluster DNS resolution through CoreDNS. | `Healthy` |
-| InternalLocalDNS | Internal cluster DNS resolution through [LocalDNS](./localdns-custom.md). | `Healthy` |
-| ExternalCoreDNSPerPod | External DNS resolution capability for each CoreDNS pod. Includes pod name and namespace labels for targeted troubleshooting. | `Healthy` |
-| InternalCoreDNSPerPod | Internal cluster DNS resolution capability for each CoreDNS pod. Includes pod name and namespace labels for targeted troubleshooting. | `Healthy` |
-| MetricsServer | Kubernetes metrics server health and availability. | `Healthy` |
+### Metric statuses
+
+Each check returns one of the following statuses:
+
+| Status | Meaning |
+|---|---|
+| `Healthy` | The component is operating normally. |
+| `Unhealthy` | The check failed. The error code in the metric indicates the failure reason. |
+| `Unknown` | The result is inconclusive, for example during pod startup or when a dependency is unavailable. |
+
+### Checks
+
+| Check | What it monitors |
+|---|---|
+| APIServer | API server reachability by creating, reading, and deleting a test resource. |
+| InternalCoreDNS | In-cluster DNS resolution through the CoreDNS service. |
+| ExternalCoreDNS | Public DNS resolution through the CoreDNS service. |
+| InternalCoreDNSPerPod | In-cluster DNS resolution through each CoreDNS pod. Includes pod name and namespace labels. |
+| ExternalCoreDNSPerPod | Public DNS resolution through each CoreDNS pod. Includes pod name and namespace labels. |
+| InternalLocalDNS | In-cluster DNS resolution through [LocalDNS](./localdns-custom.md). |
+| ExternalLocalDNS | Public DNS resolution through [LocalDNS](./localdns-custom.md). |
+| MetricsServer | Metrics server availability. |
 
 ## How CoreDNS remediation works
 
-CoreDNS remediation is designed to restore DNS health while minimizing risk to DNS availability. Cluster Health Monitor evaluates multiple CoreDNS health signals and remediates only when the cluster can safely absorb a pod restart.
+Cluster Health Monitor includes a CoreDNS remediation capability designed to restore DNS health while minimizing risk to DNS availability. It evaluates multiple CoreDNS health signals and remediates only when the cluster can safely absorb a pod restart.
 
 ### Signals used for remediation
 
@@ -138,19 +142,19 @@ CoreDNS remediation is designed to restore DNS health while minimizing risk to D
 
 ### The remediation process
 
-AKS remediates a CoreDNS pod only when all of the following conditions are true:
+Cluster Health Monitor remediates a CoreDNS pod only when all of the following conditions are true:
 
-- Exactly one CoreDNS pod is continuously unhealthy for at least five minutes.
-- At least one other CoreDNS pod is healthy.
-- No prior CoreDNS remediation event fired in the last one hour.
+- Cluster Health Monitor detects exactly one CoreDNS pod as continuously unhealthy for at least five minutes.
+- Cluster Health Monitor detects at least one other CoreDNS pod as healthy.
+- No prior Cluster Health Monitor CoreDNS remediation event fired in the last one hour.
 
-When all conditions are met, AKS deletes one unhealthy CoreDNS pod. Kubernetes then recreates the pod.
+When all conditions are met, Cluster Health Monitor deletes one unhealthy CoreDNS pod. Kubernetes then recreates the pod.
 
 This approach helps:
 
-- Restore DNS capacity without restarting all CoreDNS pods.
+- Restore DNS capacity by replacing only the affected pod.
 - Keep at least one healthy CoreDNS replica serving traffic during recovery.
-- Avoid repeated restart cycles during ongoing incidents.
+- Avoid repeated remediation cycles during ongoing incidents.
 
 ## Next steps
 
