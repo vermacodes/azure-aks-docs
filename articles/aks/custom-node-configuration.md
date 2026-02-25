@@ -3,7 +3,7 @@ title: Customize the Node Configuration for Azure Kubernetes Service (AKS) Node 
 description: Learn how to customize the configuration on Azure Kubernetes Service (AKS) cluster nodes and node pools.
 ms.service: azure-kubernetes-service
 ms.topic: how-to
-ms.date: 04/24/2023
+ms.date: 02/25/2026
 ms.author: schaffererin
 author: schaffererin
 ms.subservice: aks-nodes
@@ -130,7 +130,14 @@ az aks nodepool add --name <node-pool-name> --cluster-name <cluster-name> --reso
 
 After you apply custom node configuration, you can confirm the settings were applied to the nodes by [connecting to the host][node-access] and verifying `sysctl` or configuration changes were made on the filesystem.
 
+## Failure modes and symptoms of misconfiguration
+
+[ADD CONTENT ABOUT FAILURE MODES AND SYMPTOMS OF MISCONFIGURATION]
+
 ## Supported custom configuration parameters
+
+> [!IMPORTANT]
+> When enabling unsafe sysctls, you assume responsibility for node stability and workload behavior. Unsafe sysctls can potentially cause node instability or security vulnerabilities if misconfigured. Ensure you understand the implications of enabling specific unsafe sysctls and monitor your cluster's health closely after making changes.
 
 ### Linux kubelet custom configuration
 
@@ -230,6 +237,14 @@ The following table lists the kernel settings that you can customize per node po
 | `swapFileSizeMB` | 1 MB - Size of the [temporary disk](/azure/virtual-machines/managed-disks-overview#temporary-disk) (/dev/sdb) | None | None | None | SwapFileSizeMB specifies the size in MB of a swap file to create on the agent nodes from this node pool. |
 | `transparentHugePageEnabled` | `always`, `madvise`, `never` | `always` | `always` | `madvise` | [Transparent Hugepages](https://www.kernel.org/doc/html/latest/admin-guide/mm/transhuge.html#admin-guide-transhuge) is a Linux kernel feature intended to improve performance by making more efficient use of your processor's memory-mapping hardware. When enabled the kernel attempts to allocate `hugepages` whenever possible and any Linux process receives 2-MB pages if the `mmap` region is 2 MB naturally aligned. In certain cases when `hugepages` are enabled system wide, applications might end up allocating more memory resources. An application might `mmap` a large region but only touch 1 byte of it, in that case a 2-MB page might be allocated instead of a 4k page for no good reason. This scenario is why it's possible to disable `hugepages` system-wide or to only have them inside `MADV_HUGEPAGE madvise` regions. |
 | `transparentHugePageDefrag` | `always`, `defer`, `defer+madvise`, `madvise`, `never` | `madvise` | `madvise` | `madvise` | This value controls whether the kernel should make aggressive use of memory compaction to make more `hugepages` available. |
+
+## Upgrade behavior with custom configuration
+
+[ADD CONTENT ABOUT UPGRADE BEHAVIOR]
+
+## Best practices and considerations
+
+[ADD CONTENT ABOUT BEST PRACTICES AND CONSIDERATIONS]
 
 ## Related content
 
