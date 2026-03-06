@@ -85,6 +85,7 @@ The cluster extensions platform is supported in all regions where AKS is deploye
 | [Flux (GitOps)][gitops-overview] | Use GitOps with Flux to manage cluster configuration and application deployment. See also [supported versions of Flux (GitOps)][gitops-support] and [Tutorial: Deploy applications using GitOps with Flux v2][gitops-tutorial].|
 | [Azure Container Storage](/azure/storage/container-storage/container-storage-introduction) | Use Azure Container Storage to manage block storage on AKS clusters to store data in persistent volumes. |
 | [Azure Backup for AKS](/azure/backup/azure-kubernetes-service-backup-overview) | Use Azure Backup for AKS to protect your containerized applications and data stored in Persistent Volumes deployed in the AKS clusters. |
+| [Container Networking Agent](/azure/aks/container-networking-agent-overview) | Use the Container Networking Agent—an AI-powered, evidence-based AKS cluster extension—to diagnose and troubleshoot networking issues in your AKS cluster. |
 
 You can also [select and deploy Kubernetes applications available through Marketplace](deploy-marketplace.md).
 
@@ -109,6 +110,7 @@ You can also [select and deploy Kubernetes applications available through Market
 [use-managed-identity]: ./use-managed-identity.md
 [workload-identity-overview]: workload-identity-overview.md
 [use-azure-ad-pod-identity]: use-azure-ad-pod-identity.md
+[container-networking-agent-overview]: ./container-networking-agent-overview.md
 
 <!-- EXTERNAL LINKS -->
 [arc-k8s-regions]: https://azure.microsoft.com/global-infrastructure/services/?products=azure-arc&regions=all

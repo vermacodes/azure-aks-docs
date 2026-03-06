@@ -524,12 +524,6 @@
             href: advanced-container-networking-services-overview.md
           - name: Enable or disable ACNS
             href: use-advanced-container-networking-services.md
-          - name: Container Networking Agent
-            items:
-              - name: Overview
-                href: container-networking-agent-overview.md
-              - name: Configure Container Networking Agent
-                href: how-to-configure-container-networking-agent.md
       - name: Ingress
         items:
           - name: Overview
@@ -1124,6 +1118,14 @@
               href: agentic-cli-for-aks-troubleshoot.md
             - name: Agentic CLI for AKS FAQ
               href: agentic-cli-for-aks-faq.yml
+        - name: Container Networking Agent
+          items:
+            - name: Overview
+              href: container-networking-agent-overview.md
+            - name: Install and use the Container Networking Agent
+              href: how-to-configure-container-networking-agent.md
+            - name: Troubleshoot Container Networking Agent issues
+              href: troubleshoot-container-networking-agent.md
         - name: AKS MCP server
           href: aks-model-context-protocol-server.md
         - name: Work with clusters using Copilot

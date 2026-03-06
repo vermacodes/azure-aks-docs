@@ -1,5 +1,5 @@
 ---
-title: Container Networking Agent for AKS overview
+title: Container Networking Agent for AKS overview (Public Preview)
 description: Learn about Container Networking Agent, an AI-powered diagnostic assistant that helps you troubleshoot networking issues in Azure Kubernetes Service (AKS) clusters.
 author: shaifaligargmsft
 ms.author: shaifaligarg
@@ -8,14 +8,17 @@ ms.topic: overview
 ms.service: azure-kubernetes-service
 ---
 
-# What is Container Networking Agent for AKS?
+# What is Container Networking Agent for AKS? (Public Preview)
+
+> [!IMPORTANT]
+> Container Networking Agent is currently in public preview. Preview features are provided without a service-level agreement and aren't recommended for production workloads. For more information, see [Supplemental Terms of Use for Microsoft Azure Previews](https://azure.microsoft.com/support/legal/preview-supplemental-terms/).
 
 Container Networking Agent is an AI-powered diagnostic assistant that helps you identify and resolve networking issues in your Azure Kubernetes Service (AKS) clusters. Describe a problem in natural language — DNS failures, packet drops, unreachable services, or blocked traffic — and the agent collects evidence from your cluster and returns a structured report with root cause analysis and remediation guidance.
 
-The agent runs as an in-cluster web application that you access through your browser. It operates with read-only access and never modifies your cluster, so you can run diagnostics safely on production workloads.
+The agent runs as an in-cluster web application deployed as an [AKS cluster extension](/azure/aks/cluster-extensions). You access it through your browser. It operates with read-only access and never modifies your cluster, so you can run diagnostics safely on production workloads.
 
 > [!NOTE]
-> Container Networking Agent is also referred to internally as **CNA**. You may see this abbreviation in Azure portal experiences and CLI output.
+> Container Networking Agent is a cloud-only feature for Azure Kubernetes Service (AKS). It isn't supported on AKS hybrid, AKS on Azure Stack HCI, or Arc-enabled Kubernetes clusters.
 
 ## What can you do with Container Networking Agent?
 
@@ -57,7 +60,19 @@ When you describe a networking issue, Container Networking Agent follows a struc
 ```
 You describe the issue → Agent classifies it → Collects evidence from the cluster → Analyzes findings → Reports results
 ```
-:::image type="content" source="./media/advanced-container-networking-services/Conatiner-network-agent-working.png" alt-text="Screenshot of the Container Networking Agent chat interface showing a user prompt and a structured diagnostic response." lightbox="./media/advanced-container-networking-services/Conatiner-network-agent-working.png":::
+:::image type="content" source="../media/container-network-agent-working.png" alt-text="Architecture diagram showing the Container Networking Agent inside an AKS cluster, its connections to cluster data sources, and its integration with Azure OpenAI Service." lightbox="../media/container-network-agent-working.png":::
+
+As shown in the diagram, Container Networking Agent runs as a pod inside your AKS cluster. You interact with it through a web browser over HTTPS. Inside the cluster, the agent connects to five data sources through specialized plugins:
+
+- **Kubernetes API Server** — Queries pods, services, nodes, network policies, and other cluster resources via `kubectl`.
+- **CoreDNS** — Collects DNS health status and metrics through the DNS plugin.
+- **Cilium Agent** — Inspects Cilium network policies and endpoint state through the Kubernetes Networking plugin.
+- **Hubble** — Observes live network flows and identifies dropped traffic through the Kubernetes Networking plugin (requires ACNS).
+- **Node Network Stack** — Gathers host-level network statistics (RX/TX buffers, ring buffer state, softnet counters) through the Linux Networking plugin.
+
+The agent communicates bidirectionally with Azure OpenAI Service: it sends your natural language query and collected diagnostic evidence for reasoning, and receives structured diagnostic insights in return.
+
+The diagnostic workflow follows four steps:
 
 **1. Classify** — The agent determines the issue category (DNS, connectivity, network policy, service routing, or packet drops) based on your description.
 
@@ -267,9 +282,9 @@ Container Networking Agent runs as a pod in your AKS cluster. Direct costs inclu
 - **Azure OpenAI usage**: Token consumption depends on conversation length and diagnostic complexity. See [Azure OpenAI pricing](https://azure.microsoft.com/pricing/details/cognitive-services/openai-service/) for current rates.
 - **AKS node compute**: The Container Networking Agent pod and (for packet drop diagnostics) the debug DaemonSet consume cluster compute resources.
 
-Container Networking Agent itself has no separate licensing fee.
+Container Networking Agent itself has no separate licensing fee during public preview.
 
-## Customer experience, support, and feedback
+## Access and use Container Networking Agent
 
 Container Networking Agent is a browser-based chatbot that runs inside your AKS cluster. After deployment, open the application URL in any modern browser to start a conversation. You don't need a CLI tool on your workstation or a portal blade to navigate. It's a standalone chat interface designed for network diagnostics.
 
@@ -310,5 +325,6 @@ If you encounter a problem with Container Networking Agent:
 ## Next steps
 
 - [Quickstart: Deploy Container Networking Agent](./how-to-configure-container-networking-agent.md)
+- [Troubleshoot Container Networking Agent on AKS](./troubleshoot-container-networking-agent.md)
 - [Advanced Container Networking Services overview](/azure/aks/advanced-container-networking-services-overview)
 - [Azure CNI powered by Cilium](/azure/aks/azure-cni-powered-by-cilium)

@@ -25,7 +25,7 @@ Container Networking Agent operates with read-only access to your cluster. It do
 
 You deploy Container Networking Agent as an AKS extension (`microsoft.containernetworkingagent`). It integrates with the Azure resource management plane, and you manage it through the `az k8s-extension` CLI commands.
 
-**Supported regions:** centralus, eastus, eastus2euap, centralusueap, eastus2, uksouth, westus2.
+**Supported regions:** centralus, eastus, eastus2, uksouth, westus2.
 
 ## Prerequisites
 
@@ -53,7 +53,7 @@ Before you begin, ensure you have the following tools, permissions, and informat
 |-----------|-------------|
 | Azure Subscription ID | Your target subscription. |
 | Resource group name | Existing or to be created during deployment. |
-| Azure region | A supported region: centralus, eastus, eastus2euap, centralusueap, eastus2, uksouth, westus2. |
+| Azure region | A supported region: centralus, eastus, eastus2, uksouth, westus2. |
 | AKS cluster name | Create a new cluster or use an existing one. |
 | `SERVICE_MANAGEMENT_REFERENCE` | Service management reference (for example, a Service Tree ID) required by your tenant for App Registration setup (Step 7). To find this value for an existing app, run: `az ad app show --id <app-id> --query serviceManagementReference -o tsv`. |
 
@@ -74,7 +74,7 @@ Before you begin, ensure you have the following tools, permissions, and informat
 
 ### Step 1: Set environment variables and create a resource group
 
-Set the following environment variables. Replace the placeholder values with your own.
+Define the core configuration variables and create an Azure resource group to organize all the resources you'll deploy in subsequent steps (AKS cluster, Azure OpenAI service, managed identity). Replace the placeholder values with your own.
 
 ```azurecli-interactive
 export SUBSCRIPTION_ID="<your-subscription-id>"
@@ -96,7 +96,11 @@ az group create \
 
 ### Step 2: Create an AKS cluster
 
-If you don't already have an AKS cluster, create one with workload identity, OIDC issuer, Azure CNI with Cilium dataplane, and Advanced Container Networking Services (ACNS) enabled. Use the [`az aks create`](/cli/azure/aks#az-aks-create) command.
+Container Networking Agent runs inside an AKS cluster and requires several cluster features to function. If you don't already have an AKS cluster, create one using the [`az aks create`](/cli/azure/aks#az-aks-create) command with the following features enabled:
+
+- **Workload identity and OIDC issuer** — Required for secure, secretless authentication between the agent pod and Azure services (OpenAI, AKS API).
+- **Cilium dataplane** — Required for network policy enforcement and Cilium policy diagnostics.
+- **ACNS (Advanced Container Networking Services)** — Required for Hubble flow analysis and advanced networking diagnostics.
 
 ```azurecli-interactive
 az aks create \
@@ -135,6 +139,8 @@ az aks get-credentials \
 ```
 
 ### Step 3: Create an Azure OpenAI resource and deploy a model
+
+Container Networking Agent uses Azure OpenAI Service to power its AI reasoning. When you describe a networking issue, the agent sends your query and the collected diagnostic evidence to Azure OpenAI for analysis and response generation. In this step, you create an Azure OpenAI resource and deploy a model (for example, GPT-4o or later) that the agent uses at runtime.
 
 > [!NOTE]
 > If you already have an Azure OpenAI resource with a deployed model, skip the resource and model creation commands below. Instead, set the following environment variables to match your existing resource and continue to the next step:
@@ -803,11 +809,13 @@ The guide walks you through:
 
 ### Steps 4-6: Create a managed identity, assign RBAC roles, and configure federated credentials
 
+Container Networking Agent needs an Azure identity to authenticate with Azure services at runtime. In these steps, you create a managed identity, grant it the minimum required permissions to access Azure OpenAI and AKS resources, and link it to the Kubernetes service account that the agent pod runs under. This approach uses [AKS workload identity](/azure/aks/workload-identity-overview) to eliminate the need for secrets or connection strings in your cluster.
+
 #### [Azure CLI](#tab/step456-cli)
 
 **Step 4: Create a managed identity**
 
-Create a user-assigned managed identity for the agent using the [`az identity create`](/cli/azure/identity#az-identity-create) command.
+Create a user-assigned managed identity that serves as the agent's Azure identity. The agent pod uses this identity to authenticate with Azure OpenAI for AI reasoning and with the AKS API for cluster diagnostics. Use the [`az identity create`](/cli/azure/identity#az-identity-create) command.
 
 ```azurecli-interactive
 export IDENTITY_NAME="container-networking-agent-reader-identity"
@@ -822,7 +830,7 @@ az identity create \
 Get the identity client ID and principal ID using the [`az identity show`](/cli/azure/identity#az-identity-show) command.
 
 ```azurecli-interactive
-export IDENTITY_CLIENT_ID=$(az identity show \
+export AZURE_CLIENT_ID=$(az identity show \
     --name $IDENTITY_NAME \
     --resource-group $RESOURCE_GROUP \
     --query "clientId" -o tsv)
@@ -832,13 +840,13 @@ export IDENTITY_PRINCIPAL_ID=$(az identity show \
     --resource-group $RESOURCE_GROUP \
     --query "principalId" -o tsv)
 
-echo "Client ID: $IDENTITY_CLIENT_ID"
+echo "Client ID: $AZURE_CLIENT_ID"
 echo "Principal ID: $IDENTITY_PRINCIPAL_ID"
 ```
 
 **Step 5: Assign RBAC roles**
 
-Assign the required roles to the managed identity using the [`az role assignment create`](/cli/azure/role/assignment#az-role-assignment-create) command. The managed identity needs the following roles:
+Grant the managed identity the minimum permissions it needs to operate. Each role is scoped to the narrowest resource possible, following the principle of least privilege. Use the [`az role assignment create`](/cli/azure/role/assignment#az-role-assignment-create) command. The managed identity needs the following roles:
 
 | Role | Scope | Purpose |
 |------|-------|---------|
@@ -878,7 +886,7 @@ az role assignment create \
 
 **Step 6: Configure federated credentials**
 
-Link the managed identity to the Kubernetes service account used by the agent using the [`az identity federated-credential create`](/cli/azure/identity/federated-credential#az-identity-federated-credential-create) command.
+Create a federated credential that links the managed identity to the Kubernetes service account used by the agent pod. This link enables [AKS workload identity](/azure/aks/workload-identity-overview): at runtime, AKS injects a federated token into the agent pod, and the agent exchanges this token for a Microsoft Entra ID access token to call Azure OpenAI and other Azure services. No secrets or connection strings are stored in the cluster. Use the [`az identity federated-credential create`](/cli/azure/identity/federated-credential#az-identity-federated-credential-create) command.
 
 ```azurecli-interactive
 export OIDC_ISSUER_URL=$(az aks show \
@@ -894,8 +902,6 @@ az identity federated-credential create \
     --subject "system:serviceaccount:kube-system:container-networking-agent-reader" \
     --audiences "api://AzureADTokenExchange"
 ```
-
-Container Networking Agent uses [AKS workload identity](/azure/aks/workload-identity-overview) to authenticate to Azure OpenAI and other Azure services. At runtime, AKS automatically injects a federated token into the agent pod. The agent exchanges this token for a Microsoft Entra ID access token to call Azure OpenAI. This approach eliminates the need for secrets or connection strings in your cluster.
 
 #### [Script](#tab/step456-script)
 
@@ -1742,7 +1748,7 @@ source deployment/setup-managed-identity.env
 
 ### Step 7: Create an App Registration for Entra ID authentication
 
-Create an Entra ID App Registration so users can sign in to Container Networking Agent using Microsoft Entra ID (MSAL) with OAuth2/OIDC. This step is required for production deployments.
+Container Networking Agent is a web application that requires user sign-in. In this step, you create a Microsoft Entra ID App Registration that enables OAuth2/OIDC-based authentication. The App Registration issues tokens that the agent validates when users access the chat interface through their browser.
 
 Container Networking Agent supports two methods for user sign-in:
 
@@ -1751,31 +1757,44 @@ Container Networking Agent supports two methods for user sign-in:
 | Simple username login | Development and testing environments only. |
 | Microsoft Entra ID (MSAL) | Production environments with OAuth2/OIDC through an App Registration (recommended). |
 
+> [!NOTE]
+> For development or testing environments where you plan to use simple username login, you can skip this step. Microsoft Entra ID authentication is recommended for production deployments.
+
 #### [Azure CLI](#tab/step7-cli)
 
 To enable Microsoft Entra ID user authentication in production, create an App Registration using the [`az ad app create`](/cli/azure/ad/app#az-ad-app-create) command.
 
 ```azurecli-interactive
-export APP_DISPLAY_NAME="container-networking-agent-oauth2-user-auth"
-export APP_HOST="<your-app-hostname>"
-export APP_REDIRECT_URI="https://${APP_HOST}/auth/callback"
-export SERVICE_MANAGEMENT_REFERENCE="<your-service-management-reference>"
+export APP_DISPLAY_NAME="container-networking-agent-oauth2-user-auth-<your-alias>"
+export APP_REDIRECT_URI="http://localhost:8000/auth/callback"  # For local/port-forward testing
 
-export APP_ID=$(az ad app create \
+# Optional: Required by some tenants - set your Service Tree ID if needed
+# export SERVICE_MANAGEMENT_REFERENCE="<your-service-tree-id>"
+
+# Create app registration with ID token and access token issuance
+# NOTE: Ensure you have Owner or Contributor permissions on the app registration
+#       you plan to use so you can add federated credentials later.
+# If your tenant requires SERVICE_MANAGEMENT_REFERENCE, add: --service-management-reference $SERVICE_MANAGEMENT_REFERENCE
+export APP_CLIENT_ID=$(az ad app create \
     --display-name $APP_DISPLAY_NAME \
     --web-redirect-uris $APP_REDIRECT_URI \
+    --sign-in-audience AzureADMyOrg \
     --enable-id-token-issuance true \
-    --service-management-reference $SERVICE_MANAGEMENT_REFERENCE \
+    --enable-access-token-issuance true \
     --query "appId" -o tsv)
 
+echo "App Registration Client ID (ENTRA_CLIENT_ID): $APP_CLIENT_ID "
+
+# Get tenant ID
 export TENANT_ID=$(az account show --query tenantId -o tsv)
+echo "Tenant ID: $TENANT_ID"
 ```
 
 Add the required Microsoft Graph delegated permissions (`openid`, `profile`, `User.Read`, `offline_access`) using the [`az ad app permission add`](/cli/azure/ad/app/permission#az-ad-app-permission-add) command.
 
 ```azurecli-interactive
 az ad app permission add \
-    --id $APP_ID \
+    --id $APP_CLIENT_ID \
     --api 00000003-0000-0000-c000-000000000000 \
     --api-permissions \
         e1fe6dd8-ba31-4d61-89e7-88639da4683d=Scope \
@@ -1783,7 +1802,7 @@ az ad app permission add \
         37f7f235-527c-4136-accd-4a02d197296e=Scope \
         7427e0e9-2fba-42fe-b0c0-848c9e6a8182=Scope
 
-echo "App Registration Client ID: $APP_ID"
+echo "App Registration Client ID: $APP_CLIENT_ID"
 echo "Tenant ID: $TENANT_ID"
 ```
 
@@ -2498,12 +2517,20 @@ export APP_REDIRECT_URI="https://<your-app-hostname>/auth/callback"
 
 ### Step 8: Install the extension
 
-Install the Container Networking Agent AKS extension using the [`az k8s-extension create`](/cli/azure/k8s-extension#az-k8s-extension-create) command. Use the command that matches your cluster configuration.
+With all prerequisites in place — AKS cluster, Azure OpenAI resource, managed identity with RBAC roles and federated credentials, and (optionally) an App Registration — you can now install the Container Networking Agent as an AKS cluster extension. The extension deploys the agent pod into the `kube-system` namespace and configures it with the identity, OpenAI, and authentication settings from the previous steps.
+
+Install the extension using the [`az k8s-extension create`](/cli/azure/k8s-extension#az-k8s-extension-create) command. Use the command that matches your cluster configuration.
+
+> [!TIP]
+> The `--version` flag is optional. If you omit it, the extension installs the latest available version automatically.
 
 **For clusters with ACNS and Cilium dataplane:**
 
 ```azurecli-interactive
-export TENANT_ID=$(az account show --query tenantId -o tsv)
+# Map variables from previous steps to the names used by the extension
+export AZURE_TENANT_ID=$(az account show --query tenantId -o tsv)
+export AZURE_SUBSCRIPTION_ID=$SUBSCRIPTION_ID
+export AZURE_OPENAI_DEPLOYMENT=$OPENAI_DEPLOYMENT_NAME
 
 az k8s-extension create \
     --cluster-name $CLUSTER_NAME \
@@ -2511,8 +2538,8 @@ az k8s-extension create \
     --cluster-type managedClusters \
     --name containernetworkingagent \
     --extension-type microsoft.containernetworkingagent \
-    --version 0.0.7 \
-    --release-train dev \
+    --version 0.0.9 \ 
+    --release-train stable \
     --auto-upgrade-minor-version false \
     --scope cluster \
     --configuration-settings image.repository=acnpublic.azurecr.io/unlisted/containernetworking/container-networking-agent \
@@ -2534,7 +2561,10 @@ az k8s-extension create \
 **For clusters without ACNS (Hubble disabled):**
 
 ```azurecli-interactive
-export TENANT_ID=$(az account show --query tenantId -o tsv)
+# Map variables from previous steps to the names used by the extension (skip if already set above)
+export AZURE_TENANT_ID=$(az account show --query tenantId -o tsv)
+export AZURE_SUBSCRIPTION_ID=$SUBSCRIPTION_ID
+export AZURE_OPENAI_DEPLOYMENT=$OPENAI_DEPLOYMENT_NAME
 
 az k8s-extension create \
     --cluster-name $CLUSTER_NAME \
@@ -2542,19 +2572,25 @@ az k8s-extension create \
     --cluster-type managedClusters \
     --name containernetworkingagent \
     --extension-type microsoft.containernetworkingagent \
+    --version 0.0.9 \
+    --release-train stable \
+    --auto-upgrade-minor-version false \
     --scope cluster \
-    --release-train dev \
-    --configuration-settings config.AZURE_CLIENT_ID=$IDENTITY_CLIENT_ID \
-    --configuration-settings config.AZURE_TENANT_ID=$TENANT_ID \
-    --configuration-settings config.AZURE_SUBSCRIPTION_ID=$SUBSCRIPTION_ID \
+    --configuration-settings image.repository=acnpublic.azurecr.io/unlisted/containernetworking/container-networking-agent \
+    --configuration-settings image.tag=v0.0.8 \
+    --configuration-settings config.AZURE_CLIENT_ID=$AZURE_CLIENT_ID \
+    --configuration-settings config.AZURE_TENANT_ID=$AZURE_TENANT_ID \
+    --configuration-settings config.AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID \
     --configuration-settings config.AKS_CLUSTER_NAME=$CLUSTER_NAME \
     --configuration-settings config.AKS_RESOURCE_GROUP=$RESOURCE_GROUP \
-    --configuration-settings config.ENTRA_TENANT_ID=$TENANT_ID \
-    --configuration-settings config.AZURE_OPENAI_DEPLOYMENT=$OPENAI_DEPLOYMENT_NAME \
+    --configuration-settings config.ENTRA_TENANT_ID=$AZURE_TENANT_ID \
+    --configuration-settings config.ENTRA_CLIENT_ID=$APP_CLIENT_ID \
+    --configuration-settings config.AZURE_OPENAI_DEPLOYMENT=$AZURE_OPENAI_DEPLOYMENT \
     --configuration-settings config.AZURE_OPENAI_API_VERSION=2025-03-01-preview \
     --configuration-settings config.AZURE_OPENAI_ENDPOINT=$AZURE_OPENAI_ENDPOINT \
-    --configuration-settings hubble.enabled=false \
-    --configuration-settings config.AKS_MCP_ENABLED_COMPONENTS=kubectl
+    --configuration-settings config.AKS_MCP_ENABLED_COMPONENTS=kubectl \
+    --configuration-settings config.DISABLE_TELEMETRY=false \
+    --configuration-settings hubble.enabled=false
 ```
 
 > [!NOTE]
@@ -2774,360 +2810,11 @@ az k8s-extension delete \
 
 ## Troubleshoot
 
-### Identity or permission errors
-
-**Symptom:** The agent pod starts but returns `401 Unauthorized` or `403 Forbidden` errors when processing requests. Pod logs show authentication or authorization failures.
-
-**Cause:** The managed identity is missing required RBAC role assignments, or the federated credential is misconfigured.
-
-**Resolution:**
-
-1. Verify the managed identity has the correct role assignments:
-
-   ```azurecli-interactive
-   az role assignment list --assignee <identity-principal-id> --all -o table
-   ```
-
-   Confirm that all four required roles are assigned:
-
-   | Role | Scope |
-   |------|-------|
-   | `Cognitive Services OpenAI User` | Azure OpenAI resource |
-   | `Azure Kubernetes Service Cluster User Role` | AKS cluster |
-   | `Azure Kubernetes Service Contributor Role` | AKS cluster |
-   | `Reader` | Resource group |
-
-1. Verify workload identity is enabled on the cluster:
-
-   ```azurecli-interactive
-   az aks show --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME \
-       --query "securityProfile.workloadIdentity.enabled"
-   ```
-
-1. Verify the federated credential subject matches the service account:
-
-   ```azurecli-interactive
-   az identity federated-credential list \
-       --identity-name $IDENTITY_NAME \
-       --resource-group $RESOURCE_GROUP
-   ```
-
-   The `subject` should be `system:serviceaccount:kube-system:container-networking-agent-reader`.
-
-1. Verify the service account annotation:
-
-   ```azurecli-interactive
-   kubectl get serviceaccount container-networking-agent-reader -n kube-system -o yaml
-   ```
-
-   The `azure.workload.identity/client-id` annotation must match your managed identity's client ID. If it doesn't match, fix it manually:
-
-   ```azurecli-interactive
-   kubectl annotate serviceaccount container-networking-agent-reader \
-     -n kube-system \
-     azure.workload.identity/client-id=$IDENTITY_CLIENT_ID \
-     --overwrite
-   ```
-
-   Then restart the pod:
-
-   ```azurecli-interactive
-   kubectl rollout restart deployment container-networking-agent -n kube-system
-   ```
-
-> [!TIP]
-> Azure RBAC role assignments can take up to 10 minutes to propagate. If you see `401` or `403` errors immediately after setup, wait a few minutes and restart the pod.
-
-### Missing environment variables at startup
-
-**Symptom:** Application crashes immediately on startup with:
-
-```
-RuntimeError: Missing required Azure OpenAI environment variable(s): AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_DEPLOYMENT, AZURE_OPENAI_API_VERSION.
-```
-
-**Cause:** Required configuration values aren't set in the ConfigMap or `config.env`.
-
-**Resolution:**
-
-1. Verify the ConfigMap has correct values (not placeholders):
-
-   ```azurecli-interactive
-   kubectl get configmap -n kube-system -l app=container-networking-agent -o yaml
-   ```
-
-1. Confirm that the following required variables are set:
-
-   | Variable | Description | Example |
-   |----------|-------------|---------|
-   | `AZURE_OPENAI_ENDPOINT` | Azure OpenAI service endpoint | `https://your-instance.openai.azure.com/` |
-   | `AZURE_OPENAI_DEPLOYMENT` | Model deployment name | `gpt-4.1` |
-   | `AZURE_OPENAI_API_VERSION` | API version | `2025-03-01-preview` |
-   | `AZURE_CLIENT_ID` | Managed identity client ID | UUID |
-   | `AZURE_TENANT_ID` | Azure tenant ID | UUID |
-   | `AZURE_SUBSCRIPTION_ID` | Azure subscription ID | UUID |
-   | `AKS_CLUSTER_NAME` | Target AKS cluster name | Your cluster name |
-   | `AKS_RESOURCE_GROUP` | Cluster resource group | Your resource group |
-
-1. If values show placeholders like `MY_AZURE_OPENAI_DEPLOYMENT` or `00000000-0000-0000-0000-000000000000`, redeploy the extension with correct values using `az k8s-extension update`.
-
-### Agent not running or crashing
-
-**Symptom:** The agent pod is in `CrashLoopBackOff`, `Error`, or `Pending` state.
-
-**Cause:** Misconfiguration, missing Azure OpenAI connectivity, or insufficient cluster resources.
-
-**Resolution:**
-
-1. Check pod events:
-
-   ```azurecli-interactive
-   kubectl describe pod -n kube-system -l app=container-networking-agent
-   ```
-
-1. Check pod logs:
-
-   ```azurecli-interactive
-   kubectl logs -n kube-system -l app=container-networking-agent --tail=200
-   ```
-
-1. Look for specific error patterns in the logs:
-
-   | Log message | Cause | Fix |
-   |-------------|-------|-----|
-   | `Missing required Azure OpenAI environment variable(s)` | ConfigMap has placeholder values | Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION` correctly |
-   | `bootstrap.validation_agent_failed` | Can't connect to Azure OpenAI | Check network, endpoint URL, and managed identity RBAC |
-   | `AKS MCP binary not found` | `aks-mcp` not in image | Use the official extension image |
-   | `FailedMount` / volume mount error | Missing Hubble cert secrets | Deploy with `hubble.enabled=false` or ensure ACNS is enabled |
-   | `Token acquisition failed` | Workload identity not configured | Check service account annotation and federated credential |
-
-1. Verify the Azure OpenAI endpoint is reachable from the cluster. If you use network policies or firewalls, ensure outbound HTTPS traffic to the OpenAI endpoint is allowed.
-
-### Azure OpenAI connectivity issues
-
-**Symptom:** The agent pod starts but chat requests fail. Logs show `401 Unauthorized`, `404 Not Found`, or connection errors from the OpenAI endpoint.
-
-**Cause:** The Azure OpenAI endpoint, deployment name, or credentials are misconfigured.
-
-**Resolution:**
-
-1. Verify the Azure OpenAI endpoint is accessible from the pod:
-
-   ```azurecli-interactive
-   kubectl exec -n kube-system <pod-name> -- curl -s -o /dev/null -w "%{http_code}" \
-       $AZURE_OPENAI_ENDPOINT
-   ```
-
-1. Check if network policies are blocking outbound traffic:
-
-   ```azurecli-interactive
-   kubectl get networkpolicies -n kube-system
-   ```
-
-1. If you use Azure Firewall or NSGs, ensure outbound HTTPS (port 443) is allowed to `*.openai.azure.com`.
-
-1. Verify the managed identity has the `Cognitive Services OpenAI User` role on the Azure OpenAI resource:
-
-   ```azurecli-interactive
-   az role assignment list \
-     --assignee <managed-identity-principal-id> \
-     --scope /subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.CognitiveServices/accounts/<name> \
-     --output table
-   ```
-
-### App Registration / Entra ID authentication errors
-
-**Symptom:** MSAL login flow fails. Login redirects return errors, or the ENTRA_CLIENT_ID shows the placeholder value `44444444-4444-4444-4444-444444444444`.
-
-**Cause:** The App Registration is not configured correctly, or the `ENTRA_CLIENT_ID` was not set during deployment.
-
-**Resolution:**
-
-1. If you see the placeholder value `44444444-4444-4444-4444-444444444444` in pod logs, redeploy the extension with the correct App Registration client ID:
-
-   ```azurecli-interactive
-   az k8s-extension update \
-     --cluster-name $CLUSTER_NAME \
-     --resource-group $RESOURCE_GROUP \
-     --cluster-type managedClusters \
-     --name containernetworkingagent \
-     --configuration-settings config.ENTRA_CLIENT_ID=<your-actual-app-registration-client-id>
-   ```
-
-1. If the callback fails with a `redirect_uri mismatch` error, verify the redirect URI in the Azure portal: **App Registrations > Your App > Authentication > Redirect URIs**. For port-forwarded access, the URI should be `http://localhost:8080/auth/callback`.
-
-   > [!NOTE]
-   > Only `localhost` redirect URIs are currently supported. Public LoadBalancer URLs aren't supported for redirect URIs.
-
-1. Ensure the App Registration has the required Microsoft Graph delegated permissions: `openid`, `profile`, `User.Read`. Grant admin consent if required:
-
-   ```azurecli-interactive
-   az ad app permission admin-consent --id <app-registration-id>
-   ```
-
-### Extension installation fails
-
-**Symptom:** The `az k8s-extension create` command fails or the extension provisioning state shows `Failed`.
-
-**Cause:** Unsupported region, missing cluster features, or insufficient permissions.
-
-**Resolution:**
-
-1. Check the extension provisioning state:
-
-   ```azurecli-interactive
-   az k8s-extension show \
-       --cluster-name $CLUSTER_NAME \
-       --resource-group $RESOURCE_GROUP \
-       --cluster-type managedClusters \
-       --name containernetworkingagent \
-       --query "{state:provisioningState, statuses:statuses}" -o json
-   ```
-
-1. Verify your cluster is in a supported region: centralus, eastus, eastus2euap, centralusueap, eastus2, uksouth, westus2.
-
-1. Verify your cluster has workload identity and OIDC issuer enabled.
-
-1. Check that you have `Contributor` and `User Access Administrator` roles on the resource group.
-
-1. If running `az k8s-extension create` a second time, use `az k8s-extension update` instead because the extension already exists.
-
-### Readiness probe failures
-
-**Symptom:** Pod is `Running` but shows `0/1` ready status. The `/ready` endpoint returns 503.
-
-**Cause:** One or more startup checks have not completed: cluster properties have errors, warmup pool hasn't started, or no pre-warmed agents are available yet.
-
-**Resolution:**
-
-1. Wait up to 2-3 minutes after deployment for the warmup pool to create pre-warmed agents.
-
-1. Check the readiness response for specific failure reasons:
-
-   ```azurecli-interactive
-   kubectl port-forward svc/container-networking-agent-service -n kube-system 8080:80
-   curl -s http://localhost:8080/ready | jq
-   ```
-
-1. Check pod logs for the cause:
-
-   ```azurecli-interactive
-   kubectl logs -n kube-system -l app=container-networking-agent | grep -i "warmup\|ready\|error"
-   ```
-
-1. If cluster properties are failing, verify that `AKS_CLUSTER_NAME`, `AKS_RESOURCE_GROUP`, and `AZURE_SUBSCRIPTION_ID` are correctly set.
-
-### Chat rate limiting (429 errors)
-
-**Symptom:** Chat requests return HTTP 429 with `X-RateLimit-*` or `X-LLM-RateLimit-*` headers.
-
-**Cause:** The built-in rate limiter is throttling requests to protect the backend.
-
-**Resolution:**
-
-The application has three rate limiting layers:
-
-| Rate limiter | Default | Behavior |
-|--------------|---------|----------|
-| Chat | 13 requests/second, burst of 13 | Per-session throttle on chat messages |
-| Auth | 1 request/second, burst of 20 | Restrictive limiter on login/callback endpoints; fails closed on errors |
-| LLM (adaptive) | 100 requests/second global, shared across users | Global throughput control; fair share per active user |
-
-For chat 429s, reduce message frequency. For LLM 429s, check your Azure OpenAI TPM quota and consider increasing it through the Azure portal.
-
-### Hubble commands fail
-
-**Symptom:** The agent reports errors when running Hubble-related diagnostics, or Hubble flow analysis isn't available.
-
-**Cause:** The cluster doesn't have ACNS enabled, or the Cilium dataplane isn't configured.
-
-**Resolution:**
-
-- If your cluster doesn't use ACNS, deploy with `hubble.enabled=false` and `config.AKS_MCP_ENABLED_COMPONENTS=kubectl`. The agent still provides DNS, packet drop, and standard Kubernetes networking diagnostics.
-- To enable Hubble, your cluster must use [Azure CNI powered by Cilium](/azure/aks/azure-cni-powered-by-cilium) with [Advanced Container Networking Services (ACNS)](/azure/aks/advanced-container-networking-services-overview) enabled.
-- Verify Hubble is running on your cluster:
-
-  ```azurecli-interactive
-  kubectl get pods -n kube-system -l k8s-app=hubble-relay
-  ```
-
-### Debug DaemonSet persists after crash
-
-**Symptom:** The `retina-debug-daemonset` DaemonSet remains in `kube-system` after a diagnostic session.
-
-**Cause:** The Container Networking Agent pod crashed unexpectedly during a packet drop diagnostic.
-
-**Resolution:**
-
-Manually delete the DaemonSet:
-
-```azurecli-interactive
-kubectl delete ds retina-debug-daemonset -n kube-system
-```
-
-### Performance: slow first request
-
-**Symptom:** The first chat message after deployment or pod restart takes 10-30 seconds to respond.
-
-**Cause:** The warmup pool needs time to pre-initialize agents. Each agent requires MCP plugin startup, Azure credential setup, and AI framework initialization.
-
-**Resolution:** This is expected behavior. The warmup pool maintains three pre-warmed agents. Wait for the `/ready` endpoint to return 200 before sending requests. Subsequent requests use the pre-warmed pool and respond faster (typically 5-10 seconds for simple queries).
-
-### Session data lost after pod restart
-
-**Symptom:** All chat history and sessions disappear after the pod restarts.
-
-**Cause:** Session data is stored in-memory only. All data is lost on restart.
-
-**Resolution:** This is expected behavior for the current architecture. Start a new session after a pod restart.
-
-### Quick diagnostic commands
-
-Use these commands to quickly diagnose common issues:
-
-```azurecli-interactive
-# ──── Pod Status ────
-kubectl get pods -n kube-system -l app=container-networking-agent
-kubectl describe pod -n kube-system -l app=container-networking-agent
-kubectl top pod -n kube-system -l app=container-networking-agent
-
-# ──── Application Logs ────
-kubectl logs -n kube-system -l app=container-networking-agent --tail=200
-kubectl logs -n kube-system -l app=container-networking-agent -f              # Stream live
-kubectl logs -n kube-system -l app=container-networking-agent | grep ERROR     # Errors only
-
-# ──── Health Checks (requires port-forward) ────
-kubectl port-forward svc/container-networking-agent-service -n kube-system 8080:80
-curl -s http://localhost:8080/ready | jq
-curl -s http://localhost:8080/live | jq
-curl -s http://localhost:8080/api/status/sessions | jq
-
-# ──── Configuration ────
-kubectl get configmap -n kube-system -l app=container-networking-agent -o yaml
-kubectl get serviceaccount container-networking-agent-reader -n kube-system -o yaml
-
-# ──── Workload Identity ────
-kubectl describe serviceaccount container-networking-agent-reader -n kube-system
-az identity show --name $IDENTITY_NAME -g $RESOURCE_GROUP --query "{clientId:clientId, principalId:principalId}"
-
-# ──── RBAC ────
-az role assignment list --assignee <principal-id> --output table
-
-# ──── Extension Status ────
-az k8s-extension show \
-  --cluster-name $CLUSTER_NAME \
-  --resource-group $RESOURCE_GROUP \
-  --cluster-type managedClusters \
-  --name containernetworkingagent \
-  --query "{state:provisioningState, version:version}" -o table
-
-# ──── Cleanup Stuck Resources ────
-kubectl delete daemonset -n kube-system -l app=cna-diagnostic          # Leftover diagnostic DaemonSets
-kubectl delete pod -n kube-system -l app=container-networking-agent    # Force pod restart
-```
+If you encounter issues during deployment, setup, or while using Container Networking Agent, see [Troubleshoot Container Networking Agent on AKS](./troubleshoot-container-networking-agent.md). The troubleshooting guide covers common scenarios including extension installation failures, identity and permissions errors, Azure OpenAI connectivity issues, authentication errors, pod startup failures, and diagnostic capability issues.
 
 ## Next steps
 
+- [Troubleshoot Container Networking Agent on AKS](./troubleshoot-container-networking-agent.md)
 - [Container Networking Agent overview](./container-networking-agent-overview.md)
 - [Advanced Container Networking Services overview](/azure/aks/advanced-container-networking-services-overview)
 - [Azure CNI powered by Cilium](/azure/aks/azure-cni-powered-by-cilium)
