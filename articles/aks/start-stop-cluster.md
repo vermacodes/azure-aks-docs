@@ -42,7 +42,7 @@ When using the cluster stop/start feature, the following conditions apply:
 ## Stop an AKS cluster
 
 > [!CAUTION]
-> If your cluster has a `ValidatingWebhookConfiguration` whose rules target cluster-scoped resources AKS manages during stop/start (such as nodes, leases, or clusterroles), the stop operation is rejected with a `ValidationError`. This includes webhooks with wildcard (`*`) rules on `apiGroups` or `resources`. To resolve, either narrow the webhook rules to only the resources you need (avoid wildcards), set `failurePolicy` to `Ignore`, or remove the webhook before stopping.
+> If your cluster has a `ValidatingWebhookConfiguration` or `MutatingWebhookConfiguration` whose scope may apply to cluster-scoped resources AKS manages during stop/start (such as nodes, leases, or clusterroles), the stop operation may be rejected with a `ValidationError`. This includes webhooks with wildcard (`*`) rules on `apiGroups` or `resources`. To resolve, either narrow the webhook rules to only the resources you need (avoid wildcards), scope the webhook to namespaced resources using `scope: Namespaced` and a `namespaceSelector`, set `failurePolicy` to `Ignore`, or remove the webhook before stopping.
 
 ### [Azure CLI](#tab/azure-cli)
 
