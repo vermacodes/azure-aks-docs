@@ -60,7 +60,7 @@ When you describe a networking issue, Container Networking Agent follows a struc
 ```
 You describe the issue → Agent classifies it → Collects evidence from the cluster → Analyzes findings → Reports results
 ```
-:::image type="content" source="./media/conatiner-networking-agent-working.png" alt-text="Architecture diagram showing the Container Networking Agent inside an AKS cluster, its connections to cluster data sources, and its integration with Azure OpenAI Service." lightbox="./media/conatiner-networking-agent-working.png":::
+:::image type="content" source="./media/advanced-container-networking-services/container-networking-agent-working.png" alt-text="Architecture diagram showing the Container Networking Agent inside an AKS cluster, its connections to cluster data sources, and its integration with Azure OpenAI Service." lightbox="./media/advanced-container-networking-services/container-networking-agent-working.png":::
 
 As shown in the diagram, Container Networking Agent runs as a pod inside your AKS cluster. You interact with it through a web browser over HTTPS. Inside the cluster, the agent connects to five data sources through specialized plugins:
 
