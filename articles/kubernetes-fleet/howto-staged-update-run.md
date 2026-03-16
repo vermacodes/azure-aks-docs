@@ -2,9 +2,9 @@
 title: "Control cluster order for resource placement"
 description: Learn how to use placement staged update runs to deploy Kubernetes resources to member clusters in stages and roll back to previous versions in Azure Kubernetes Fleet Manager.
 ms.topic: how-to
-ms.date: 07/18/2025
-author: arvindth
-ms.author: arvindth
+ms.date: 03/16/2026
+author: sjwaight
+ms.author: simonwaight
 ms.service: azure-kubernetes-fleet-manager
 # Customer intent: "As a DevOps engineer, I want to use staged update runs to control how workloads are deployed across multiple clusters, so that I can minimize risk and ensure reliable rollouts through progressive deployment strategies."
 zone_pivot_groups: cluster-namespace-scope
@@ -61,13 +61,23 @@ This demo runs on a Fleet Manager with a hub cluster and three member clusters. 
 
 This tutorial demonstrates staged update runs using a demo fleet environment with three member clusters that have the following labels:
 
-| cluster name | labels                      |
+| member name  | labels                      |
 |--------------|-----------------------------|
 | member1      | environment=canary, order=2 |
 | member2      | environment=staging         |
 | member3      | environment=canary, order=1 |
 
-To group clusters by environment and control the deployment order within each stage, these labels allow us to create stages.
+These labels enable creation of stages and to control the deployment order within each stage.
+
+Apply labels to the member clusters using the command shown.
+
+```azurecli-interactive
+az fleet member update \
+    --resource-group $GROUP \
+    --fleet-name $FLEET_NAME \
+    --name member2 \
+    --labels environment=staging
+```
 
 :::zone target="docs" pivot="cluster-scope"
 
