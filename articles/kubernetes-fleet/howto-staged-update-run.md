@@ -71,7 +71,7 @@ These labels enable creation of stages and to control the deployment order withi
 
 Apply labels to the member clusters using the command shown.
 
-```bash
+```azurecli-interactive
 az fleet member update \
     --resource-group $GROUP \
     --fleet-name $FLEET_NAME \
