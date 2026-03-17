@@ -10,11 +10,11 @@ ms.service: azure-kubernetes-service
 
 # What is Container Network Optimization Agent for AKS? (Public Preview)
 
-Container Network Optimization (CNO) agent is an AI-powered diagnostic assistant that helps you identify and resolve networking issues in your Azure Kubernetes Service (AKS) clusters. Describe a problem in natural language — DNS failures, packet drops, unreachable services, or blocked traffic — and the agent collects evidence from your cluster and returns a structured report with root cause analysis and remediation guidance.
+Container Network Optimization (CNO) agent is an AI-powered diagnostic assistant that helps you identify and resolve networking issues in your Azure Kubernetes Service (AKS) clusters. Describe a problem in natural language, such as DNS failures, packet drops, unreachable services, or blocked traffic. The agent collects evidence from your cluster and returns a structured report with root cause analysis and remediation guidance.
 
-Unlike tools that operate only at the Kubernetes layer, CNO agent can also gather **host-level network statistics** through its Linux Networking plugin. This means it can inspect NIC ring buffers, kernel packet counters, SoftIRQ distribution, and socket buffer utilization across your cluster nodes — surfacing low-level issues such as packet drops, network bottlenecks, and hardware-level saturation that are otherwise difficult to diagnose in a Kubernetes environment.
+Unlike tools that operate only at the Kubernetes layer, CNO agent can also gather **host-level network statistics** through its Linux Networking plugin. The agent can inspect NIC ring buffers, kernel packet counters, SoftIRQ distribution, and socket buffer utilization across your cluster nodes. This surfaces low-level issues such as packet drops, network bottlenecks, and hardware-level saturation that are otherwise difficult to diagnose in a Kubernetes environment.
 
-The agent runs as an in-cluster web application deployed as an [AKS cluster extension](/azure/aks/cluster-extensions). You access it through your browser. It provides insights, analysis, and recommended actions — you review the findings and apply any suggested changes yourself.
+The agent runs as an in-cluster web application deployed as an [AKS cluster extension](/azure/aks/cluster-extensions). You access it through your browser. It provides insights, analysis, and recommended actions. You review the findings and apply any suggested changes yourself.
 
 > [!NOTE]
 > CNO agent is a cloud-only feature for Azure Kubernetes Service (AKS). It isn't supported on AKS hybrid, AKS on Azure Stack HCI, or Arc-enabled Kubernetes clusters.
@@ -38,11 +38,11 @@ Each diagnostic produces a structured report that includes what was checked, wha
 
 ### Use CNO agent when you need to
 
-- **Describe the problem in plain English** — No need to construct CLI commands or know which tool handles each networking layer. The agent determines the right diagnostic steps automatically.
-- **Trace issues across Kubernetes and host networking in one conversation** — Go from network policies and pod scheduling down to NIC ring buffers and kernel counters without switching tools or SSH-ing into nodes.
-- **Detect active issues, not just stale counters** — Delta-based measurements distinguish problems happening right now from historical noise.
-- **Get automated root cause analysis with ready-to-use fixes** — The agent correlates evidence from multiple cluster data sources and delivers a structured report with copy-pasteable remediation commands.
-- **Troubleshoot on any AKS cluster with no additional setup** — DNS, packet drop, and Kubernetes networking diagnostics work out of the box. Enable [Advanced Container Networking Services (ACNS)](/azure/aks/advanced-container-networking-services-overview) for Cilium policy and Hubble flow analysis.
+- **Describe the problem in plain English**: No need to construct CLI commands or know which tool handles each networking layer. The agent determines the right diagnostic steps automatically.
+- **Trace issues across Kubernetes and host networking in one conversation**: Go from network policies and pod scheduling down to NIC ring buffers and kernel counters without switching tools or SSH-ing into nodes.
+- **Detect active issues, not just stale counters**: Delta-based measurements distinguish problems happening right now from historical noise.
+- **Get automated root cause analysis with ready-to-use fixes**: The agent correlates evidence from multiple cluster data sources and delivers a structured report with remediation commands you can copy and run.
+- **Troubleshoot on any AKS cluster with no additional setup**: DNS, packet drop, and Kubernetes networking diagnostics work out of the box. Enable [Advanced Container Networking Services (ACNS)](/azure/aks/advanced-container-networking-services-overview) for Cilium policy and Hubble flow analysis.
 
 ### CNO agent isn't designed for
 
@@ -51,7 +51,7 @@ Each diagnostic produces a structured report that includes what was checked, wha
 - RBAC configuration, secrets management, or security auditing (except network policies)
 - Workload scheduling, resource optimization, or cost management
 - Non-Azure cloud environments (AWS, GCP)
-- Making changes to your cluster. The agent provides recommendations that you review and apply.
+- Making changes to your cluster (the agent provides recommendations only; you apply them)
 
 ## How it works
 
@@ -62,25 +62,22 @@ You describe the issue → Agent classifies it → Collects evidence from the cl
 ```
 :::image type="content" source="./media/advanced-container-networking-services/container-networking-agent-working.png" alt-text="Architecture diagram showing the CNO agent inside an AKS cluster, its connections to cluster data sources, and its integration with Azure OpenAI Service." lightbox="./media/advanced-container-networking-services/container-networking-agent-working.png":::
 
-As shown in the diagram, CNO agent runs as a pod inside your AKS cluster. You interact with it through a web browser over HTTPS. Inside the cluster, the agent executes diagnostic commands through the [AKS MCP server](/azure/aks/aks-model-context-protocol-server) and connects to five data sources through specialized plugins:
+CNO agent runs as a pod inside your AKS cluster. You interact with it through a web browser over HTTPS. Inside the cluster, the agent executes diagnostic commands through the [AKS MCP server](/azure/aks/aks-model-context-protocol-server) and connects to five data sources through specialized plugins:
 
-- **Kubernetes API Server** — Queries pods, services, nodes, network policies, and other cluster resources via `kubectl` through the AKS MCP server.
-- **CoreDNS** — Collects DNS health status and metrics through the DNS plugin.
-- **Cilium Agent** — Inspects Cilium network policies and endpoint state via the AKS MCP server through the Kubernetes Networking plugin.
-- **Hubble** — Observes live network flows and identifies dropped traffic via the AKS MCP server through the Kubernetes Networking plugin (requires ACNS).
-- **Node Network Stack** — Gathers host-level network statistics (RX/TX buffers, ring buffer state, softnet counters) through the Linux Networking plugin.
+- **Kubernetes API Server**: Queries pods, services, nodes, network policies, and other cluster resources via `kubectl` through the AKS MCP server.
+- **CoreDNS**: Collects DNS health status and metrics through the DNS plugin.
+- **Cilium Agent**: Inspects Cilium network policies and endpoint state via the AKS MCP server through the Kubernetes Networking plugin.
+- **Hubble**: Observes live network flows and identifies dropped traffic via the AKS MCP server through the Kubernetes Networking plugin.
+- **Node Network Stack**: Gathers host-level network statistics (RX/TX buffers, ring buffer state, softnet counters) through the Linux Networking plugin.
 
 The agent communicates bidirectionally with Azure OpenAI Service: it sends your natural language query and collected diagnostic evidence for reasoning, and receives structured diagnostic insights in return.
 
 The diagnostic workflow follows four steps:
 
-**1. Classify** — The agent determines the issue category (DNS, connectivity, network policy, service routing, or packet drops) based on your description.
-
-**2. Collect evidence** — The agent runs diagnostic commands against your cluster through the [AKS MCP server](/azure/aks/aks-model-context-protocol-server), using `kubectl`, `cilium`, and `hubble`. Each diagnostic category uses a dedicated evidence collection workflow to gather the right data automatically.
-
-**3. Analyze** — The agent examines collected evidence to separate healthy signals from anomalies. The agent bases all conclusions on actual command output, never on speculation.
-
-**4. Report** — You receive a structured report that includes:
+1. **Classify**: The agent determines the issue category (DNS, connectivity, network policy, service routing, or packet drops) based on your description.
+2. **Collect evidence**: The agent runs diagnostic commands against your cluster through the [AKS MCP server](/azure/aks/aks-model-context-protocol-server), using `kubectl`, `cilium`, and `hubble`. Each diagnostic category uses a dedicated evidence collection workflow to gather the right data automatically.
+3. **Analyze**: The agent examines collected evidence to separate healthy signals from anomalies. The agent bases all conclusions on actual command output, never on speculation.
+4. **Report**: You receive a structured report that includes:
 - A summary of the issue and its status
 - An evidence table showing each check, its result, and whether it passed or failed
 - Analysis of what's working and what's broken
@@ -96,7 +93,7 @@ CNO agent works with the AKS networking tools you already use:
 | **[AKS MCP server](/azure/aks/aks-model-context-protocol-server)** | Provides the execution layer for cluster operations; routes `kubectl`, `cilium`, and `hubble` commands from the agent to the cluster |
 | **kubectl** | Queries pods, services, endpoints, nodes, network policies, and other Kubernetes resources |
 | **Cilium** | Analyzes CiliumNetworkPolicy, CiliumClusterWideNetworkPolicy, and Cilium agent health |
-| **Hubble** | Observes network flows between pods and identifies dropped traffic (requires ACNS) |
+| **Hubble** | Observes network flows between pods and identifies dropped traffic |
 | **CoreDNS** | Checks pod health, service endpoints, configuration, and Prometheus metrics |
 | **Azure OpenAI** | Powers the conversational AI that interprets your questions and generates diagnostic reports |
 
@@ -109,11 +106,11 @@ CNO agent works with the AKS networking tools you already use:
 
 CNO agent collects diagnostic data from your cluster to generate insights, reports, and recommended actions. It executes cluster operations through the [AKS MCP server](/azure/aks/aks-model-context-protocol-server) and uses a dedicated Kubernetes service account (`container-networking-agent-reader`) with minimal permissions scoped to the data it needs for diagnostics.
 
-All remediation guidance is **advisory**. The agent tells you what commands to run, but you review and apply the suggested changes yourself.
+CNO agent doesn't make changes to your cluster. It provides remediation commands and recommendations, but you review and apply them yourself.
 
 ### Scope restrictions
 
-The agent responds only to networking and Kubernetes-related questions and politely declines off-topic requests. The system also includes prompt injection defenses to prevent misuse.
+The agent responds only to networking and Kubernetes-related questions and doesn't respond to off-topic requests. The system also includes prompt injection defenses to prevent misuse.
 
 ### Session and conversation limits
 
@@ -304,9 +301,9 @@ After you authenticate, you land on the chat interface. The server maintains you
 The chat interface is where you:
 
 - **Ask questions in natural language**: Type prompts like *"Why can't my pod resolve DNS?"* or *"Check packet drops on node aks-nodepool1-vmss000000"*. No special syntax is required.
-- **Receive structured diagnostic reports**: Responses include evidence tables, root cause analysis, and copy-pasteable remediation commands.
+- **Receive structured diagnostic reports**: Responses include evidence tables, root cause analysis, and remediation commands you can copy and run.
 - **Start new conversations**: Each conversation maintains its own context. Switch topics by starting a new conversation.
-- **Submit feedback**: After each diagnostic response, use the built-in feedback controls (thumbs up / thumbs down) to rate the quality of the diagnosis. Your feedback helps improve future diagnostic accuracy.
+- **Submit feedback**: After each diagnostic response, use the built-in feedback controls (thumbs-up and thumbs-down) to rate the quality of the diagnosis. Your feedback helps improve future diagnostic accuracy.
 
 ### Report issues
 
