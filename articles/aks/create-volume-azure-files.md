@@ -855,7 +855,7 @@ Azure Files now supports workload identity based authentication for SMB access. 
 Before using workload identity to access Azure Files from AKS, complete the following prerequisites.
 
 #### 1. Create a cluster with oidc-issuer enabled and get the AKS cluster credential
-Create a new AKS cluster with the OIDC issuer enabled, or verify that it’s already enabled. Follow the official [documentation](use-oidc-issuer.md#create-an-aks-cluster-with-oidc-issuer) for creating a new AKS cluster with the `--enable-oidc-issuer` parameter and retrieve the cluster credentials. And set the following environment variables:
+Create a new AKS cluster with the OIDC issuer enabled, or verify that it’s already enabled. Follow the official [documentation](use-oidc-issuer.md#create-an-aks-cluster-with-the-oidc-issuer) for creating a new AKS cluster with the `--enable-oidc-issuer` parameter and retrieve the cluster credentials. And set the following environment variables:
 ```console
 export RESOURCE_GROUP=<your resource group name>
 export CLUSTER_NAME=<your cluster name>
@@ -872,7 +872,7 @@ export SHARE=<your fileshare name> # optional
 
 #### 3. Create or reuse a managed identity and grant required permissions
 
-Create a user‑assigned managed identity, or reuse an existing one (for example, a [managed identity](use-managed-identity.md#summary-of-managed-identities) associated with the AKS node resource group). And retrieve the required identity and resource details:
+Create a user‑assigned managed identity, or reuse an existing one (for example, a [managed identity](managed-identity-overview.md) associated with the AKS node resource group). And retrieve the required identity and resource details:
 ```console
 export UAMI=<your managed identity name>
 az identity create --name $UAMI --resource-group $RESOURCE_GROUP
