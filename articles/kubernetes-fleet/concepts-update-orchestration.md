@@ -1,7 +1,7 @@
 ---
 title: "Update Kubernetes and node images across multiple member clusters"
 description: This article describes the concept of update orchestration across multiple clusters.
-ms.date: 02/17/2026
+ms.date: 03/18/2026
 author: sjwaight
 ms.author: simonwaight
 ms.service: azure-kubernetes-fleet-manager
@@ -159,9 +159,9 @@ Examples:
 
 [!INCLUDE [preview features note](./includes/preview/preview-callout.md)]
 
-## MaxConcurrency (preview)
+## Maximum concurrency (preview)
 
-`MaxConcurrency` is an optional setting on your update strategy that controls how many member clusters can upgrade concurrently. You can set `MaxConcurrency` at two levels:
+`Maximum concurrency` is an optional setting on your update strategy that controls how many member clusters can upgrade concurrently. You can set `Maximum concurrency` at two levels:
 
 - **Stage level**: Defines the maximum number of clusters that can upgrade at the same time across all groups in a stage. Acts as a global ceiling for the stage.
 - **Group level**: Defines the maximum number of clusters that can upgrade concurrently within a specific group.
@@ -178,12 +178,10 @@ Examples:
 > 
 > Existing update strategies and update runs created before this feature was available automatically receive these defaults the next time the resource is updated.
 
-`MaxConcurrency` accepts two value forms:
+`Maximum concurrency` accepts two value forms:
 
 - **Fixed integer**: For example, `"3"` limits concurrency to exactly three clusters.
 - **Percentage**: For example, `"25%"` limits concurrency to a percentage of clusters. For stage-level settings, the percentage is calculated from all clusters in the stage. For group-level settings, the percentage is calculated from the clusters in that group. Percentages are calculated at runtime, rounded down, and enforced with a minimum resolved value of 1.
-
-The update strategy stores `MaxConcurrency` values as strings (for example, `"3"` or `"25%"`). When an update run is created from the strategy, these string values are resolved into concrete integers based on the actual cluster counts at that time. The resolved integer values are visible on the update run, so you can see exactly how many clusters are allowed to upgrade concurrently. For example, a strategy value of `"25%"` applied to a stage with 20 clusters resolves to `5` on the update run.
 
 ### Concurrency control suggestions
 If you want to upgrade with safety (less speed, but less likely to end with multiple broken clusters): set maximum concurrency to a smaller value.
