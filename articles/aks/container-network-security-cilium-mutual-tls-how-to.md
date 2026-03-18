@@ -130,65 +130,65 @@ Traffic between enrolled and non‑enrolled workloads continues in plaintext wit
 After enrolling a namespace for Cilium mTLS, you can verify that authentication and encryption are active using the following methods.
 
 1. Check that ztunnel has been enabled:
-```bash
-kubectl -n kube-system describe cm cilium-config | grep enable-ztunnel -A2
-```
-You should see output indicating that ztunnel encryption is enabled.
+   ```bash
+   kubectl -n kube-system describe cm cilium-config | grep enable-ztunnel -A2
+   ```
+   You should see output indicating that ztunnel encryption is enabled.
 
 2. Check which namespaces are enrolled:
-```bash
-kubectl get namespaces -l io.cilium/mtls-enabled=true
-```
-This shows all namespaces labeled for ztunnel enrollment.
+   ```bash
+   kubectl get namespaces -l io.cilium/mtls-enabled=true
+   ```
+   This shows all namespaces labeled for ztunnel enrollment.
 
-To verify that these namespaces are actually enrolled in the StateDB table:
-```bash
-kubectl exec -n kube-system ds/cilium -- cilium-dbg statedb dump | jq '.["mtls-enrolled-namespaces"]'
-```
-The results of this query should show which namespaces have been successfully processed by the enrollment reconciler.
+   To verify that these namespaces are actually enrolled in the StateDB table:
+   ```bash
+   kubectl exec -n kube-system ds/cilium -- cilium-dbg statedb dump | jq '.["mtls-enrolled-namespaces"]'
+   ```
+   The results of this query should show which namespaces have been successfully processed by the enrollment reconciler.
 
 3. Verify pods are enrolled in SPIRE
 
-Exec into the SPIRE Server container and list entries:
+   Exec into the SPIRE Server container and list entries:
 
-```bash
-kubectl exec -n kube-system spire-server-0 -c spire-server -- \
-  /opt/spire/bin/spire-server entry show
-```
+   ```bash
+   kubectl exec -n kube-system spire-server-0 -c spire-server -- \
+   /opt/spire/bin/spire-server entry show
+   ```
 
-This command queries the SPIRE Server datastore and prints all registered workload identities.
+   This command queries the SPIRE Server datastore and prints all registered workload identities.
 
-Look for entries matching the SPIFFE format:
+   Look for entries matching the SPIFFE format:
 
-```
-spiffe://<trust-domain>/ns/<namespace>/sa/<serviceaccount>
-```
+   ```
+   spiffe://<trust-domain>/ns/<namespace>/sa/<serviceaccount>
+   ```
 
 4. Verify pod enrollment in ztunnel
 
-Ztunnel exposes a local admin endpoint that allows inspecting its active configuration, including enrolled workloads.
+   Ztunnel exposes a local admin endpoint that allows inspecting its active configuration, including enrolled workloads.
 
-Select a ztunnel pod.
+   Select a ztunnel pod.
 
-```bash
-kubectl get pods -n kube-system \
--l app.kubernetes.io/name=ztunnel-cilium \
--o wide
-```
+   ```bash
+   kubectl get pods -n kube-system \
+   -l app.kubernetes.io/name=ztunnel-cilium \
+   -o wide
+   ```
 
-Port-forward the ztunnel admin endpoint. ztunnel exposes an admin API on port 15000 (localhost-only by default).
+   Port-forward the ztunnel admin endpoint. ztunnel exposes an admin API on port 15000 (localhost-only by default).
 
-```bash
-kubectl port-forward -n kube-system <ZTUNNEL_POD> 15000:15000
-```
+   ```bash
+   kubectl port-forward -n kube-system <ZTUNNEL_POD> 15000:15000
+   ```
 
-Inspect the ztunnel configuration dump.
+   Inspect the ztunnel configuration dump.
 
-```bash
-curl -s http://localhost:15000/config_dump | jq
-```
+   ```bash
+   curl -s http://localhost:15000/config_dump | jq
+   ```
 
-Verify your pod is registered. Search the config dump for your workload's SPIFFE identity or namespace/service account. You should see entries like the following output:
+   Verify your pod is registered. Search the config dump for your workload's SPIFFE identity or namespace/service account. You should see entries like the following output:
 
 ```json
 "workloads": [
