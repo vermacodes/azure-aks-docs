@@ -528,7 +528,7 @@
         items:
           - name: Overview
             href: concepts-network-ingress.md
-          - name: Ingress with the Kubernetes Gateway API
+          - name: Ingress with the Kubernetes Gateway API (preview)
             href: managed-gateway-api.md
           - name: Use Application Gateway for Containers
             items:
@@ -540,6 +540,10 @@
             items:
               - name: Application routing add-on overview
                 href: app-routing.md
+              - name: Kubernetes Gateway API with application routing (preview)
+                href: app-routing-gateway-api.md
+              - name: Secure application routing Gateway API ingress traffic
+                href: app-routing-gateway-api-tls.md
               - name: Advanced application routing add-on configurations (NGINX)
                 href: app-routing-nginx-configuration.md
               - name: Custom domain name and SSL certificate configuration
@@ -548,8 +552,6 @@
                 href: create-nginx-ingress-private-controller.md
               - name: Monitor using Prometheus and Grafana
                 href: app-routing-nginx-prometheus.md
-              - name: Migrate from HTTP application routing to the application routing add-on
-                href: app-routing-migration.md
               - name: Use Application Gateway Ingress Controller add-on
                 href: /azure/application-gateway/tutorial-ingress-controller-add-on-existing?toc=/azure/aks/toc.json&bc=/azure/aks/breadcrumb/toc.json
       - name: Egress
