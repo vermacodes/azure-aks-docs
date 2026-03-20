@@ -3,7 +3,7 @@ title: Use the Vertical Pod Autoscaler in Azure Kubernetes Service (AKS)
 description: Learn how to deploy, upgrade, or disable the Vertical Pod Autoscaler on your Azure Kubernetes Service (AKS) cluster.
 ms.topic: how-to
 ms.custom: devx-track-azurecli
-ms.date: 02/06/2026
+ms.date: 03/20/2026
 author: schaffererin
 ms.author: schaffererin
 ms.service: azure-kubernetes-service
@@ -25,11 +25,6 @@ For more information, see the [Vertical Pod Autoscaler overview](./vertical-pod-
     ```azurecli-interactive
     az aks get-credentials --name <cluster-name> --resource-group <resource-group-name>
     ```
-
-> [!NOTE]
-> Vertical Pod Autoscaler 1.4.2 is enabled with AKS Kubernetes version 1.34: 
-> - The [`InPlaceOrRecreate` feature gate](https://kubernetes.io/blog/2025/05/16/kubernetes-v1-33-in-place-pod-resize-beta/) is enabled which allows you to use the [`InPlaceOrRecreate` update mode](./vertical-pod-autoscaler.md#vpa-object-operation-modes) in your VPA objects.
-> - The Vertical Pod Autoscaling component vpa-recommender and vpa-updater are highly available, they have 2 replicas by default.
 
 ## Deploy the Vertical Pod Autoscaler on a new cluster
 
@@ -64,6 +59,9 @@ For more information, see the [Vertical Pod Autoscaler overview](./vertical-pod-
 ## Test Vertical Pod Autoscaler installation
 
 In the following example, we create a deployment with two pods, each running a single container that requests 100 millicore and tries to utilize slightly above 500 millicores. We also create a VPA config pointing at the deployment. The VPA observes the behavior of the pods, and after about five minutes, updates the pods to request 500 millicores.
+
+> [!WARNING]
+> The `Auto` update mode is deprecated since VPA version 1.4.0 (AKS 1.34+). Auto mode is currently an alias for Recreate mode and behaves identically. It was introduced to allow for future expansion of automatic update strategies. If you don't specify an update mode, `Recreate` mode is used. 
 
 1. Create a file named `hamster.yaml` and copy in the following manifest of the Vertical Pod Autoscaler example from the [kubernetes/autoscaler][kubernetes-autoscaler-github-repo] GitHub repository:
 
@@ -198,7 +196,7 @@ In the following example, we create a deployment with two pods, each running a s
 
     In the previous output, you can see that the CPU reservation increased to 587 millicpu, which is over five times the original value. The Memory increased to 262,144 Kilobytes, which is around 250 Mibibytes, or five times the original value. This pod was under-resourced, and the Vertical Pod Autoscaler corrected the estimate with a much more appropriate value.
 
-7. View updated recommendations from VPA using the [`kubectl describe`][kubectl-describe] command to describe the hamster-vpa resource information. Note that the deployment pods are recreated after the new VPA recommendations are applied. 
+7. View updated recommendations from VPA using the [`kubectl describe`][kubectl-describe] command to describe the hamster-vpa resource information. Note that the deployment pods are evicted and recreated after the new VPA recommendations are applied. 
 
     ```bash
     kubectl describe vpa/hamster-vpa
@@ -241,6 +239,7 @@ In the following example, we create a deployment with two pods, each running a s
     deployment.apps "hamster" deleted from default namespace
   ```
 ### Using Vertical Autoscaler InPlaceOrRecreate mode
+`InPlaceOrRecreate` mode is available on AKS 1.34+.
 1. To limit your pod restarts when using VPA, you can use the `updateMode` of `InPlaceOrRecreate`. Create a new file called `inplacevpa.yaml` and copy in the following manifest:
     ```yml
         apiVersion: "autoscaling.k8s.io/v1"
@@ -301,7 +300,7 @@ In the following example, we create a deployment with two pods, each running a s
     ```
 
     After a few minutes, the command completes and returns JSON-formatted information about the cluster.
-3. Follow steps 3-5 in [the previous section](#test-vertical-pod-autoscaler-installation). Notice that the pods requests were increased without pod restarts. Note that in some cases, if in-place updates cannot be performed for a particular resource change, VPA falls back to evicting the Pod (similar to Recreate mode) and allowing the workload controller to create a replacement Pod with updated resources.
+3. Follow steps 3-5 in [the previous section](#test-vertical-pod-autoscaler-installation). Notice that the pods requests were increased without pod restarts. Note that in some cases, if in-place updates cannot be performed for a particular resource change, VPA falls back to evicting the Pod (similar to Recreate mode) and allowing the workload controller to create a replacement Pod with updated resources. For more details, refer to the [In-Place Updates upstream documentation][vpa-upstream-doc].
   ```bash
     kubectl describe vpa/hamster-vpa
   ```
@@ -319,24 +318,24 @@ In the following example, we create a deployment with two pods, each running a s
   ```
 ## Set Vertical Pod Autoscaler requests
 
-The `VerticalPodAutoscaler` object automatically sets resource requests on pods with an `updateMode` of `Auto`. You can set a different value depending on your requirements and testing. In this example, we create and test a deployment manifest with two pods, each running a container that requests 100 milliCPU and 50 MiB of Memory, and sets the `updateMode` to `Recreate`.
+The `VerticalPodAutoscaler` object automatically sets resource requests on pods with an `updateMode` of `Recreate`. You can set a different value depending on your requirements and testing. In this example, we create and test a deployment manifest with two pods, each running a container that requests 100 milliCPU and 50 MiB of Memory, and sets the `updateMode` to `Recreate`.
 
-1. Create a file named `azure-autodeploy.yaml` and copy in the following manifest:
+1. Create a file named `azure-recreatedeploy.yaml` and copy in the following manifest:
 
     ```yml
     apiVersion: apps/v1
     kind: Deployment
     metadata:
-      name: vpa-auto-deployment
+      name: vpa-recreate-deployment
     spec:
       replicas: 2
       selector:
         matchLabels:
-          app: vpa-auto-deployment
+          app: vpa-recreate-deployment
       template:
         metadata:
           labels:
-            app: vpa-auto-deployment
+            app: vpa-recreate-deployment
         spec:
           containers:
           - name: mycontainer
@@ -352,7 +351,7 @@ The `VerticalPodAutoscaler` object automatically sets resource requests on pods 
 2. Create the pod using the [`kubectl create`][kubectl-create] command.
 
     ```bash
-    kubectl create -f azure-autodeploy.yaml
+    kubectl create -f azure-recreatedeploy.yaml
     ```
 
     After a few minutes, the command completes and returns JSON-formatted information about the cluster.
@@ -367,32 +366,32 @@ The `VerticalPodAutoscaler` object automatically sets resource requests on pods 
 
     ```output
     NAME                                   READY   STATUS    RESTARTS   AGE
-    vpa-auto-deployment-54465fb978-kchc5   1/1     Running   0          52s
-    vpa-auto-deployment-54465fb978-nhtmj   1/1     Running   0          52s
+    vpa-recreate-deployment-54465fb978-kchc5   1/1     Running   0          52s
+    vpa-recreate-deployment-54465fb978-nhtmj   1/1     Running   0          52s
     ```
 
-4. Create a file named `azure-vpa-auto.yaml` and copy in the following manifest:
+4. Create a file named `azure-vpa-recreate.yaml` and copy in the following manifest:
 
     ```yml
     apiVersion: autoscaling.k8s.io/v1
     kind: VerticalPodAutoscaler
     metadata:
-      name: vpa-auto
+      name: vpa-recreate
     spec:
       targetRef:
         apiVersion: "apps/v1"
         kind:       Deployment
-        name:       vpa-auto-deployment
+        name:       vpa-recreate-deployment
       updatePolicy:
         updateMode: "Recreate"
     ```
 
-    The `targetRef.name` value specifies that any pod controlled by a deployment named `vpa-auto-deployment` belongs to `VerticalPodAutoscaler`. The `updateMode` value of `Recreate` means that the Vertical Pod Autoscaler controller can delete a pod, adjust the CPU and Memory requests, and then create a new pod.
+    The `targetRef.name` value specifies that any pod controlled by a deployment named `vpa-recreate-deployment` belongs to `VerticalPodAutoscaler`. The `updateMode` value of `Recreate` means that the Vertical Pod Autoscaler controller can delete a pod, adjust the CPU and Memory requests, and then create a new pod.
 
 5. Apply the manifest to the cluster using the [`kubectl apply`][kubectl-apply] command.
 
     ```bash
-    kubectl create -f azure-vpa-auto.yaml
+    kubectl create -f azure-vpa-recreate.yaml
     ```
 
 6. Wait a few minutes and then view the running pods using the [`kubectl get`][kubectl-get] command.
@@ -405,8 +404,8 @@ The `VerticalPodAutoscaler` object automatically sets resource requests on pods 
 
     ```output
     NAME                                   READY   STATUS    RESTARTS   AGE
-    vpa-auto-deployment-54465fb978-qbhc4   1/1     Running   0          2m49s
-    vpa-auto-deployment-54465fb978-vbj68   1/1     Running   0          109s
+    vpa-recreate-deployment-54465fb978-qbhc4   1/1     Running   0          2m49s
+    vpa-recreate-deployment-54465fb978-vbj68   1/1     Running   0          109s
     ```
 
 7. Get detailed information about one of your running pods using the [`kubectl get`][kubectl-get] command. Make sure you replace `<pod-name>` with the name of one of your pods from your previous output.
@@ -423,12 +422,12 @@ The `VerticalPodAutoscaler` object automatically sets resource requests on pods 
     metadata:
       annotations:
         vpaObservedContainers: mycontainer
-        vpaUpdates: 'Pod resources updated by vpa-auto: container 0: cpu request, memory
+        vpaUpdates: 'Pod resources updated by vpa-recreate: container 0: cpu request, memory
           request'
       creationTimestamp: "2022-09-29T16:44:37Z"
-      generateName: vpa-auto-deployment-54465fb978-
+      generateName: vpa-recreate-deployment-54465fb978-
       labels:
-        app: vpa-auto-deployment
+        app: vpa-recreate-deployment
 
     spec:
       containers:
@@ -449,7 +448,7 @@ The `VerticalPodAutoscaler` object automatically sets resource requests on pods 
 8. Get detailed information about the Vertical Pod Autoscaler and its recommendations for CPU and Memory using the [`kubectl get`][kubectl-get] command.
 
     ```bash
-    kubectl get vpa vpa-auto --output yaml
+    kubectl get vpa vpa-recreate --output yaml
     ```
 
     Your output should look similar to the following example output:
@@ -545,7 +544,7 @@ In the following example, we create an extra Recommender, apply to an existing A
         kind: Deployment 
         name: hamster 
       updatePolicy: 
-        updateMode: "Auto" 
+        updateMode: "Recreate" 
       resourcePolicy: 
         containerPolicies: 
           - containerName: '*' 
@@ -591,7 +590,7 @@ In the following example, we create an extra Recommender, apply to an existing A
 
    For example, if you start with a pod that requests 2 CPUs and limits to 4 CPUs, VPA always sets the limit to be twice as much as requests. The same principle applies to Memory. When you use the `RequestsAndLimits` mode, it can serve as a blueprint for your initial application resource requests and limits.
 
-    You can simplify the VPA object using `Auto` mode and computing recommendations for both CPU and Memory.
+    You can simplify the VPA object using `Recreate` mode and computing recommendations for both CPU and Memory.
 
 4. Deploy the `hamster-extra-recomender.yaml` example using the [`kubectl apply`][kubectl-apply] command.
 
@@ -646,6 +645,21 @@ In the following example, we create an extra Recommender, apply to an existing A
         Name: customized-recommender
     ```
 
+## High Availability of VPA Components
+The Vertical Pod Autoscaling components vpa-recommender and vpa-updater are now highly available starting on AKS 1.34, running with two replicas each by default. In addition to vpa-admission-controller which has been high available with two replicas by default. This improves resilience by ensuring continued autoscaling operations if a single replica becomes unavailable.
+
+If you want to reduce the replica count to one, you can scale the deployments in the `kube-system` namespace using the following commands:
+
+```bash
+kubectl scale deployment vpa-recommender -n kube-system --replicas=1
+kubectl scale deployment vpa-updater -n kube-system --replicas=1
+kubectl scale deployment vpa-admission-controller -n kube-system --replicas=1
+
+```
+
+> [!NOTE]
+> Reducing the replica count removes the high availability guarantee for the VPA components. 
+
 ## Troubleshoot the Vertical Pod Autoscaler
 
 If you encounter issues with the Vertical Pod Autoscaler, you can troubleshoot the system components and custom resource definition to identify the problem.
@@ -680,6 +694,7 @@ To learn more about the VPA object, see the [Vertical Pod Autoscaler API referen
 [kubectl-create]: https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#create
 [kubectl-get]: https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#get
 [kubectl-describe]: https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#describe
+[vpa-upstream-doc]: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/features.md#in-place-updates-inplaceorrecreate
 
 <!-- INTERNAL LINKS -->
 [install-azure-cli]: /cli/azure/install-azure-cli
