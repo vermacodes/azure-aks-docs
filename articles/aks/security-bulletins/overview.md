@@ -13,9 +13,9 @@ ms.subservice: aks-security
 
 This page provides up-to-date information on security vulnerabilities affecting Azure Kubernetes Service(AKS) and its components. This information includes details on:
 
-- Critical Security Advisories – High-impact security vulnerabilities, including zero-day vulnerabilities and other critical CVEs requiring immediate attention, along with mitigation guidance.
-- Ongoing Security Investigations – Security issues under review, including CVEs where a patch isn't yet available or further assessment is needed.
-- False Positives & Non-Exploitable CVEs – Cases where a reported CVE doesn't impact AKS due to specific configurations, mitigations, or lack of exploitability.
+- Critical Security Advisories - High-impact security vulnerabilities, including zero-day vulnerabilities and other critical CVEs requiring immediate attention, along with mitigation guidance.
+- Ongoing Security Investigations - Security issues under review, including CVEs where a patch isn't yet available or further assessment is needed.
+- False Positives & Non-Exploitable CVEs - Cases where a reported CVE doesn't impact AKS due to specific configurations, mitigations, or lack of exploitability.
 
 These updates cover security information related to the following AKS components:
 
