@@ -1,7 +1,7 @@
 ---
 title: "Cross-cluster networking for Azure Kubernetes Fleet Manager"
 description: This article provides a conceptual overview of Cross-cluster networking for Azure Kubernetes Fleet Manager. 
-ms.date: 03/18/2026
+ms.date: 03/23/2026
 author: sjwaight
 ms.author: simonwaight
 ms.service: azure-kubernetes-fleet-manager
@@ -9,13 +9,15 @@ ms.topic: concept-article
 # Customer intent: "As a platform engineer, I want to understand the supporting concepts for cross-cluster networking in Azure Kubernetes Fleet Manager, so that I know how and where I can use cross-cluster networking."
 ---
 
-# Cross-cluster networking for Azure Kubernetes Fleet Manager
+# Cross-cluster networking for Azure Kubernetes Fleet Manager (preview)
 
 Azure Kubernetes Fleet Manager provides a dedicated cross-cluster networking solution that extends the Kubernetes datapath across multiple clusters. Using cross-cluster networking enables any connected cluster to communicate directly with endpoints on any other connected cluster with full network‑policy enforcement. Using cross-cluster networking allowing clusters to publish services such that any connected cluster can call them as if they were local.
 
 Multiple cross-cluster network profiles can be created in Fleet Manager, with the only restriction being that member clusters can only participate in a single cross-cluster network. 
 
 In this article, we introduce key concepts for cross-cluster networking for Azure Kubernetes Fleet Manager.
+
+[!INCLUDE [preview features note](./includes/preview/preview-callout.md)]
 
 ## Prerequisites and limitations
 
@@ -61,7 +63,12 @@ One reason to adopt cross-cluster networking over installing and running Cilium 
 
 Cross-cluster networking's Cilium component updates are bundled as part of AKS Kubernetes releases. Upgrades are simplified by pre-validation that Cilium components work with the Kubernetes version your cluster runs, ensuring the cross-cluster network remains stable.
 
-This approach means you can use Fleet Manager's [Update Runs and Strategies][fleet-update-runs] to upgrade the control plane of your clusters, defining the order in which clusters are updated. 
+This approach means you can use Fleet Manager's [Update Runs and Strategies][fleet-update-runs] to upgrade the control plane of your clusters, defining the order in which clusters are updated.
+
+## Next steps
+
+* [Track availability of this preview][track-preview].
+
 
 <!-- INTERNAL LINKS -->
 [aks-acns-enabled]: ../aks/use-advanced-container-networking-services.md?pivots=cilium
@@ -74,3 +81,4 @@ This approach means you can use Fleet Manager's [Update Runs and Strategies][fle
 [cilium-intro]: https://docs.cilium.io/en/stable/network/clustermesh/intro/
 [cilium-network-policy]: https://docs.cilium.io/en/latest/security/policy/index.html
 [cilium-cli-github]: https://github.com/cilium/cilium-cli
+[track-preview]: https://github.com/Azure/AKS/issues/5113
