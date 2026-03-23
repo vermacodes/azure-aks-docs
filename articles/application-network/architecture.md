@@ -1,14 +1,16 @@
 ---
-title: Azure Kubernetes Application Network Architecture
+title: Azure Kubernetes Application Network Architecture (Preview)
 description: Learn about the architecture of Azure Kubernetes Application Network including management plane, control plane, data plane, and multi-cluster service discovery.
-author: schaffererin
-ms.author: schaffererin
+author: kochhars
+ms.author: kochhars
 ms.service: azure
 ms.topic: concept-article
 ms.date: 03/05/2026
 ---
 
-# Azure Kubernetes Application Network architecture
+# Azure Kubernetes Application Network architecture (preview)
+
+[!INCLUDE [preview features callout](~/reusable-content/ce-skilling/azure/includes/aks/includes/preview/preview-callout.md)]
 
 Azure Kubernetes Application Network architecture is organized into three layers: a **management plane**, a **control plane**, and a **data plane**. Each layer has distinct responsibilities that together provide a fully managed, Ambient-based service network solution for Azure Kubernetes Service (AKS). This architecture enables secure, policy-driven communication between services without requiring sidecars or changes to your applications.
 

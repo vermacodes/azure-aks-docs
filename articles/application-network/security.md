@@ -1,14 +1,16 @@
 ---
-title: Security Overview for Azure Kubernetes Application Network
+title: Security Overview for Azure Kubernetes Application Network (Preview)
 description: Learn about the security features in Azure Kubernetes Application Network, including mTLS, workload identities, certificate management, and authorization policies for secure service-to-service communication in AKS.
-author: schaffererin
-ms.author: schaffererin
+author: kochhars
+ms.author: kochhars
 ms.service: azure
 ms.topic: overview
 ms.date: 11/05/2025
 ---
 
-# Overview of Azure Kubernetes Application Network security
+# Overview of Azure Kubernetes Application Network security (preview)
+
+[!INCLUDE [preview features callout](~/reusable-content/ce-skilling/azure/includes/aks/includes/preview/preview-callout.md)]
 
 Azure Kubernetes Application Network secures communication between services in connected Azure Kubernetes Service (AKS) clusters through automatic mutual TLS (mTLS) and identity-based authorization. It issues workload identities and manages certificate issuance, rotation, and validation to enable encrypted, authenticated, and explicitly authorized service-to-service communication without manual configuration, with FIPS-compliant encryption in transit.
 

@@ -1,14 +1,16 @@
 ---
-title: Azure Kubernetes Application Network Supported Versions
+title: Azure Kubernetes Application Network Supported Versions (Preview)
 description: Learn about the supported versions of Azure Kubernetes Application Network, their compatible AKS versions, and how to check available versions in your region.
-author: schaffererin
-ms.author: schaffererin
+author: kochhars
+ms.author: kochhars
 ms.service: azure
 ms.topic: concept-article
 ms.date: 03/05/2026
 ---
 
-# Azure Kubernetes Application Network supported versions
+# Azure Kubernetes Application Network supported versions (preview)
+
+[!INCLUDE [preview features callout](~/reusable-content/ce-skilling/azure/includes/aks/includes/preview/preview-callout.md)]
 
 Azure Kubernetes Application Network releases minor versions roughly once a quarter. Minor version releases include new features, improvements and component updates. Each minor version has a specific Istio minor version built in, though consecutive Application Network versions might share the same Istio version. Patch releases include fixes for bugs and security vulnerabilities.
 

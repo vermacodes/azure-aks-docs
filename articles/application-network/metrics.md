@@ -1,14 +1,16 @@
 ---
-title: Configure and View Azure Kubernetes Application Network Metrics
+title: Configure and View Azure Kubernetes Application Network Metrics (Preview)
 description: Learn how to configure and view Azure Kubernetes Application Network metrics in Azure Monitor, including data plane metrics from your workloads and Azure Kubernetes Application Network components.
-author: schaffererin
-ms.author: schaffererin
+author: kochhars
+ms.author: kochhars
 ms.service: azure
 ms.topic: how-to
 ms.date: 11/04/2025
 ---
 
-# Configure and view Azure Kubernetes Application Network metrics
+# Configure and view Azure Kubernetes Application Network metrics (preview)
+
+[!INCLUDE [preview features callout](~/reusable-content/ce-skilling/azure/includes/aks/includes/preview/preview-callout.md)]
 
 Azure Kubernetes Application Network provides comprehensive metrics for your workloads and the Azure Kubernetes Application Network data plane components (ZTunnel, Istio CNI, and Waypoint) through Azure Monitor metrics. This article explains how to configure and view these metrics in Azure Monitor.
 

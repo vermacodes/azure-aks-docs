@@ -1,15 +1,17 @@
 ---
-title: Overview of Azure Kubernetes Application Network for AKS
+title: Overview of Azure Kubernetes Application Network for AKS (Preview)
 description: Learn about Azure Kubernetes Application Network, a fully managed, ambient-based service network solution for Azure Kubernetes Service (AKS) that enables secure, policy-driven communication between services without sidecars or changes to your applications.
-author: schaffererin
-ms.author: schaffererin
+author: kochhars
+ms.author: kochhars
 ms.service: azure
 ms.topic: overview
 ms.date: 11/04/2025
 ms.custom: references_regions
 ---
 
-# Overview of Azure Kubernetes Application Network for AKS
+# Overview of Azure Kubernetes Application Network for AKS (preview)
+
+[!INCLUDE [preview features callout](~/reusable-content/ce-skilling/azure/includes/aks/includes/preview/preview-callout.md)]
 
 Azure Kubernetes Application Network provides a fully managed, [ambient-based](https://istio.io/latest/docs/ambient/) service network solution for Azure Kubernetes Service (AKS). It enables secure, policy-driven communication between services without requiring sidecars or changes to your applications. Azure manages both the control plane and data plane, so you can focus on your workloads instead of operating and maintaining service-network infrastructure.
 

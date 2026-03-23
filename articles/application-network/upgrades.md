@@ -1,14 +1,16 @@
 ---
-title: Configure Upgrades for Azure Kubernetes Application Network
+title: Configure Upgrades for Azure Kubernetes Application Network (Preview)
 description: Learn how to configure minor version upgrades for Azure Kubernetes Application Network members using self-managed and fully-managed upgrade modes, including how to select versions, initiate upgrades, and roll back if needed.
-author: schaffererin
-ms.author: schaffererin
+author: kochhars
+ms.author: kochhars
 ms.service: azure
 ms.topic: how-to
 ms.date: 11/04/2025
 ---
 
-# Configure upgrades for Azure Kubernetes Application Network members
+# Configure upgrades for Azure Kubernetes Application Network members (preview)
+
+[!INCLUDE [preview features callout](~/reusable-content/ce-skilling/azure/includes/aks/includes/preview/preview-callout.md)]
 
 Azure Kubernetes Application Network provides flexible control over how minor version upgrades are applied to members. Each member cluster enrolled in an Azure Kubernetes Application Network resource can use one of two upgrade modes depending on the level of control you require: **self-managed** (`SelfManaged`) or **fully-managed** (`FullyManaged`). These modes operate at the member level, allowing you to choose whether upgrades are performed manually or automatically for each cluster.
 

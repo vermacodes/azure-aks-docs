@@ -8,12 +8,16 @@
   items:
   - name: Create an Azure Kubernetes Application Network
     href: get-started.md
+- name: Traffic management use cases
+  href: traffic-management-use-cases.md
 - name: Versions and upgrades
   items:
   - name: Supported versions
     href: supported-versions.md
   - name: Manage upgrades
     href: upgrades.md
+  - name: Use planned maintenance to schedule upgrades
+    href: planned-maintenance.md
 - name: Observability
   items:
   - name: Overview
