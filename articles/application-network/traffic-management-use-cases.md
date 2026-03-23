@@ -5,7 +5,7 @@ author: schaffererin
 ms.author: schaffererin
 ms.service: azure
 ms.topic: how-to
-ms.date: 03/13/2026
+ms.date: 03/19/2026
 ---
 
 # Traffic management use cases for Azure Kubernetes Application Network
@@ -255,7 +255,7 @@ This architecture demonstrates how a distributed application can span across mul
 ### Verify application access
 
 > [!NOTE]
-> You need to make sure your Network Security Group (NSG) rules allow traffic from the Internet via port 80.
+> If you can't access the application from the internet, make sure the network security group (NSG) associated with your cluster allows inbound internet traffic on TCP port `80` to the ingress gateway.
 
 - Access the application through the ingress gateway using the following commands:
 
@@ -650,42 +650,106 @@ This architecture demonstrates how a distributed application can span across mul
     {"id": "1","podname": "reviews-v1-12ab34c5de-fg6hi","clustername": "null","reviews": [{  "reviewer": "Reviewer1",  "text": "An extremely entertaining play by Shakespeare. The slapstick humour is refreshing!"},{  "reviewer": "Reviewer2",  "text": "Absolutely fun and entertaining. The play lacks thematic depth when compared to other plays by Shakespeare."}]}
     ```
 
-## Implement cross-cluster traffic splitting
+## Implement cross-cluster traffic shifting
 
-1. Get the cluster IDs from the `applink-system` namespace labels in both clusters and set them as environment variables. The cluster IDs are used to identify which cluster the `reviews` service subsets are running on in the DestinationRule configuration.
+We implement cross-cluster traffic shifting using the following setup across the two AKS clusters:
+
+- **AKS cluster 1**: The `reviews-local` services selects only `reviews-v1` pods, and the `reviews-remote` service intentionally selects no local pods.
+- **AKS cluster 2**: The `reviews-local` service intentionally selects no local pods, and the `reviews-remote` service selects both `reviews-v2` and `reviews-v3` pods.
+
+In this section, the terms _local_ and _remote_ are defined from the perspective of AKS cluster 1.
+
+1. Apply the following Service resources in AKS cluster 1 to set up the `reviews-local` and `reviews-remote` services with the appropriate selectors using the `kubectl apply` command:
 
     ```bash
-    export CLUSTER_ID_1=$(kubectl --context $CLUSTER_NAME_1 get ns applink-system -o jsonpath='{.metadata.labels.topology\.istio\.io/network}' | sed 's/^network-//')
-    export CLUSTER_ID_2=$(kubectl --context $CLUSTER_NAME_2 get ns applink-system -o jsonpath='{.metadata.labels.topology\.istio\.io/network}' | sed 's/^network-//')
-    echo $CLUSTER_ID_1
-    echo $CLUSTER_ID_2
+    kubectl --context $CLUSTER_NAME_1 apply -f - <<EOF
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: reviews-local
+      namespace: default
+      labels:
+        app: reviews
+        service: reviews-local
+        istio.io/global: "true"
+        istio.io/use-waypoint: waypoint
+    spec:
+      ports:
+      - name: http
+        port: 9080
+        targetPort: 9080
+      selector:
+        app: reviews
+        version: v1
+    ---
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: reviews-remote
+      namespace: default
+      labels:
+        app: reviews
+        service: reviews-remote
+        istio.io/global: "true"
+        istio.io/use-waypoint: waypoint
+    spec:
+      ports:
+      - name: http
+        port: 9080
+        targetPort: 9080
+      selector:
+        app: reviews
+        version: remote
+    EOF
     ```
 
-1. Split traffic for the `reviews` service between the two AKS clusters using the following `kubectl apply` command to create a DestinationRule with subsets for each version of the `reviews` service in both clusters, and a VirtualService to route traffic to the subsets with specified weights:
+1. Apply the following Service resources in AKS cluster 2 to set up the `reviews-local` and `reviews-remote` services with the appropriate selectors using the `kubectl apply` command:
 
     ```bash
-    envsubst <<EOF | kubectl --context $CLUSTER_NAME_1 apply -f -
-    apiVersion: networking.istio.io/v1
-    kind: DestinationRule
+    kubectl --context $CLUSTER_NAME_2 apply -f - <<EOF
+    apiVersion: v1
+    kind: Service
     metadata:
-      name: reviews
+      name: reviews-local
       namespace: default
+      labels:
+        app: reviews
+        service: reviews-local
+        istio.io/global: "true"
+        istio.io/use-waypoint: waypoint
     spec:
-      host: reviews
-      subsets:
-      - name: v1
-        labels:
-          topology.istio.io/cluster: "${CLUSTER_ID_1}"
-          version: v1
-      - name: v2
-        labels:
-          topology.istio.io/cluster: "${CLUSTER_ID_2}"
-          version: v2
-      - name: v3
-        labels:
-          topology.istio.io/cluster: "${CLUSTER_ID_2}"
-          version: v3
+      ports:
+      - name: http
+        port: 9080
+        targetPort: 9080
+      selector:
+        app: reviews
+        version: local
     ---
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: reviews-remote
+      namespace: default
+      labels:
+        app: reviews
+        service: reviews-remote
+        istio.io/global: "true"
+        istio.io/use-waypoint: waypoint
+    spec:
+      ports:
+      - name: http
+        port: 9080
+        targetPort: 9080
+      selector:
+        app: reviews
+    EOF
+    ```
+
+1. Split traffic for the `reviews` service `20/80` between the local and remote clusters using the following `kubectl apply` command:
+
+    ```bash
+    kubectl --context $CLUSTER_NAME1 apply -f - <<EOF
     apiVersion: networking.istio.io/v1
     kind: VirtualService
     metadata:
@@ -697,34 +761,32 @@ This architecture demonstrates how a distributed application can span across mul
       http:
       - route:
         - destination:
-            host: reviews
-            subset: v1
+            host: reviews-local.default.svc.cluster.local
             port:
               number: 9080
           weight: 20
         - destination:
-            host: reviews
-            subset: v2
+            host: reviews-remote.default.svc.cluster.local
             port:
               number: 9080
-          weight: 40
-        - destination:
-            host: reviews
-            subset: v3
-            port:
-              number: 9080
-          weight: 40
+          weight: 80
     EOF
     ```
 
-1. Verify the settings are working by sending multiple requests to the `productpage` through the ingress gateway and observing the distribution of reviews coming from different versions of the `reviews` service in both clusters. You can use the following script to send 100 requests and summarize the results:
+1. Verify the settings using the following script (feel free to change the weights and test it yourself).
+
+    The `Connection: close` header only closes the client-side HTTP/1.1 connection. In ambient multicluster, the east-west gateway and waypoint can still reuse HBONE connections, so requests sent to `cluster-2` might stay pinned to either `reviews-v2` or `reviews-v3` within a single run. Use `cluster-1` versus `cluster-2` as the authoritative verification signal for the `20/80` split, and treat the star color as an illustrative detail only.
 
     ```bash
     results=()
-    for i in $(seq 1 100); do
-      html=$(curl -sS --http1.1 -H 'Connection: close' http://$BOOK_INFO_GTW_IP/productpage)
+    for i in $(seq 1 20); do
+      html=$(curl -sS --http1.1 -H 'Connection: close' http://$BOOKINFO_GTW_IP/productpage)
       pod=$(printf '%s' "$html" | grep -oE 'reviews-v[0-9]-[a-z0-9-]+' | head -n1)
-
+      if printf '%s' "$pod" | grep -q '^reviews-v1-'; then
+        target=cluster-1
+      else
+        target=cluster-2
+      fi
       if printf '%s' "$html" | grep -q 'text-red-500'; then
         star=red
       elif printf '%s' "$html" | grep -q 'text-black-500'; then
@@ -733,9 +795,9 @@ This architecture demonstrates how a distributed application can span across mul
         star=no-star
       fi
 
-      line=$(printf '%02d  %-35s  %s' "$i" "$pod" "$star")
+      line=$(printf '%02d  %-10s  %-8s  %s' "$i" "$target" "$star" "$pod")
       echo "$line"
-      results+=("$pod $star")
+      results+=("$target $star")
     done
 
     echo
@@ -743,79 +805,24 @@ This architecture demonstrates how a distributed application can span across mul
     printf '%s\n' "${results[@]}" | sort | uniq -c
     ```
 
-    Your output should show a distribution of reviews coming from different versions of the `reviews` service in both clusters, with approximately 20% from `reviews-v1` in cluster 1, 40% from `reviews-v2` in cluster 2, and 40% from `reviews-v3` in cluster 2. The star ratings should also correspond to the version of the `reviews` service, with `reviews-v1` showing no stars, `reviews-v2` showing black stars, and `reviews-v3` showing red stars.
+    Example output:
 
     ```output
     ...
 
     Summary:
-     13 reviews-v1-12ab34c5de-fg6hi no-star
-     42 reviews-v2-12345ab6c-defghi black
-     45 reviews-v3-12ab34567c-defgjh red
+    3 cluster-1 no-star
+    17 cluster-2 black
     ```
 
 ## Implement fault injection
 
-### Set up destination rules and virtual services
+### Set up virtual services
 
-1. Set up destination rules for the `productpage` and `details` services in AKS cluster 1 using the following `kubectl apply` command:
+> [!IMPORTANT]
+> In this section, we reuse the `reviews-local` and `reviews-remote` services created in the [traffic shifting section](#implement-cross-cluster-traffic-shifting).
 
-    ```bash
-    kubectl --context $CLUSTER_NAME_1 apply -f - <<EOF
-    apiVersion: networking.istio.io/v1
-    kind: DestinationRule
-    metadata:
-      name: productpage
-    spec:
-      host: productpage
-      subsets:
-      - name: v1
-        labels:
-          version: v1
-    ---
-    apiVersion: networking.istio.io/v1
-    kind: DestinationRule
-    metadata:
-      name: details
-    spec:
-      host: details
-      subsets:
-      - name: v1
-        labels:
-          version: v1
-      - name: v2
-        labels:
-          version: v2
-    EOF
-    ```
-
-1. Set up destination rules for the `ratings` service in AKS cluster 2 using the following `kubectl apply` command:
-
-    ```bash
-    kubectl --context $CLUSTER_NAME_2 apply -f - <<EOF
-    apiVersion: networking.istio.io/v1
-    kind: DestinationRule
-    metadata:
-      name: ratings
-    spec:
-      host: ratings
-      subsets:
-      - name: v1
-        labels:
-          version: v1
-      - name: v2
-        labels:
-          version: v2
-      - name: v2-mysql
-        labels:
-          version: v2-mysql
-      - name: v2-mysql-vm
-        labels:
-          version: v2-mysql-vm
-    EOF
-    ```
-
-1. Set up virtual services for the `productpage` and `details` services in AKS cluster 1 using the following `kubectl apply` command:
+1. Set up virtual services for `productpage` and `details` services in AKS cluster 1 using the following `kubectl apply` command:
 
     ```bash
     kubectl --context $CLUSTER_NAME_1 apply -f - <<EOF
@@ -830,7 +837,6 @@ This architecture demonstrates how a distributed application can span across mul
       - route:
         - destination:
             host: productpage
-            subset: v1
     ---
     apiVersion: networking.istio.io/v1
     kind: VirtualService
@@ -843,11 +849,10 @@ This architecture demonstrates how a distributed application can span across mul
       - route:
         - destination:
             host: details
-            subset: v1
     EOF
     ```
 
-1. Set up a virtual service for the `ratings` service in AKS cluster 2 to route all traffic to `ratings-v1` using the following `kubectl apply` command:
+1. Set up a virtual service for the `ratings` service in AKS cluster 2 using the following `kubectl apply` command:
 
     ```bash
     kubectl --context $CLUSTER_NAME_2 apply -f - <<EOF
@@ -862,11 +867,35 @@ This architecture demonstrates how a distributed application can span across mul
       - route:
         - destination:
             host: ratings
-            subset: v1
     EOF
     ```
 
-1. Modify the reviews virtual service in AKS cluster 1 to route all traffic to `reviews-v2` for user `jason` using the following `kubectl apply` command:
+1. Update `reviews-remote` in AKS cluster 2 to select `reviews-v2` only using the following `kubectl apply` command:
+
+    ```bash
+    kubectl --context $CLUSTER_NAME_2 apply -f - <<EOF
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: reviews-remote
+      namespace: default
+      labels:
+        app: reviews
+        service: reviews-remote
+        istio.io/global: "true"
+        istio.io/use-waypoint: waypoint
+    spec:
+      ports:
+      - name: http
+        port: 9080
+        targetPort: 9080
+      selector:
+        app: reviews
+        version: v2
+    EOF
+    ```
+
+1. Modify the virtual service for AKS cluster 1 to route user `jason`'s requests to `reviews-remote` using the following `kubectl apply` command:
 
     ```bash
     kubectl --context $CLUSTER_NAME_1 apply -f - <<EOF
@@ -885,14 +914,12 @@ This architecture demonstrates how a distributed application can span across mul
               exact: jason
         route:
         - destination:
-            host: reviews
-            subset: v2
+            host: reviews-remote.default.svc.cluster.local
             port:
               number: 9080
       - route:
         - destination:
-            host: reviews
-            subset: v1
+            host: reviews-local.default.svc.cluster.local
             port:
               number: 9080
     EOF
@@ -903,7 +930,31 @@ This architecture demonstrates how a distributed application can span across mul
 1. Inject a seven second HTTP delay for user `jason` to the `ratings` service in AKS cluster 2 using the following `kubectl apply` command:
 
     ```bash
-    kubectl --context $CLUSTER_NAME_2 apply -f https://raw.githubusercontent.com/istio/istio/release-1.29/samples/bookinfo/networking/virtual-service-ratings-test-delay.yaml
+    kubectl --context $CLUSTER_NAME2 apply -f - <<EOF
+    apiVersion: networking.istio.io/v1
+    kind: VirtualService
+    metadata:
+      name: ratings
+    spec:
+      hosts:
+      - ratings
+      http:
+      - match:
+        - headers:
+            end-user:
+              exact: jason
+        fault:
+          delay:
+            percentage:
+              value: 100.0
+            fixedDelay: 7s
+        route:
+        - destination:
+            host: ratings
+      - route:
+        - destination:
+            host: ratings
+    EOF
     ```
 
 1. To see the impact of this delay, open a browser and navigate to `http://$BOOK_INFO_GTW_IP/productpage`. Initially, you shouldn't see any rating stars under the "Book Reviews" section since all the traffic goes to `reviews-v1`.
@@ -925,35 +976,30 @@ This architecture demonstrates how a distributed application can span across mul
 
 ### Reduce HTTP delay and timeout
 
-- Let's bring back the "Book Reviews" section. Reduce the webpage load time by changing the reviews virtual service in AKS cluster 1 to route all traffic to `reviews-v3` for user `jason`, which has a two and a half second timeout when fetching ratings, using the following `kubectl apply` command:
+In this section, we bring back the "Book Reviews" section. To reduce the webpage load time, we can change the traffic pattern for user `jason` to route to `reviews-v3`, which has a two and a half second timeout.
+
+1. Update `reviews-remote` in AKS cluster 2 to select `reviews-v3` only using the following `kubectl apply` command:
 
     ```bash
-    kubectl --context $CLUSTER_NAME_1 apply -f - <<EOF
-    apiVersion: networking.istio.io/v1
-    kind: VirtualService
+    kubectl --context $CLUSTER_NAME_2 apply -f - <<EOF
+    apiVersion: v1
+    kind: Service
     metadata:
-      name: reviews
+      name: reviews-remote
       namespace: default
+      labels:
+        app: reviews
+        service: reviews-remote
+        istio.io/global: "true"
+        istio.io/use-waypoint: waypoint
     spec:
-      hosts:
-      - reviews
-      http:
-      - match:
-        - headers:
-            end-user:
-              exact: jason
-        route:
-        - destination:
-            host: reviews
-            subset: v3
-            port:
-              number: 9080
-      - route:
-        - destination:
-            host: reviews
-            subset: v1
-            port:
-              number: 9080
+      ports:
+      - name: http
+        port: 9080
+        targetPort: 9080
+      selector:
+        app: reviews
+        version: v3
     EOF
     ```
 
@@ -1001,7 +1047,32 @@ This architecture demonstrates how a distributed application can span across mul
 
 #### Inject HTTP abort
 
-1. Update the reviews virtual service in AKS cluster 1 to route all traffic to `reviews-v2` for user `jason` using the following `kubectl apply` command:
+1. Ensure `reviews-remote` in AKS cluster 2 selects `reviews-v2` again using the following `kubectl apply` command:
+
+    ```bash
+    kubectl --context $CLUSTER_NAME_2 apply -f - <<EOF
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: reviews-remote
+      namespace: default
+      labels:
+        app: reviews
+        service: reviews-remote
+        istio.io/global: "true"
+        istio.io/use-waypoint: waypoint
+    spec:
+      ports:
+      - name: http
+        port: 9080
+        targetPort: 9080
+      selector:
+        app: reviews
+        version: v2
+    EOF
+    ```
+
+1. Let all requests from AKS cluster 1 hit `reviews-remote` using the following `kubectl apply` command:
 
     ```bash
     kubectl --context $CLUSTER_NAME_1 apply -f - <<EOF
@@ -1015,14 +1086,13 @@ This architecture demonstrates how a distributed application can span across mul
       http:
       - route:
         - destination:
-            host: reviews
-            subset: v2
+            host: reviews-remote.default.svc.cluster.local
             port:
               number: 9080
     EOF
     ```
 
-1. Inject a 503 HTTP error for all requests to the `ratings` service in AKS cluster 2 using the following `kubectl apply` command:
+1. Inject a 503 HTTP abort for user `jason` to the `ratings` service in AKS cluster 2 using the following `kubectl apply` command:
 
     ```bash
     kubectl --context $CLUSTER_NAME_2 apply -f - <<EOF
@@ -1042,11 +1112,10 @@ This architecture demonstrates how a distributed application can span across mul
         route:
         - destination:
             host: ratings
-            subset: v1
     EOF
     ```
 
-    No matter whether you log in or not, rating stars aren't able to display since all requests to `ratings` service return 503:
+    Whether you log in or not, rating stars aren't able to display since all requests to `ratings` service return 503:
 
     :::image type="content" source="./media/traffic-management-use-cases/book-info-sample-book-ratings-503.png" alt-text="Screenshot showing the book ratings aren't displayed due to all requests to the ratings service returning 503.":::
 
