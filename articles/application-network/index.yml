@@ -33,6 +33,8 @@ landingContent:
         links:
           - text: Create an Azure Kubernetes Application Network
             url: get-started.md
+          - text: Explore traffic management use cases
+            url: traffic-management-use-cases.md
 
   # Card (optional)
   - title: Versions and upgrades

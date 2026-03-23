@@ -8,6 +8,8 @@
   items:
   - name: Create an Azure Kubernetes Application Network
     href: get-started.md
+- name: Traffic management use cases
+  href: traffic-management-use-cases.md
 - name: Versions and upgrades
   items:
   - name: Supported versions
