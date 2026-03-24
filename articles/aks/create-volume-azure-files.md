@@ -768,7 +768,7 @@ Azure Files now supports managed identity based authentication for SMB access. T
 - Ensure the [user-assigned Kubelet identity](use-managed-identity.md#create-a-kubelet-managed-identity) has the `Storage File Data SMB MI Admin` role on the storage account.
   - If you use your own storage account, you need to assign `Storage File Data SMB MI Admin` role to the user-assigned Kubelet identity on that storage account.
   - If the storage account is created by the CSI driver, grant `Storage File Data SMB MI Admin` role to the resource group where the storage account resides.
-  - If you just leverage the default built-in user-assigned Kubelet identity, it already has the required `Storage File Data SMB MI Admin` role on the managed node resource group.
+
 
 ### Enable managed identity for dynamic PVs with Azure Files
 
