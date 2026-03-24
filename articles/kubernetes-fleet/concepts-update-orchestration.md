@@ -120,9 +120,9 @@ In an auto-upgrade profile you can configure:
 - the `NodeImageSelectionType` (Latest, Consistent) to specify how the node image is selected when upgrading the Kubernetes version.
 
 > [!NOTE]
-> When you create an auto-upgrade profile, it may be some time (days or weeks) before a new Kubernetes or node image releases from AKS causes auto-upgrade to create and execute an update run. 
+> When you create an auto-upgrade profile, it may be some time (days or weeks) before a new Kubernetes or node image release from AKS causes auto-upgrade to create and execute an update run. 
 >
-> Auto-upgrade allows you to generate an update run at any time using the [`az fleet autoupgradeprofile generate-update-run`][az-fleet-updaterun-generate] command. The resulting update run is based on the current AKS-published Kubernetes or node image version. 
+> You can generate an update run from an auto-upgrade profile at any time using the [`az fleet autoupgradeprofile generate-update-run`][az-fleet-updaterun-generate] command. The resulting update run is based on the current AKS-published Kubernetes or node image version. 
 > 
 > For more information on creating an on-demand update run from an auto-upgrade profile, see [generate an update run from an auto-upgrade profile](./update-orchestration.md#generate-an-update-run-from-an-auto-upgrade-profile).
 
