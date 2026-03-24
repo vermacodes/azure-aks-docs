@@ -6,6 +6,7 @@ ms.topic: how-to
 ms.date: 07/28/2025
 author: schaffererin
 ms.author: schaffererin
+zone_pivot_groups: azure-cli-or-terraform
 # Customer intent: "As a cloud architect, I want to configure Azure Kubernetes Service to utilize availability zones, so that I can enhance the reliability and availability of my applications against datacenter failures."
 ---
 
@@ -13,7 +14,25 @@ ms.author: schaffererin
 
 [Availability zones](/azure/reliability/availability-zones-overview) help protect your applications and data from datacenter failures. Zones are unique physical locations within an Azure region. Each zone includes one or more datacenters equipped with independent power, cooling, and networking.
 
-Using Azure Kubernetes Service (AKS) with availability zones physically distributes resources across different availability zones within a single region, improving reliability. Deploying nodes in multiple zones doesn't incur extra costs. This article shows you how to configure AKS resources to use availability zones.
+Using Azure Kubernetes Service (AKS) with availability zones physically distributes resources across different availability zones within a single region, improving reliability. Deploying nodes in multiple zones doesn't incur extra costs. This article shows you how to configure AKS resources to use availability zones using the Azure CLI or Terraform.
+
+## Prerequisites
+
+- An active Azure subscription. If you don't have an Azure subscription, create a [free account](https://azure.microsoft.com/free/) before you begin.
+- Set your subscription context using the [`az account set`][az-account-set] command. For example:
+
+    ```azurecli-interactive
+    az account set --subscription "00000000-0000-0000-0000-000000000000"
+    ```
+
+- Azure CLI installed and configured. For installation instructions, see [Install the Azure CLI](/cli/azure/install-azure-cli).
+- [kubectl](https://kubernetes.io/releases/download/) installed. You can install it locally using the [`az aks install-cli`][az-aks-install-cli] command.
+
+:::zone pivot="terraform"
+
+- Terraform installed locally. For installation instructions, see [Install Terraform](https://developer.hashicorp.com/terraform/install).
+
+:::zone-end
 
 ## Limitations and considerations
 
@@ -53,6 +72,8 @@ The system node pool zones are configured when you create a cluster or node pool
 
 In zone-spanning node pools, nodes are spread across all selected zones. AKS automatically balances the number of nodes between zones. If a zone outage occurs, nodes within the affected zone might be impacted, but nodes in other availability zones remain unaffected.
 
+:::zone pivot="azure-cli"
+
 You can specify zones using the `--zones` parameter when creating an AKS cluster using the [`az aks create`][az-aks-create] command or node pool using the [`az aks nodepool add`][az-aks-nodepool-add] command. For example:
 
 ```azurecli-interactive
@@ -63,12 +84,16 @@ az aks create --resource-group example-rg --name example-cluster --node-count 3 
 az aks nodepool add --resource-group example-rg --cluster-name example-cluster --name userpool-a  --node-count 6 --zones 1 2 3
 ```
 
+:::zone-end
+
 #### Zone-aligned node pools
 
 > [!NOTE]
 > If a single workload is deployed across node pools, we recommend setting `--balance-similar-node-groups` to `true` to maintain a balanced distribution of nodes across zones for your workloads during scale-up operations.
 
 In this configuration, each node is aligned (pinned) to a specific zone. You can use this configuration when you need [lower latency between nodes](/azure/aks/reduce-latency-ppg), more granular control over scaling operations, or when you're using the [cluster autoscaler](./cluster-autoscaler-overview.md).
+
+:::zone pivot="azure-cli"
 
 The following commands create three node pools for a region with three availability zones using the [`az aks nodepool add`][az-aks-nodepool-add] command with the `--zones` parameter to specify the zone for each node pool:
 
@@ -78,6 +103,8 @@ az aks nodepool add --resource-group example-rg --cluster-name example-cluster -
 az aks nodepool add --resource-group example-rg --cluster-name example-cluster --name userpool-y  --node-count 2 --zones 2
 az aks nodepool add --resource-group example-rg --cluster-name example-cluster --name userpool-z  --node-count 2 --zones 3
 ```
+
+:::zone-end
 
 #### Regional node pools
 
@@ -180,6 +207,140 @@ spec:
       targetPort: 8080
 ```
 
+:::zone pivot="terraform"
+
+## Create the Terraform configuration file
+
+Terraform configuration files define the infrastructure that Terraform creates and manages.
+
+1. Create a file named `main.tf` and add the following code to define the Terraform version and specify the Azure provider:
+
+    ```tf
+    terraform {
+    required_version = ">= 1.0"
+    required_providers {
+      azurerm = {
+        source  = "hashicorp/azurerm"
+        version = "~> 4.0"
+      }
+     }
+    }
+    provider "azurerm" {
+     features {}
+    }
+    ```
+
+1. Add the following code to `main.tf` to create an Azure resource group. Feel free to change the name and location of the resource group as needed.
+
+    ```tf
+    resource "azurerm_resource_group" "example" {
+     name     = "aks-rg"
+     location = "East US"
+    }
+    ```
+
+## Create an AKS cluster with a zone-spanning system node pool
+
+Add the following code to `main.tf` to create an AKS cluster with a zone-spanning system node pool in all three availability zones with one node in each availability zone:
+
+```tf
+resource "azurerm_kubernetes_cluster" "example" {
+  name                = "aks-zones"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  dns_prefix          = "akszones"
+  default_node_pool {
+    name       = "system"
+    node_count = 1
+    vm_size    = "Standard_DS2_v2"
+    zones      = ["1", "2", "3"]
+  }
+  identity {
+    type = "SystemAssigned"
+  }
+}
+```
+
+## Add zone-spanning user node pools to an AKS cluster
+
+Add the following code to `main.tf` to create a new zone-spanning user node pool with two nodes in each availability zone:
+
+```tf
+resource "azurerm_kubernetes_cluster_node_pool" "zonespan" {
+  name                  = "userpool"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
+  vm_size               = "Standard_DS2_v2"
+  node_count            = 2
+  zones                 = ["1", "2", "3"]
+}
+```
+
+## Add zone-aligned user node pools to an AKS cluster
+
+Add the following code to `main.tf` to create three new zone-aligned user node pools with two nodes in each availability zone:
+
+```tf
+resource "azurerm_kubernetes_cluster_node_pool" "zone1" {
+  name                  = "userpool1"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
+  vm_size               = "Standard_DS2_v2"
+  node_count            = 1
+  zones                 = ["1"]
+}
+resource "azurerm_kubernetes_cluster_node_pool" "zone2" {
+  name                  = "userpool2"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
+  vm_size               = "Standard_DS2_v2"
+  node_count            = 1
+  zones                 = ["2"]
+}
+resource "azurerm_kubernetes_cluster_node_pool" "zone3" {
+  name                  = "userpool3"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
+  vm_size               = "Standard_DS2_v2"
+  node_count            = 1
+  zones                 = ["3"]
+}
+```
+
+## Initialize Terraform
+
+Initialize Terraform in the directory containing your `main.tf` file using the [`terraform init`](https://www.terraform.io/docs/commands/init.html) command. This command downloads the Azure provider required to manage Azure resources with Terraform.
+
+```console
+terraform init
+```
+
+## Create a Terraform execution plan
+
+Create a Terraform execution plan using the [`terraform plan`](https://www.terraform.io/docs/commands/plan.html) command. This command shows you the resources that Terraform will create or modify in your Azure subscription.
+
+```console
+terraform plan
+```
+
+## Apply the Terraform configuration
+
+After reviewing and confirming the execution plan, apply the Terraform configuration using the [`terraform apply`](https://www.terraform.io/docs/commands/apply.html) command. This command creates or modifies the resources defined in your `main.tf` file in your Azure subscription.
+
+```console
+terraform apply
+```
+
+:::zone-end
+
+## Verify availability zone configuration
+
+After creating your AKS cluster and node pools, you can verify that your nodes are distributed across availability zones using the [`az aks show`][az-aks-show] command with the `--query` parameter to filter the output. For example:
+
+```azurecli-interactive
+az aks show \
+ --name example-cluster \
+ --resource-group example-rg \
+ --query agentPoolProfiles[].availabilityZones \
+ --output tsv
+```
+
 ## Validate node locations
 
 Validate the distribution of nodes across availability zones using the following `kubectl get nodes` command:
@@ -207,7 +368,7 @@ kubectl describe pod | grep -e "^Name:" -e "^Node:"
 
 ## Related content
 
-To learn ore about reliability in AKS, see the following articles:
+To learn more about reliability in AKS, see the following articles:
 
 - [Reliability in AKS](/azure/reliability/reliability-aks)
 - [Manage system node pools in AKS](/azure/aks/use-system-pools)
