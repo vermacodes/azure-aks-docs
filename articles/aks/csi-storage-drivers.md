@@ -18,7 +18,7 @@ The Container Storage Interface (CSI) is a standard for exposing arbitrary block
 The CSI storage driver support on AKS allows you to natively use **Azure Disks**, **Azure Files**, or **Azure Blob storage** as persistent storage for your applications running on AKS.
 
 > [!TIP]
-> If you want a fully managed solution for block-level access to data, consider using [Azure Container Storage][azure-container-storage] instead of CSI drivers. Azure Container Storage integrates with Kubernetes, allowing dynamic and automatic provisioning of persistent volumes. Azure Container Storage supports Azure Disks, Ephemeral Disks, and Azure Elastic SAN (preview) as backing storage, offering flexibility and scalability for stateful applications running on Kubernetes clusters.
+> If you want a fully managed solution for block-level access to data, consider using [Azure Container Storage][azure-container-storage] instead of CSI drivers. Azure Container Storage integrates with Kubernetes so you can dynamically provision persistent volumes for stateful applications on Kubernetes clusters.
 
 :::zone pivot="azure-disks,azure-files"
 

@@ -130,14 +130,14 @@ A PVC automatically provisions storage based on a storage class. In this case, a
     apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:
-        name: azure-managed-disk
+      name: azure-managed-disk
     spec:
-    accessModes:
-    - ReadWriteOnce
-    storageClassName: managed-csi
-    resources:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: managed-csi
+      resources:
         requests:
-        storage: 5Gi
+          storage: 5Gi
     ```
 
    > [!TIP]

@@ -84,7 +84,7 @@ Blue-green upgrades currently don't support the following features:
 - Automated rollback
 - [Virtual machine (VM) pools](./virtual-machines-node-pools.md)
 - [Max unavailable](./upgrade-cluster.md#customize-unavailable-nodes-during-upgrade) setting
-- Undrainable node behavior and `maxBlockedNodes` setting
+- [Undrainable node behavior](./upgrade-options.md#option-2-handle-undrainable-nodes-honor-pdb) and [maxBlockedNodes](./upgrade-options.md#example-configuration-with-max-blocked-nodes) setting
 
 Keep the following considerations in mind when using blue-green upgrades:
 
@@ -148,10 +148,10 @@ You can customize the following blue-green upgrade properties (`NodePoolBlueGree
 
 ## Create a node pool with default blue-green upgrade settings
 
-- Create a node pool with the default blue-green upgrade strategy and settings using the [`az aks nodepool create`](/cli/azure/aks/nodepool#az-aks-nodepool-create) command with the `--upgrade-strategy` parameter set to `bluegreen`. The following example creates a new node pool named `myNodePool` in the AKS cluster `myAKSCluster` within the resource group `myResourceGroup`:
+- Create a node pool with the default blue-green upgrade strategy and settings using the [`az aks nodepool add`](/cli/azure/aks/nodepool#az-aks-nodepool-add) command with the `--upgrade-strategy` parameter set to `bluegreen`. The following example creates a new node pool named `myNodePool` in the AKS cluster `myAKSCluster` within the resource group `myResourceGroup`:
 
     ```azurecli-interactive
-    az aks nodepool create \
+    az aks nodepool add \
         --name myNodePool \
         --cluster-name myAKSCluster \
         --resource-group myResourceGroup \
@@ -160,10 +160,10 @@ You can customize the following blue-green upgrade properties (`NodePoolBlueGree
 
 ## Create a node pool with custom blue-green upgrade settings
 
-- Create a node pool with custom blue-green upgrade settings using the [`az aks nodepool create`](/cli/azure/aks/nodepool#az-aks-nodepool-create) command with the `--upgrade-strategy` parameter set to `bluegreen` and set any desired custom blue-green upgrade settings. The following example creates a new node pool named `myNodePool` in the AKS cluster `myAKSCluster` within the resource group `myResourceGroup`, with custom blue-green upgrade settings:
+- Create a node pool with custom blue-green upgrade settings using the [`az aks nodepool add`](/cli/azure/aks/nodepool#az-aks-nodepool-add) command with the `--upgrade-strategy` parameter set to `bluegreen` and set any desired custom blue-green upgrade settings. The following example creates a new node pool named `myNodePool` in the AKS cluster `myAKSCluster` within the resource group `myResourceGroup`, with custom blue-green upgrade settings:
 
     ```azurecli-interactive
-    az aks nodepool create \
+    az aks nodepool add \
         --name myNodePool \
         --cluster-name myAKSCluster \
         --resource-group myResourceGroup \
