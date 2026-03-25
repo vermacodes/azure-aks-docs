@@ -384,3 +384,6 @@ To learn more about reliability in AKS, see the following articles:
 [best-practices-multi-region]: ./operator-best-practices-storage.md
 [az-aks-create]: /cli/azure/aks#az-aks-create
 [az-aks-nodepool-add]: /cli/azure/aks/nodepool#az-aks-nodepool-add
+[az-account-set]: /cli/azure/account#az-account-set
+[az-aks-install-cli]: /cli/azure/aks#az-aks-install-cli
+[az-aks-show]: /cli/azure/aks#az-aks-show
