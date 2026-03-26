@@ -7,10 +7,8 @@ ms.date: 2/12/2026
 ms.author: wilsondarko
 author: wdarko1
 ai-usage: ai-assisted
-ai-usage: ai-assisted
 
-#Customer intent: As a cluster operator or developer, I want to automatically provision and manage the optimal VM configuration for my AKS workloads, so that I can efficiently scale my cluster while minimizing resource costs and complexities.
-
+# Customer intent: As a cluster operator or developer, I want to be able to migrate from Cluster Autoscaler to Node Auto Provisioning safely. I want to automatically provision and manage the optimal VM configuration for my AKS workloads, so that I can efficiently scale my cluster while minimizing resource costs and complexities.
 ---
 
 # Migrate from Cluster Autoscaler to Node auto provisioning
@@ -159,12 +157,12 @@ spec:
         - key: karpenter.azure.com/sku-family
           operator: In
           values: [D]
-      expireAfter: Never
   limits:
     cpu: 100
   disruption:
     consolidationPolicy: WhenEmptyOrUnderutilized
     consolidateAfter: 0s
+    expireAfter: Never
 ---
 apiVersion: karpenter.azure.com/v1beta1
 kind: AKSNodeClass
@@ -191,7 +189,7 @@ After enabling node autoprovisioning on your cluster, you can create a NodePool 
 
 This example creates an advanced NodePool that:
 - Supports both spot and on-demand instances
-- Uses D, E, and F-series VMs
+- Uses D, E, and F series VMs
 - Sets a CPU limit of 100
 - Sets nodes to never expire
 - Enables consolidation when nodes are empty or underutilized
@@ -216,6 +214,8 @@ spec:
           operator: In
           values: [D, E, F]
       expireAfter: Never
+  limits:
+    cpu: 100
   disruption:
     consolidationPolicy: WhenEmptyOrUnderutilized
     consolidateAfter: 0s
@@ -313,8 +313,8 @@ kubectl apply -f nodepool-default.yaml
 
 ## Migrate workloads from fixed pools to node auto provisioning managed nodes
 
->[!NOTE]
-> Consider setting node affinity that match your NAP specs to ensure that your workloads can tolerate the types of nodes specified for NAP to provision and are scheduled to the NAP-managed nodes when desired. Visit the [AKS node selector and affinity documentaiton](./operator-best-practices-advanced-scheduler.md#control-pod-scheduling-using-node-selectors-and-affinity) on best practices. 
+> [!NOTE]
+> Consider setting node affinity that match your specifications in NAP's NodePool and AKSNodeClass CRDs to ensure that your workloads can tolerate the types of nodes you defined NAP to provision and that they are scheduled to the NAP-managed nodes when desired. Visit the [AKS node selector and affinity documentaiton](./operator-best-practices-advanced-scheduler.md#control-pod-scheduling-using-node-selectors-and-affinity) on best practices. 
 
 Now scale down user pools gradually (keep the system pool):
 
@@ -329,7 +329,7 @@ az aks nodepool scale \
 
 As pods evict, node auto provisioning provisions replacement nodes per your NodePool and AKSNodeClass rules. If a user pool must go to zero, remember you can only do that on user pools (not system pool), and with cluster autoscaler disabled - which is already disabled in an earlier step.
 
->[!NOTE]
+> [!NOTE]
 > We recommend a gradual scale down in waves, and watch replicas/PDBs to avoid dips in availability.
 
 To confirm that the scale down is working and workloads are being scheduled to NAP-managed nodes safely, you can check:
