@@ -3,7 +3,7 @@ title: Azure Kubernetes Application Network Architecture (Preview)
 description: Learn about the architecture of Azure Kubernetes Application Network including management plane, control plane, data plane, and multi-cluster service discovery.
 author: kochhars
 ms.author: kochhars
-ms.service: azure
+ms.service: azure-kubernetes-app-net
 ms.topic: concept-article
 ms.date: 03/05/2026
 ---

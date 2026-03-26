@@ -3,7 +3,7 @@ title: Monitor Data Plane and Control Plane Logs in Azure Kubernetes Application
 description: Learn how to enable and view data plane and control plane logs for Azure Kubernetes Application Network in Azure Monitor using Container Insights and diagnostic settings.
 author: kochhars
 ms.author: kochhars
-ms.service: azure
+ms.service: azure-kubernetes-app-net
 ms.topic: how-to
 ms.date: 11/04/2025
 ---

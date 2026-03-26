@@ -3,7 +3,7 @@ title: Configure Upgrades for Azure Kubernetes Application Network (Preview)
 description: Learn how to configure minor version upgrades for Azure Kubernetes Application Network members using self-managed and fully-managed upgrade modes, including how to select versions, initiate upgrades, and roll back if needed.
 author: kochhars
 ms.author: kochhars
-ms.service: azure
+ms.service: azure-kubernetes-app-net
 ms.topic: how-to
 ms.date: 11/04/2025
 ---

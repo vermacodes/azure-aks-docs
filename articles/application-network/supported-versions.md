@@ -3,7 +3,7 @@ title: Azure Kubernetes Application Network Supported Versions (Preview)
 description: Learn about the supported versions of Azure Kubernetes Application Network, their compatible AKS versions, and how to check available versions in your region.
 author: kochhars
 ms.author: kochhars
-ms.service: azure
+ms.service: azure-kubernetes-app-net
 ms.topic: concept-article
 ms.date: 03/05/2026
 ---

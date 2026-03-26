@@ -3,7 +3,7 @@ title: Get Started with Azure Kubernetes Application Network for AKS (Preview)
 description: Learn how to get started with Azure Kubernetes Application Network for AKS, including prerequisites, creating an Application Network resource, connecting an AKS cluster as a member, and managing resources.
 author: kochhars
 ms.author: kochhars
-ms.service: azure
+ms.service: azure-kubernetes-app-net
 ms.topic: get-started
 ms.date: 11/04/2025
 ---

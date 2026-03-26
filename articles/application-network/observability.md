@@ -3,7 +3,7 @@ title: Observability Overview of Azure Kubernetes Application Network (Preview)
 description: Learn about the observability features available for Azure Kubernetes Application Network, including supported metrics, logs, and tracing capabilities, as well as workspace options for monitoring.
 author: kochhars
 ms.author: kochhars
-ms.service: azure
+ms.service: azure-kubernetes-app-net
 ms.topic: overview
 ms.date: 11/04/2025
 ---

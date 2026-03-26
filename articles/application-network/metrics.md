@@ -3,7 +3,7 @@ title: Configure and View Azure Kubernetes Application Network Metrics (Preview)
 description: Learn how to configure and view Azure Kubernetes Application Network metrics in Azure Monitor, including data plane metrics from your workloads and Azure Kubernetes Application Network components.
 author: kochhars
 ms.author: kochhars
-ms.service: azure
+ms.service: azure-kubernetes-app-net
 ms.topic: how-to
 ms.date: 11/04/2025
 ---

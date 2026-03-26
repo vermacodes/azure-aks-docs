@@ -6,7 +6,7 @@ summary: Azure Kubernetes Application Network provides a fully-managed service n
 metadata:
   title: Azure Kubernetes Application Network documentation
   description: Azure Kubernetes Application Network provides a fully-managed service network solution for your AKS workloads. Learn more with these overviews and tutorials.
-  ms.service: azure
+  ms.service: azure-kubernetes-app-net
   ms.topic: landing-page
   author: kochhars
   ms.author: kochhars
