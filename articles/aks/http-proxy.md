@@ -29,6 +29,7 @@ The following scenarios are **not** supported:
 * AKS clusters with Windows node pools
 * Node pools using Virtual Machine Availability Sets (VMAS)
 * Using * as wildcard attached to a domain suffix for noProxy
+* noProxy hosts must be RFC 1123 compliant
 
 `httpProxy`, `httpsProxy`, and `trustedCa` have no value by default. Pods are injected with the following environment variables:
 
@@ -46,6 +47,7 @@ To disable the injection of the proxy environment variables, you need to annotat
 ## Before you begin
 
 [!INCLUDE [azure-cli-prepare-your-environment-no-header.md](~/reusable-content/azure-cli/azure-cli-prepare-your-environment-no-header.md)]
+- Disable HTTP Proxy requires minimum CLI version 2.85.0.
 :::zone-end
 :::zone target="docs" pivot="azure-cli"
 
