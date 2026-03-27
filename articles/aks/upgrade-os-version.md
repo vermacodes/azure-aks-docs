@@ -6,17 +6,16 @@ ms.service: azure-kubernetes-service
 ms.date: 09/23/2025
 author: allyford
 ms.author: allyford
+ai-usage: ai-assisted
 ---
 
 # Upgrade operating system (OS) versions in AKS
 
 This article describes OS versions available for Azure Kubernetes Service (AKS) nodes, and best practices for testing and upgrading your OS version.
 
-> [!CAUTION]
-> In this article, there are references to Ubuntu and Azure Linux OS versions that are being deprecated for AKS:
->
-> - Starting on **March 17, 2027**, AKS will no longer support Ubuntu 20.04. Existing node images will be deleted and AKS will no longer provide security updates. You'll no longer be able to scale your node pools. Migrate to a supported Ubuntu version by [upgrading your node pools](./upgrade-aks-cluster.md) to Kubernetes version 1.34+. For more information on this retirement, see [Retirement: Ubuntu 20.04 node pools on AKS](https://github.com/Azure/AKS/issues/4874).
-> - As of **November 30, 2025**, Azure Kubernetes Service (AKS) no longer supports or provides security updates for Azure Linux 2.0. The Azure Linux 2.0 node image is frozen at the [202512.06.0 release](https://raw.githubusercontent.com/Azure/AgentBaker/main/vhdbuilder/release-notes/AKSCBLMarinerV2/gen2/202512.06.0.txt). Beginning **March 31, 2026**, node images will be removed, and you'll be unable to scale your node pools. Migrate to a supported Azure Linux version by [upgrading your node pools](/azure/aks/upgrade-aks-cluster) to a supported Kubernetes version or migrating to [osSku AzureLinux3](/azure/aks/upgrade-os-version). For more information, see [[Retirement] Azure Linux 2.0 node pools on AKS](https://github.com/Azure/AKS/issues/4988).
+[!INCLUDE [ubuntu 22.04 retirement](./includes/ubuntu-22-04-retirement.md)]
+
+[!INCLUDE [azure linux 2.0 retirement](./includes/azure-linux-retirement.md)]
 
 ## Supported OS versions
 
@@ -54,7 +53,7 @@ We recommend testing your nonproduction workloads with the new OS version when i
 
 There are two ways to migrate to a new OS version:
 
-- **Default OS SKU**: If you're using a default OS SKU such as `Ubuntu` or `AzureLinux`, you automatically get the latest GA version when you [upgrade your Kubernetes version][manage-node-pools]. There are no manual changes required to migrate to a new OS version. 
+- **Default OS SKU**: If you're using a default OS SKU such as `Ubuntu` or `AzureLinux`, you automatically get the latest GA version when you [upgrade your Kubernetes version][manage-node-pools]. There are no manual changes required to migrate to a new OS version. Clusters and node pools using the `Ubuntu` OS SKU automatically migrate to Ubuntu 24.04 when upgrading the Kubernetes version to 1.35 or higher. 
 - **Versioned OS SKU**: If you're using a versioned OS SKU such as `Ubuntu2404`, `AzureLinux3`, or `Windows2025`, you need to manually migrate to a new OS version to avoid blocked Kubernetes upgrades. If you're using a Linux OS, you can update the OS SKU on an existing node pool to manually migrate.
 
 ### Update OS SKU on an existing node pool
@@ -90,6 +89,7 @@ Ubuntu 24.04 is the default for `--os-sku Ubuntu` in Kubernetes versions 1.35+. 
 >
 > - [FIPS](./enable-fips-nodes.md) is not supported.
 > - Ubuntu 24.04 is supported in Kubernetes versions 1.32 to 1.38.
+> - Ubuntu 24.04 node images on AKS use containerd 2.0 by default. Workloads relying on container runtime behavior should be validated with containerd 2.0 when migrating to Ubuntu 24.04.
 > - You need to update your OS SKU to a supported OS option before upgrading your Kubernetes version to 1.39+. `--os-sku Ubuntu2404` is an option and is intended for testing the new OS Linux version without requiring you to upgrade your Kubernetes version.
 > - You need the preview Azure CLI version 18.0.0b5 or later for _preview_ and version 2.82.0 for _GA_ installed and configured. To find your CLI version, run `az --version`. If you need to install or upgrade, see [Install Azure CLI][install-azure-cli].
 
@@ -193,8 +193,8 @@ az aks nodepool update \
 > Keep the following information in mind when migrating to `--os-sku Ubuntu2204`:
 >
 > - [FIPS](./enable-fips-nodes.md) and [CVM](./use-cvm.md) aren't supported.
-> - Ubuntu 22.04 is supported in Kubernetes versions 1.25 to 1.35.
-> - `--os-sku Ubuntu2204` is intended for roll back to Ubuntu 22.04 on your current Kubernetes version. You need to update your OS SKU to a supported OS option to upgrade your Kubernetes version to 1.36 and above.
+> - Ubuntu 22.04 is supported in Kubernetes versions 1.25 to 1.36.
+> - `--os-sku Ubuntu2204` is intended for roll back to Ubuntu 22.04 on your current Kubernetes version. You need to update your OS SKU to a supported OS option to upgrade your Kubernetes version to 1.37 and above.
 
 Roll back to `--os-sku Ubuntu2204` on an existing node pool using the [`az aks nodepool update`][az-aks-nodepool-update] command.
 

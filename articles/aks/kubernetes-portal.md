@@ -1,11 +1,11 @@
 ---
-title: Access Kubernetes resources using the Azure portal
-description: Learn how to access Kubernetes resources to manage an Azure Kubernetes Service (AKS) cluster in the Azure portal.
+title: Access Kubernetes Resources using the Azure Portal
+description: Learn how to access and manage your Azure Kubernetes Service (AKS) resources using the Azure portal.
 ms.topic: how-to
 ms.service: azure-kubernetes-service
 ms.author: schaffererin
 author: schaffererin
-ms.date: 01/13/2026
+ms.date: 01/26/2026
 # Customer intent: "As a cloud administrator, I want to access and manage Kubernetes resources in my Azure Kubernetes Service cluster through the Azure portal, so that I can effectively monitor and deploy applications within my infrastructure."
 ---
 
@@ -15,14 +15,12 @@ In this article, you learn how to access and manage your Azure Kubernetes Servic
 
 ## Prerequisites
 
-* To view Kubernetes resources in the Azure portal, you need an AKS cluster. Any cluster is supported, but if you're using Microsoft Entra integration, your cluster must use [AKS-managed Microsoft Entra integration][aks-managed-aad].
-
-* If your cluster uses legacy Microsoft Entra ID, you can upgrade your cluster in the portal or with the [Azure CLI][cli-aad-upgrade]. You can also [use the Azure portal][aks-quickstart-portal] to create a new AKS cluster.
+- An existing AKS cluster. Any cluster is supported, but if you're using Microsoft Entra integration, your cluster must use [AKS-managed Microsoft Entra integration][aks-managed-aad].
+- If your cluster uses legacy Microsoft Entra ID, you can upgrade your cluster in the portal or with the [Azure CLI][cli-aad-upgrade]. You can also use the [Azure portal][aks-quickstart-portal] to create a new AKS cluster.
 
 ## View Kubernetes resources
 
-1. In the [Azure portal](https://portal.azure.com), navigate to your AKS cluster resource.
-1. From the **Azure services** menu, select your AKS cluster, then select **Kubernetes resources**. The Kubernetes resources list displays the following categories:
+Select **Kubernetes resources**. The Kubernetes resources list displays the following categories:
 
    - **Namespaces** shows information about the namespaces of your cluster.
    - **Workloads** shows information about deployments, pods, replica sets, stateful sets, daemon sets, jobs, and cron jobs deployed to your cluster.
@@ -36,16 +34,16 @@ In this article, you learn how to access and manage your Azure Kubernetes Servic
 
    :::image type="content" source="media/kubernetes-portal/kubernetes-resources.png" alt-text="Screenshot showing the Kubernetes resources displayed in the Azure portal." lightbox="media/kubernetes-portal/kubernetes-resources.png":::
 
-## Deploy a sample application
-
-In this section, we deploy the Azure Store application from the [AKS quickstart][aks-quickstart-portal].
+## Connect to your AKS cluster
 
 To deploy the Azure Store application, you need to connect to your AKS cluster. Follow these steps to connect to your cluster using the Azure portal:
 
 1. From the **Overview** page of your AKS cluster, select **Connect**.
-1. Follow the instructions to connect to your cluster using *Cloud Shell*, *Azure CLI*, or *Run command*.
+1. Follow the instructions to connect to your cluster using _Cloud Shell_, _Azure CLI_, or _Run command_.
 
-### Deploy the Azure Store application
+## Deploy the Azure Store application
+
+In this section, we deploy the Azure Store application from the [AKS quickstart][aks-quickstart-portal].
 
 1. From the **Kubernetes resources** list, select **Services and ingresses**.
 1. Select **Create** > **Apply a YAML**.
@@ -281,16 +279,16 @@ To deploy the Azure Store application, you need to connect to your AKS cluster. 
      type: LoadBalancer
    ```
 
-1. Select **Add**.
+1. Select **Apply**.
 
-   Once the application finishes deploying, you see the following services in the *Services* list:
+    Once the application finishes deploying, you see the following services in the _Services_ list:
 
    - `order-service`
    - `product-service`
    - `rabbitmq`
    - `store-front`
 
-   :::image type="content" source="media/kubernetes-portal/portal-services.png" alt-text="Screenshot of the Azure Store application services displayed in the Azure portal." lightbox="media/kubernetes-portal/portal-services.png":::
+    :::image type="content" source="media/kubernetes-portal/portal-services.png" alt-text="Screenshot of the Azure Store application services displayed in the Azure portal." lightbox="media/kubernetes-portal/portal-services.png":::
 
 ## Monitor deployment insights
 
@@ -324,48 +322,72 @@ If you no longer need the Azure Store application, you can delete the services t
 
 To access the Kubernetes resources, you need access to the AKS cluster, Kubernetes API, and Kubernetes objects. Make sure you're either a **Cluster Administrator** or a user with the appropriate permissions delegated to access the AKS cluster. For more information, see [Access and identity options for AKS][concepts-identity].
 
-### Kubernetes resource viewer is inaccessible
+### Viewing Kubernetes resources is inaccessible
 
 You might need to configure authorized IP ranges to enable the Kubernetes resource view for existing clusters.
 
 > [!TIP]
 > You can add the AKS feature for [**API server authorized IP ranges**](api-server-authorized-ip-ranges.md) to limit API server access to only the firewall's public endpoint. Another option is to update the `--api-server-authorized-ip-ranges`/`-ApiServerAccessAuthorizedIpRange` to include access for a local client computer or the IP address range from which you're browsing the Azure portal. To allow this access, you need the computer's public IPv4 address. You can find this address using the following Azure CLI or Azure PowerShell commands.
 
-# [Azure CLI](#tab/azure-cli)
+#### [Azure CLI](#tab/azure-cli)
 
 1. Retrieve your IP address using the following command:
 
-   ```bash
-   CURRENT_IP=$(dig +short myip.opendns.com @resolver1.opendns.com)
-   ```
+    ```azurecli-interactive
+    CURRENT_IP=$(dig +short myip.opendns.com @resolver1.opendns.com)
+    ```
 
 1. Add your IP address to the AKS approved list using the [`az aks update`][az-aks-update] command with the `--api-server-authorized-ip-ranges` parameter.
 
-   ```azurecli-interactive
-   az aks update --resource-group <resource-group-name> --name <aks-cluster-name> --api-server-authorized-ip-ranges $CURRENT_IP/32
-   ```
+    ```azurecli-interactive
+    az aks update --resource-group <resource-group-name> --name <cluster-name> --api-server-authorized-ip-ranges $CURRENT_IP/32
+    ```
 
-# [Azure PowerShell](#tab/azure-powershell)
+1. After updating your cluster's authorized IP ranges, run the following command to update and merge your kubeconfig:
+
+    ```azurecli-interactive
+    az aks get-credentials --resource-group <resource-group-name> --name <cluster-name>
+    ```
+
+    The expected output informs you of this update:
+
+    ```output
+    Merged "<cluster-name>" as current context ...
+    ```
+
+#### [Azure PowerShell](#tab/azure-powershell)
 
 1. Retrieve your IP address using the following command:
 
-   ```azurepowershell-interactive
-   $CURRENT_IP = (Invoke-RestMethod -Uri http://ipinfo.io/json).ip
-   ```
+    ```azurepowershell-interactive
+    $CURRENT_IP = (Invoke-RestMethod -Uri http://ipinfo.io/json).ip
+    ```
 
 1. Add your IP address to the AKS approved list using the [`Set-AzAksCluster`][set-az-aks-cluster] command with the `-ApiServerAccessAuthorizedIpRange` parameter.
 
+    ```azurepowershell-interactive
+    Set-AzAksCluster -ResourceGroupName <resource-group-name> -Name <cluster-name> -ApiServerAccessAuthorizedIpRange $CURRENT_IP/32
+    ```
+
+1. After updating your cluster's authorized IP ranges, run the following command to update and merge your kubeconfig:
+
    ```azurepowershell-interactive
-   Set-AzAksCluster -ResourceGroupName <resource-group-name> -Name <aks-cluster-name> -ApiServerAccessAuthorizedIpRange $CURRENT_IP/32
+   Get-AzAksCredential -ResourceGroupName <resource-group-name> -Name <cluster-name>
    ```
+
+   The expected output informs you of this update:
+
+    ```output
+    Merged "<cluster-name>" as current context ...
+    ```
 
 ---
 
-If your AKS cluster is configured as a *private cluster*, you must access the Azure portal from a network that can reach the subnet where your AKS cluster resides. Otherwise, AKS resources are inaccessible in the portal due to network connectivity issues. To learn more, see [Access an AKS private cluster](/azure/architecture/guide/security/access-azure-kubernetes-service-cluster-api-server#access-an-aks-private-cluster).
+If your AKS cluster is configured as a _private cluster_, you must access the Azure portal from a network that can reach the subnet where your AKS cluster resides. Otherwise, AKS resources are inaccessible in the portal due to network connectivity issues. To learn more, see [Access an AKS private cluster](/azure/architecture/guide/security/access-azure-kubernetes-service-cluster-api-server#access-an-aks-private-cluster).
 
-## Next steps
+## Related content
 
-This article showed you how to access Kubernetes resources from the Azure portal. For more information about AKS, [Core concepts for Azure Kubernetes Service (AKS)][core-concepts].
+This article showed you how to access Kubernetes resources from the Azure portal. To learn more about AKS concepts, see [Core concepts for Azure Kubernetes Service (AKS)][core-concepts].
 
 <!-- LINKS - internal -->
 [concepts-identity]: concepts-identity.md

@@ -2,6 +2,8 @@
   href: ./index.yml
 - name: What is AKS?
   href: what-is-aks.md
+- name: Compare AKS with other Azure container options
+  href: compare-container-options-with-aks.md
 - name: Get started with AKS
   items:
     - name: Kubernetes basics
@@ -356,7 +358,7 @@
       href: stateful-workload-upgrades.md
     - name: Upgrade scenarios hub
       href: upgrade-scenarios-hub.md
-  - name: Perform upgrades
+  - name: Perform upgrades and rollbacks
     items:
     - name: Upgrade cluster control plane
       href: upgrade-aks-control-plane.md
@@ -370,6 +372,10 @@
         href: upgrade-aks-node-pools-rolling.md#customize-node-surge
       - name: Process node OS updates with kured
         href: upgrade-node-image-kured.md
+      - name: Configure blue-green node pool upgrades
+        href: blue-green-node-pool-upgrade.md
+      - name: Roll back node pool versions
+        href: roll-back-node-pool-version.md
   - name: Automate upgrades
     items:
     - name: Automatically upgrade an AKS cluster
@@ -522,12 +528,22 @@
         items:
           - name: Overview
             href: concepts-network-ingress.md
-          - name: Ingress with the Kubernetes Gateway API
+          - name: Ingress with the Kubernetes Gateway API (preview)
             href: managed-gateway-api.md
+          - name: Use Application Gateway for Containers
+            items:
+              - name: Application Gateway for Containers Overview
+                href: /azure/application-gateway/for-containers/overview?toc=/azure/aks/toc.json&bc=/azure/aks/breadcrumb/toc.json
+              - name: Deploy Application Gateway for Containers Add-on
+                href: /azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon?toc=/azure/aks/toc.json&bc=/azure/aks/breadcrumb/toc.json
           - name: Use application routing add-on
             items:
               - name: Application routing add-on overview
                 href: app-routing.md
+              - name: Kubernetes Gateway API with application routing (preview)
+                href: app-routing-gateway-api.md
+              - name: Secure application routing Gateway API ingress traffic
+                href: app-routing-gateway-api-tls.md
               - name: Advanced application routing add-on configurations (NGINX)
                 href: app-routing-nginx-configuration.md
               - name: Custom domain name and SSL certificate configuration
@@ -536,8 +552,6 @@
                 href: create-nginx-ingress-private-controller.md
               - name: Monitor using Prometheus and Grafana
                 href: app-routing-nginx-prometheus.md
-              - name: Migrate from HTTP application routing to the application routing add-on
-                href: app-routing-migration.md
               - name: Use Application Gateway Ingress Controller add-on
                 href: /azure/application-gateway/tutorial-ingress-controller-add-on-existing?toc=/azure/aks/toc.json&bc=/azure/aks/breadcrumb/toc.json
       - name: Egress
@@ -663,6 +677,12 @@
                     href: container-network-security-wireguard-encryption-concepts.md
                   - name: Set up WireGuard encryption
                     href: how-to-apply-wireguard.md
+              - name: Cilium mTLS encryption
+                items:
+                  - name: Overview
+                    href: container-network-security-cilium-mutual-tls-concepts.md
+                  - name: Set up Cilium mTLS encryption
+                    href: container-network-security-cilium-mutual-tls-how-to.md              
               - name: FQDN-based filtering
                 items:
                   - name: Overview
@@ -697,6 +717,8 @@
             href: concepts-scheduler-configuration.md
           - name: Configure a scheduler profile
             href: configure-aks-scheduler.md
+          - name: Configure node bin packing scheduler profile
+            href: configure-node-binpack-scheduler.md
       - name: Kueue
         items:
           - name: Learn about Kueue for batch scheduling
@@ -792,7 +814,7 @@
           href: secure-container-access.md
     - name: Node security
       items:
-        - name: BYOK for Azure managed disks
+        - name: BYOK for Azure Managed Disks
           href: azure-disk-customer-managed-keys.md
         - name: Enable host-based encryption
           href: enable-host-encryption.md
@@ -838,7 +860,7 @@
           href: update-credentials.md
         - name: Limit access to cluster configuration file
           href: control-kubeconfig-access.md
-        - name: External identity providers (preview)
+        - name: External identity providers
           items:
             - name: External identity provider authentication overview
               href: external-identity-provider-authentication-overview.md
@@ -968,10 +990,14 @@
       href: operator-best-practices-storage.md
     - name: CSI storage drivers
       items:
-        - name: CSI storage drivers overview
+        - name: Overview of CSI storage drivers
           href: csi-storage-drivers.md
-        - name: Use the Azure CSI driver and provision volumes
-          href: azure-csi-driver-volume-provisioning.md
+        - name: Create persistent volumes with Azure Disks CSI driver
+          href: create-volume-azure-disk.md
+        - name: Create persistent volumes with Azure Files CSI driver
+          href: create-volume-azure-files.md
+        - name: Create persistent volumes with Azure Blob storage CSI driver
+          href: create-volume-azure-blob-storage.md
         - name: Migrate from in-tree to CSI driver
           href: csi-migrate-in-tree-volumes.md
     - name: Block storage
@@ -980,7 +1006,7 @@
             items:
                 - name: Use Azure Premium SSD v2 disks
                   href: use-premium-v2-disks.md
-                - name: Use Azure ultra disks
+                - name: Use Azure Ultra Disks
                   href: use-ultra-disks.md
                 - name: Bring your own keys for disks
                   href: azure-disk-customer-managed-keys.md
@@ -1042,10 +1068,6 @@
         href: passive-cold-solution.md
 - name: AI and machine learning
   items:
-    - name: Create Azure AKS infrastructure
-      href: create-aks-infrastructure.md
-    - name: Deploy Open-WebSearch MCP Server on AKS
-      href: openwebsearch-on-aks.md
     - name: Machine learning operations (MLOps)
       items:
         - name: Best practices
@@ -1094,8 +1116,28 @@
               href: ai-toolchain-operator-mcp.md
         - name: Deploy data and ML pipelines with Flyte
           href: use-flyte.md
-    - name: Work with clusters using Copilot
-      href: /azure/copilot/work-aks-clusters?toc/azure/aks/toc.json&bc=/azure/aks/breadcrumb/toc.json
+    - name: Agents and MCP servers
+      items:
+        - name: Agentic CLI for AKS
+          items:
+            - name: Overview
+              href: agentic-cli-for-aks-overview.md
+            - name: Install and use the agentic CLI for AKS
+              href: agentic-cli-for-aks-install.md
+            - name: Troubleshoot agentic CLI for AKS issues
+              href: agentic-cli-for-aks-troubleshoot.md
+            - name: Agentic CLI for AKS FAQ
+              href: agentic-cli-for-aks-faq.yml
+            - name: Service account and workload identity setup
+              href: agentic-cli-for-aks-service-account-workload-identity-setup.md
+        - name: AKS MCP server
+          href: aks-model-context-protocol-server.md
+        - name: Work with clusters using Copilot
+          href: /azure/copilot/work-aks-clusters?toc/azure/aks/toc.json&bc=/azure/aks/breadcrumb/toc.json
+        - name: Create Azure AKS infrastructure
+          href: create-aks-infrastructure.md
+        - name: Deploy Open-WebSearch MCP Server on AKS
+          href: openwebsearch-on-aks.md
     - name: GPUs
       items:
         - name: Use NVIDIA GPUs
@@ -1224,18 +1266,10 @@
       href: best-practices-monitoring-proactive.md
     - name: Configure AKS diagnostics
       href: aks-diagnostics.md
+    - name: Cluster Health Monitor checker (preview)
+      href: cluster-health-monitor.md
     - name: Enable monitoring for AKS clusters
       href: /azure/azure-monitor/containers/kubernetes-monitoring-enable?toc=/azure/aks/toc.json&bc=/azure/aks/breadcrumb/toc.json
-    - name: Agentic CLI for AKS
-      items:
-        - name: Overview
-          href: cli-agent-for-aks-overview.md
-        - name: Install and use the agentic CLI for AKS
-          href: cli-agent-for-aks-install.md
-        - name: Troubleshoot agentic CLI for AKS issues
-          href: cli-agent-for-aks-troubleshoot.md
-        - name: Agentic CLI for AKS FAQ
-          href: cli-agent-for-aks-faq.yml
     - name: Monitor Kubernetes object events
       href: events.md
     - name: Monitor kube-audit events
@@ -1248,7 +1282,7 @@
       items:
         - name: Overview
           href: stateful-workloads-overview.md
-        - name: Deploy a MongoDB cluster
+        - name: Deploy MongoDB using Percona
           items:
             - name: Overview
               href: mongodb-overview.md
@@ -1264,7 +1298,7 @@
               href: upgrade-mongodb-cluster.md
             - name: Monitor with Percona Monitoring and Management
               href: monitor-aks-mongodb.md
-        - name: Deploy a highly available PostgreSQL database
+        - name: Deploy PostgreSQL using CloudNativePG
           items:
             - name: Overview
               href: postgresql-ha-overview.md
@@ -1274,7 +1308,7 @@
               href: deploy-postgresql-ha.md
             - name: Test PostgreSQL
               href: validate-postgresql-ha.md
-        - name: Deploy a Valkey cluster
+        - name: Deploy Valkey
           items:
             - name: Overview
               href: valkey-overview.md
@@ -1304,7 +1338,7 @@
               href: kafka-deploy.md
             - name: Configure monitoring and networking for the Kafka cluster
               href: kafka-configure.md
-        - name: Deploy GitHub Actions using Azure Files
+        - name: Deploy GitHub Actions
           items:
             - name: Overview
               href: github-actions-azure-files-overview.md

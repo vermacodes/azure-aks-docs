@@ -131,7 +131,7 @@ A public IP created by AKS is an AKS-managed resource, meaning AKS manages the l
 Make sure you meet the following requirements before providing your own outbound public IPs or prefixes:
 
 - You must create and own custom public IP addresses. You can't reuse managed public IP addresses created by AKS as a "bring your own custom IP" because it can cause management conflicts.
-- You must ensure the AKS cluster identity has permissions to access the outbound IP, as per the [required public IP permissions list](kubernetes-service-principal.md#networking).
+- You must ensure the AKS cluster identity has permissions to access the outbound IP, as per the [required public IP permissions list](kubernetes-service-principal.md#grant-access-to-networking-resources).
 - Make sure you meet the [prerequisites and constraints](/azure/virtual-network/ip-services/public-ip-address-prefix#limitations) necessary to configure outbound IPs or outbound IP prefixes.
 
 ### Provide your own outbound public IPs
@@ -464,6 +464,21 @@ The following table summarizes the port-specific annotations that can be used to
 | `service.beta.kubernetes.io/port_{port}_health-probe_request-path` | `service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path` | For Http or Https, sets the health probe request path (defaults to /).       |
 | `service.beta.kubernetes.io/port_{port}_health-probe_num-of-probe` | `service.beta.kubernetes.io/azure-load-balancer-health-probe-num-of-probe` | Number of consecutive probe failures before the port is considered unhealthy. |
 | `service.beta.kubernetes.io/port_{port}_health-probe_interval`     | `service.beta.kubernetes.io/azure-load-balancer-health-probe-interval`     | The amount of time between probe attempts.                                    |
+
+## Exclude node pool from Load Balancer backend pool
+
+In certain scenarios, you may want to prevent a node pool from being part of the load balancer’s backend pool. To do this, apply the label `node.kubernetes.io/exclude-from-external-load-balancers=true` to the node pool. 
+
+> [!NOTE]
+> Although the label resides on individual nodes, it must be applied at the node pool level to ensure long-term persistence.
+
+```azurecli-interactive
+az aks nodepool update \
+    --resource-group $RESOURCE_GROUP \
+    --cluster-name $CLUSTER_NAME \
+    --name $NODEPOOL_NAME \
+    --labels node.kubernetes.io/exclude-from-external-load-balancers=true
+```
 
 ## Next steps
 

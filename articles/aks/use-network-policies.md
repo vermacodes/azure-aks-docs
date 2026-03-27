@@ -15,22 +15,15 @@ ms.custom:
 
 # Secure traffic between pods with network policies in Azure Kubernetes Service (AKS)
 
-> [!IMPORTANT]
-> Support for Azure Network Policy Manager (NPM) on **Windows** nodes in AKS ends on **September 30, 2026**.
->
-> This change applies only to customers already onboarded to NPM. **Subscriptions that aren't registered with this feature will no longer be able to onboard**. Existing onboarded customers can continue using NPM until the end-of-support date.
->
-> To ensure your setup continues to receive support, security updates, and deployment compatibility, explore alternative options like [Network Security Groups (NSGs)](./concepts-network.md) on the node level or open-source tools like [Project Calico][calico-support].
+[!INCLUDE [azure-network-policy-manager-windows-retirement](./includes/azure-network-policy-manager-windows-retirement.md)]
 
-> [!IMPORTANT]
-> Support for Azure Network Policy Manager (NPM) on **Linux** nodes in AKS ends on **September 30, 2026**.
->
-> To avoid service disruptions, you need to [migrate AKS clusters running Linux nodes from NPM to Cilium Network Policy](./migrate-from-npm-to-cilium-network-policy.md) by the end-of-support date.
+[!INCLUDE [azure-network-policy-manager-linux-retirement](./includes/azure-network-policy-manager-linux-retirement.md)]
 
-> [!IMPORTANT]
-> Support for kubenet networking on AKS clusters ends on **March 31, 2028**.
->
-> To avoid service disruptions, you need to upgrade to [Azure Container Networking Interface (CNI) Overlay](./concepts-network-azure-cni-overlay.md) by the end-of-support date.
+### Identify impacted clusters
+
+To find AKS clusters with Linux node pools using Azure Network Policy Manager (NPM), run the [Azure Resource Graph query](https://portal.azure.com/?feature.customportal=false#blade/HubsExtension/ArgQueryBlade/query/Resources%20%0A%7C%20where%20type%20%3D%3D%20%22microsoft.containerservice%2Fmanagedclusters%22%20%0A%7C%20mv-expand%20agentPool%20%3D%20properties.agentPoolProfiles%20%0A%7C%20where%20agentPool.osType%20!%3D%20%22Windows%22%20%0A%7C%20extend%20netPol%20%3D%20tolower%28tostring%28properties.networkProfile.networkPolicy%29%29%20%0A%7C%20where%20netPol%20%3D%3D%20%22azure%22%20%0A%7C%20summarize%20by%20name%2C%20location%2C%20resourceGroup%2C%20netPol) that lists all AKS clusters where `agentPool.osType != "Windows"` and `properties.networkProfile.networkPolicy == "azure"`.
+
+[!INCLUDE [kubenet-retirement](./includes/kubenet-retirement.md)]
 
 Install a network policy engine and create Kubernetes network policies to control the flow of traffic between pods in AKS clusters.
 
@@ -50,7 +43,7 @@ Azure provides three network policy engines for enforcing network policies:
 - **Azure Network Policy Manager (NPM)**
 - **Calico** (an open-source network and network security solution founded by [Tigera][tigera])
 
-We recommend using Cilium. Cilium enforces network policy on the traffic using Linux Berkeley Packet Filter (BPF), which is more efficient than _IPTables_.
+We recommend using Cilium, which provides robust support for Kubernetes-native policies, extended features such as [Layer 7 policy](./container-network-security-l7-policy-concepts.md) and [FQDN filtering](./container-network-security-fqdn-filtering-concepts.md), and an eBPF-based dataplane that offers better performance, scalability, and security compared to iptables-based solutions.
 
 To enforce the specified policies, Azure NPM uses _IPTables_ for Linux and _Host Network Service (HNS) ACLPolicies_ for Windows. Policies are translated into sets of allowed and disallowed IP pairs. These pairs are then programmed as `IPTable` or `HNS ACLPolicy` filter rules.
 
@@ -60,7 +53,7 @@ To enforce the specified policies, Azure NPM uses _IPTables_ for Linux and _Host
 | --------------------- | ------------------- | ---------------------------- | ----------------------------------- | -------------- | ------- |
 | Cilium | Linux | Azure CNI | Supports all policy types | [FQDN](./container-network-security-fqdn-filtering-concepts.md), L3/4, [L7](./container-network-security-l7-policy-concepts.md) | Azure support and engineering team |
 | Azure NPM | Linux, Windows Server 2022 | Azure CNI | Supports all policy types | N/A | Azure support and engineering team |
-| Calico | Linux, Windows Server 2019, Windows Server 2022 | Azure CNI (Linux, Windows Server 2019, Windows Server 2022) and kubenet (Linux) | Supports all policy types | While Calico has many features that AKS doesn't block, AKS doesn't test or support them. For more information, see [Calico Network Policy issue](https://github.com/Azure/AKS/issues/4038). | Azure support and engineering team |
+| Calico | Linux, Windows Server 2019, Windows Server 2022 | Azure CNI (Linux, Windows Server 2019, Windows Server 2022) and kubenet (Linux) | Supports all policy types | While Calico has many features that AKS doesn't block, AKS doesn't test or support them. For more information, see [Calico Guidance](https://docs.tigera.io/calico/latest/getting-started/kubernetes/managed-public-cloud/aks-migrate). | Azure support and engineering team |
 
 ## Azure Network Policy Manager limitations (Linux)
 
@@ -119,6 +112,9 @@ Instead of using a system-assigned identity, you can also use a user-assigned id
         --network-policy azure \
         --generate-ssh-keys
     ```
+
+    > [!CAUTION]
+    > Azure Network Policy Manager (NPM) for Linux nodes will be retired on September 30, 2028. For new deployments, we recommend using [Azure CNI Powered by Cilium](./azure-cni-powered-by-cilium.md) with Cilium Network Policy. To migrate existing clusters, see [Migrate from NPM to Cilium Network Policy](./migrate-from-npm-to-cilium-network-policy.md).
 
 ## Create an AKS cluster with Azure Network Policy Manager (Windows Server 2022 (preview))
 

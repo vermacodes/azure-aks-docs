@@ -63,9 +63,19 @@ groups:
     title: Public hub cluster
   - id: private-hub
     title: Private hub cluster
+- id: none-public-private-hub
+  title: Hub cluster configuration
+  prompt: Select your desired configuration
+  pivots:
+  - id: no-hub
+    title: No hub cluster
+  - id: public-hub
+    title: Public hub cluster
+  - id: private-hub
+    title: Private hub cluster
 - id: cluster-namespace-scope
   title: Fleet resource scope
-  prompt: Select your Fleet custom resource scope type
+  prompt: Select your resource scope
   pivots:
   - id: cluster-scope
     title: Cluster-scoped
@@ -200,6 +210,17 @@ groups:
     title: Azure CNI Overlay cluster
   - id: aks-cni-overlay-cluster-dual-stack
     title: Azure CNI Overlay cluster with dual-stack networking
+# Owner: schaffererin
+- id: secure-container-access
+  title: Choose a secure container access method
+  prompt: Choose a secure container access method
+  pivots:
+  - id: user-namespaces
+    title: User namespaces
+  - id: apparmor
+    title: AppArmor
+  - id: seccomp
+    title: Seccomp
 # Owner: shashankbarsin
 - id: kms-key-type
   title: Choose a key management option
@@ -259,6 +280,14 @@ groups:
   - id: non-cilium
     title: Non-Cilium
 # Owner: schaffererin
+- id: kubernetes-service-principal
+  title: Select how you want to interact with Azure
+  prompt: Select how you want to interact with Azure
+  pivots:
+  - id: azure-cli
+    title: Azure CLI
+  - id: azure-powershell
+    title: Azure PowerShell
 - id: aks-desktop
   title: AKS desktop
   prompt: Choose your role in AKS desktop
@@ -267,3 +296,14 @@ groups:
     title: Cluster operator
   - id: developer
     title: Developer
+# Owner: schaffererin
+- id: csi-storage-drivers
+  title: Choose a CSI driver type
+  prompt: Choose a CSI driver type
+  pivots:
+  - id: azure-disks
+    title: Azure Disks
+  - id: azure-files
+    title: Azure Files
+  - id: azure-blob
+    title: Azure Blob

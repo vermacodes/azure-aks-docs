@@ -64,9 +64,13 @@
           href: concepts-automated-deployments.md 
     - name: Multi-cluster networking 
       items:
-        - name: DNS-based load balancing across multiple clusters
+        - name: Multi-cluster networking overview
+          href: concepts-multi-cluster-networking-overview.md
+        - name: Cross-cluster networking for Fleet Manager
+          href: concepts-cross-cluster-networking.md
+        - name: Public endpoint DNS-based load balancing
           href: concepts-dns-load-balancing.md
-        - name: Layer 4 load balancing across multiple clusters
+        - name: Multi-cluster Services with layer 4 load balancing
           href: concepts-l4-load-balancing.md
 - name: How-to guides
   items:
@@ -128,11 +132,11 @@
           href: howto-managed-namespaces.md
         - name: View and access Managed Fleet Namespaces
           href: howto-managed-namespaces-access.md
-    - name: Load balance multi-cluster services
+    - name: Configure and operate multi-cluster networking
       items:
-        - name: Use DNS-based load balancing across multiple clusters
+        - name: Resilient public DNS load balancing
           href: howto-dns-load-balancing.md
-        - name: Multi-cluster Layer 4 Load Balancing
+        - name: Multi-cluster Services with layer 4 load balancing
           href: l4-load-balancing.md
 - name: Resources
   items:

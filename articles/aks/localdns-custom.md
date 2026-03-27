@@ -2,10 +2,10 @@
 title: Configure LocalDNS in Azure Kubernetes Service (AKS)
 description: Learn how to improve your Domain Name System (DNS) resolution performance and resiliency in AKS using localDNS.
 ms.subservice: aks-networking
-author: vaibhavarora
+author: varora24
 ms.author: vaibhavarora
 ms.topic: how-to
-ms.date: 01/13/2026
+ms.date: 01/26/2026
 # Customer intent: As a cluster operator or developer, I want to improve my DNS resolution performance and resiliency for my AKS cluster.
 ---
 
@@ -19,7 +19,7 @@ To learn about what LocalDNS is, including architecture details, and key capabil
 
 When implementing LocalDNS in your AKS clusters, consider the following best practices:
 
-- **Start with a minimal configuration**: Begin with a simple configuration that uses the `Preferred` mode before moving to `Required` mode. This setup allows you to validate that LocalDNS works as expected without breaking your cluster.
+- **Start with a minimal configuration**: Begin with a simple configuration that uses the `Preferred` mode to validate your LocalDNS configuration syntax before moving to `Required` mode. The `Preferred` mode validates your configuration without enabling LocalDNS, allowing you to catch configuration errors early without impacting your cluster.
 
 - **Implement proper caching strategies**: Configure cache settings based on your workload characteristics:
 
@@ -46,11 +46,15 @@ When implementing LocalDNS in your AKS clusters, consider the following best pra
 
 ## Prerequisites
 
-* You must have an existing AKS cluster with Kubernetes versions 1.31 or later to use LocalDNS. If you need an AKS cluster, you can create one using [Azure CLI][aks-quickstart-cli], [Azure PowerShell][aks-quickstart-powershell], or the [Azure portal][aks-quickstart-portal].
-* This article requires version 2.80.0 or later of the Azure CLI. If you're using Azure Cloud Shell, the latest version is already installed.
-* LocalDNS is only supported on node pools running Azure Linux or Ubuntu 22.04 or newer.
+* You must have an existing AKS cluster with Kubernetes versions 1.31 and later to use LocalDNS. If you need an AKS cluster, you can create one using [Azure CLI][aks-quickstart-cli], [Azure PowerShell][aks-quickstart-powershell], or the [Azure portal][aks-quickstart-portal].
+
+* This article requires Azure CLI version 2.80.0 and later. If you're using Azure Cloud Shell, the latest version is already installed.
+
+* LocalDNS is only supported on node pools running Azure Linux or Ubuntu 22.04 and newer.
+
 * The Virtual Machine (VM) SKU used for your node pool must have at least 4 vCPUs (cores) to support LocalDNS.
-* LocalDNS isn't compatible with [applied FQDN filter policies in Advanced Container Networking Services (ACNS)](./how-to-apply-fqdn-filtering-policies.md).
+
+* LocalDNS isn't compatible with applied Fully Qualified Domain Names (FQDN) filter policies in [Advanced Container Networking Services (ACNS)](./how-to-apply-fqdn-filtering-policies.md).
 
 ## Manage LocalDNS on an AKS cluster
 
@@ -135,7 +139,7 @@ LocalDNS uses a JSON-based configuration file _localdnsconfig.json_ to define DN
 
 The default LocalDNS configuration provides a balanced setup that optimizes both internal and external DNS resolution for most AKS workloads. You can use this configuration as a starting point and customize it to better suit your cluster's specific DNS requirements.
 
-When customizing LocalDNS, use the following configuration format as your template. You can add additional server blocks, however adding unsupported or additional top-level properties causes validation failures.
+When customizing LocalDNS, use the following configuration format as your template. You can define extra server blocks as needed, but adding unsupported or nonstandard top-level properties to the configuration results in validation failures.
 
 ```json
 {
@@ -195,7 +199,7 @@ LocalDNS can be enabled in three possible modes that define the extent of enforc
 
 * `Disabled`: Disables the local DNS feature, meaning DNS queries aren't resolved locally on the node.
 
-* `Preferred`: In this mode, AKS manages LocalDNS enablement based on the Kubernetes version of the node pool. The configuration is always validated and included, but LocalDNS isn't enabled unless the correct Kubernetes version is used.
+* `Preferred`: In this mode, AKS validates that your LocalDNS configuration is syntactically correct but **doesn't enable LocalDNS** on the nodes. **However, applying this mode still triggers a node reimage operation**, allowing you to test your configuration for errors without affecting DNS resolution in your cluster.
 
 The following table summarizes LocalDNS behavior for each mode and Kubernetes version:
 
@@ -203,6 +207,9 @@ The following table summarizes LocalDNS behavior for each mode and Kubernetes ve
 |--|--|--|--|
 | Less than 1.31 | Not supported | Not supported | Not supported |
 | Greater than 1.31 | Config validated, not installed | Installed and enforced | Config validated, not installed |
+
+> [!NOTE]
+> The `Preferred` mode currently serves as a validation-only mode. In a future Kubernetes version, this mode will transition to automatically enabling LocalDNS. For production deployments today, use `Required` mode to enable LocalDNS.
 
 ### Server blocks and supported plugins for LocalDNS
 
@@ -237,8 +244,6 @@ When creating your LocalDNS configuration, be aware of these validation rules to
 
 > [!NOTE]
 > These validation rules are enforced during configuration deployment. Violating them causes the LocalDNS configuration to fail validation.
-
----
 
 ## Create a custom server block in LocalDNS
 
@@ -301,21 +306,59 @@ If DNS queries to specific domains are failing after enabling LocalDNS:
 1. Temporarily try removing domain-specific overrides and using only the default `.` configuration.
 1. Check if the issue occurs with both User Datagram Protocol (UDP) and Transmission Control Protocol (TCP) by adjusting the `protocol` setting.
 
-### Update VNet DNS servers for LocalDNS
+### Update Vnet DNS servers for LocalDNS
 
-When you update custom DNS servers directly in the VNet configuration (using the Azure portal or CLI), these changes aren't automatically applied to your AKS cluster nodes. This happens because updating DNS settings at the VNet level only informs the Network Resource Provider (NRP), but doesn't notify the AKS Resource Provider. As a result, AKS nodes continue to use the previous DNS server settings until further action is taken.
+When you update custom DNS servers directly in the Vnet configuration (using the Azure portal or CLI), these changes aren't automatically applied to your AKS cluster nodes. Updating DNS settings at the Vnet level only informs the Network Resource Provider (NRP), but doesn't notify the AKS Resource Provider. As a result, AKS nodes continue to use the previous DNS server settings until further action is taken.
 
-To ensure AKS nodes pick up the new VNet DNS server settings:
+To ensure AKS nodes pick up the new Vnet DNS server settings:
 
-1. Update the VNet DNS configuration using the Azure portal or APIs as needed.
+1. Update the Vnet DNS configuration using the Azure portal or APIs as needed.
 
-1. Reimage the node pool through the AKS Resource Provider to apply and persist the DNS changes:
+1. Use the AKS Resource Provider to reimage the node pool, ensuring that the updated DNS settings
+   are applied and retained:
 
    ```azurecli-interactive
    az aks nodepool upgrade --resource-group myResourceGroup --cluster-name myAKSCluster --name mynodepool --node-image-only
    ```
 
 This process ensures the AKS Resource Provider is aware of the DNS changes and applies them to all nodes in the node pool.
+
+### DNS Resolution is blocked when using Azure CNI Powered by Cilium (ACPC) 
+If you deploy Cilium Network Policies in your cluster, you must explicitly allow pod egress to the LocalDNS IP addresses.
+
+Network policies enforce a default‑deny model for destinations that aren’t specified, so DNS traffic to LocalDNS is blocked unless it’s explicitly permitted.
+
+- On ACPC <=v1.16 with k8s <=1.31, this can be achieved by a CIDR-based policy.
+- On ACPC >=v1.17 with K8s >=1.32, a CNP allowing egress to host entities can be used.
+
+The following CNP can be used to allow the traffic across all versions:
+```yaml
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: "allow-azure-dns-egress"
+  namespace: default
+spec:
+  endpointSelector:
+    matchLabels: {} # This selects ALL pods in the namespace
+  egress:
+    - toCIDR:
+        - 169.254.10.0/24
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    - toEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+```
 
 ## Next steps
 

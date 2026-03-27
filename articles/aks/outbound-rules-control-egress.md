@@ -65,7 +65,7 @@ The following network and FQDN/application rules are required for an AKS cluster
 
 | Destination FQDN                 | Port            | Use      |
 |----------------------------------|-----------------|----------|
-| **`*.hcp.<location>.azmk8s.io`** | **`HTTPS:443`** | Required for Node <-> API server communication. Replace *\<location\>* with the region where your AKS cluster is deployed. This is required for clusters with *konnectivity-agent* enabled. Konnectivity also uses Application-Layer Protocol Negotiation (ALPN) to communicate between agent and server. Blocking or rewriting the ALPN extension will cause a failure. This isn't required for [private clusters][private-clusters]. |
+| **`*.hcp.<location>.azmk8s.io`** | **`HTTPS:443`** | Required for Node <-> API server communication. Replace *\<location\>* with the region where your AKS cluster is deployed. This is required for clusters with *konnectivity-agent* enabled. Konnectivity also uses Application-Layer Protocol Negotiation (ALPN) to communicate between agent and server. Blocking or rewriting the ALPN extension will cause a failure. [Private clusters][private-clusters] use the Konnectivity tunnel. However, this rule is not required because communication between the nodes and the API server flows over private networking. |
 | **`mcr.microsoft.com`**          | **`HTTPS:443`** | Required to access images in Microsoft Container Registry (MCR). This registry contains first-party images/charts (for example, coreDNS, etc.). These images are required for the correct creation and functioning of the cluster, including scale and upgrade operations.  |
 | **`*.data.mcr.microsoft.com`**, **`mcr-0001.mcr-msedge.net`**   | **`HTTPS:443`** | Required for MCR storage backed by the Azure content delivery network (CDN). |
 | **`management.azure.com`**       | **`HTTPS:443`** | Required for Kubernetes operations against the Azure API. |
@@ -313,7 +313,7 @@ For information about retired Microsoft Defender for Cloud features, see [Micros
 
 ### Istio-based service mesh add-on
 
-In Istio=based service mesh add-on, if you are setting up istiod with a Plugin Certificate Authority (CA) or if you are setting up secure ingress gateway, Azure Key Vault provider for Secrets Store CSI Driver is required for these features. Outbound network requirements for Azure Key Vault provider for Secrets Store CSI Driver can be found [here][akv-outbound].
+If you are using the [Istio-based service mesh add-on][istio-addon] and setting up Istio with a [plug-in certificate authority (CA)][istio-plugin-ca] or [secure ingress gateways][istio-secure-gateways], Azure Key Vault provider for Secrets Store CSI Driver is required for these features. Outbound network requirements for Azure Key Vault provider for Secrets Store CSI Driver can be found [here][akv-outbound].
 
 ### Application routing add-on
 
@@ -331,6 +331,9 @@ If you want to restrict how pods communicate between themselves and East-West tr
 [use-network-policies]: ./use-network-policies.md
 [network-isolated-cluster]: ./concepts-network-isolated.md
 [akv-outbound]: #azure-key-vault-provider-for-secrets-store-csi-driver
+[istio-addon]: ./istio-deploy-addon.md
+[istio-plugin-ca]: ./istio-plugin-ca.md
+[istio-secure-gateways]: ./istio-secure-gateway.md
 
 <!-- LINKS - external -->
 

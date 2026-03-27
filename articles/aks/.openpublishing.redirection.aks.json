@@ -82,33 +82,39 @@
         },
         {
             "source_path_from_root": "/articles/aks/azure-blob-csi.md",
-            "redirect_url": "/azure/aks/azure-csi-driver-volume-provisioning",
+            "redirect_url": "/azure/aks/csi-storage-drivers",
             "redirect_document_id": false
         },
         {
             "source_path_from_root": "/articles/aks/azure-disk-csi.md",
-            "redirect_url": "/azure/aks/azure-csi-driver-volume-provisioning",
+            "redirect_url": "/azure/aks/csi-storage-drivers",
             "redirect_document_id": false
         },
         {
             "source_path_from_root": "/articles/aks/azure-files-csi.md",
-            "redirect_url": "/azure/aks/azure-csi-driver-volume-provisioning",
+            "redirect_url": "/azure/aks/csi-storage-drivers",
             "redirect_document_id": false
         },
         {
             "source_path_from_root": "/articles/aks/azure-csi-blob-storage-provision.md",
-            "redirect_url": "/azure/aks/azure-csi-driver-volume-provisioning",
+            "redirect_url": "/azure/aks/create-volume-azure-blob-storage",
             "redirect_document_id": false
         },
         {
             "source_path_from_root": "/articles/aks/azure-csi-disk-storage-provision.md",
-            "redirect_url": "/azure/aks/azure-csi-driver-volume-provisioning",
+            "redirect_url": "/azure/aks/create-volume-azure-disk",
             "redirect_document_id": false
         },
         {
             "source_path_from_root": "/articles/aks/azure-csi-files-storage-provision.md",
-            "redirect_url": "/azure/aks/azure-csi-driver-volume-provisioning",
+            "redirect_url": "/azure/aks/create-volume-azure-files",
             "redirect_document_id": false
+        },
+        {
+            "source_path_from_root": "/articles/aks/azure-csi-driver-volume-provisioning.md",
+            "redirect_url": "/azure/aks/csi-storage-drivers",
+            "redirect_document_id": false
+
         },
         {
             "source_path_from_root": "/articles/aks/azure-files.md",
@@ -546,6 +552,11 @@
             "redirect_document_id": false
         },
         {
+            "source_path_from_root": "/articles/aks/app-routing-migration.md",
+            "redirect_url": "/azure/aks/app-routing-gateway-api",
+            "redirect_document_id": false
+        },
+        {
             "source_path_from_root": "/articles/aks/windows-container-cli.md",
             "redirect_url": "/azure/aks/learn/quick-windows-container-deploy-cli",
             "redirect_document_id": false
@@ -715,6 +726,31 @@
             "source_path_from_root": "/articles/aks/use-pod-security-policies.md",
             "redirect_url": "/azure/aks/use-psa",
             "redirect_document_id": false
+        },
+        {
+            "source_path_from_root": "/articles/aks/cli-agent-for-aks-faq.yml",
+            "redirect_url": "/azure/aks/agentic-cli-for-aks-faq",
+            "redirect_document_id": true
+        },
+        {
+            "source_path_from_root": "/articles/aks/cli-agent-for-aks-install.md",
+            "redirect_url": "/azure/aks/agentic-cli-for-aks-install",
+            "redirect_document_id": true
+        },
+        {
+            "source_path_from_root": "/articles/aks/cli-agent-for-aks-overview.md",
+            "redirect_url": "/azure/aks/agentic-cli-for-aks-overview",
+            "redirect_document_id": true
+        },
+        {
+            "source_path_from_root": "/articles/aks/cli-agent-for-aks-service-account-workload-identity-setup.md",
+            "redirect_url": "/azure/aks/agentic-cli-for-aks-service-account-workload-identity-setup",
+            "redirect_document_id": true
+        },
+        {
+            "source_path_from_root": "/articles/aks/cli-agent-for-aks-troubleshoot.md",
+            "redirect_url": "/azure/aks/agentic-cli-for-aks-troubleshoot",
+            "redirect_document_id": true
         }
      ]
 }

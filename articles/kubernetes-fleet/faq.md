@@ -1,7 +1,7 @@
 ---
 title: "Frequently asked questions - Azure Kubernetes Fleet Manager"
 description: This article covers the frequently asked questions for Azure Kubernetes Fleet Manager
-ms.date: 01/08/2026
+ms.date: 03/25/2026
 author: sjwaight
 ms.author: simonwaight
 ms.service: azure-kubernetes-fleet-manager
@@ -23,9 +23,9 @@ Fleet Manager is a regional resource. Support for region failover for disaster r
 
 ### How many clusters can I join to Fleet Manager?
 
-Fleet Manager (with or without a hub cluster) supports joining up to 200 Kubernetes clusters. Member clusters can be a mix of AKS and Arc-enabled Kubernetes.
+Fleet Manager (with or without a hub cluster) supports joining up to 500 Kubernetes clusters. Member clusters can be a mix of AKS and Arc-enabled Kubernetes.
 
-If you would like Fleet Manager to support more than 200 clusters, [add feedback](https://github.com/Azure/AKS/issues/5066).
+If you would like Fleet Manager to support more than 500 clusters, [add feedback](https://github.com/Azure/AKS/issues/5066).
 
 ### What AKS clusters can be joined as members?
 
