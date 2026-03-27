@@ -1128,6 +1128,8 @@
               href: agentic-cli-for-aks-troubleshoot.md
             - name: Agentic CLI for AKS FAQ
               href: agentic-cli-for-aks-faq.yml
+            - name: Service account and workload identity setup
+              href: agentic-cli-for-aks-service-account-workload-identity-setup.md
         - name: AKS MCP server
           href: aks-model-context-protocol-server.md
         - name: Work with clusters using Copilot
@@ -1264,6 +1266,8 @@
       href: best-practices-monitoring-proactive.md
     - name: Configure AKS diagnostics
       href: aks-diagnostics.md
+    - name: Cluster Health Monitor checker (preview)
+      href: cluster-health-monitor.md
     - name: Enable monitoring for AKS clusters
       href: /azure/azure-monitor/containers/kubernetes-monitoring-enable?toc=/azure/aks/toc.json&bc=/azure/aks/breadcrumb/toc.json
     - name: Monitor Kubernetes object events
