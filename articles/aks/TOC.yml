@@ -1122,11 +1122,11 @@
           items:
             - name: Overview
               href: agentic-cli-for-aks-overview.md
-            - name: Install and use the agentic CLI for AKS
+            - name: Install the agentic CLI for AKS
               href: agentic-cli-for-aks-install.md
-            - name: Troubleshoot agentic CLI for AKS issues
+            - name: Troubleshooting
               href: agentic-cli-for-aks-troubleshoot.md
-            - name: Agentic CLI for AKS FAQ
+            - name: FAQ
               href: agentic-cli-for-aks-faq.yml
             - name: Service account and workload identity setup
               href: agentic-cli-for-aks-service-account-workload-identity-setup.md
