@@ -63,15 +63,16 @@ kubectl describe configmap large-cluster-control-plane-scaling-status -n kube-sy
 
 Kubernetes clients are application components, such as operators or monitoring agents, that run in the cluster and communicate with the kube-apiserver to read or modify resources. It's important to optimize how these clients behave to reduce the load they place on the kube-apiserver and the kubernetes control plane. 
 
-The number of requests actively being processed by the API server at any given moment is determined by values by the values specified by the --max-requests-inflight and --max-mutating-requests-inflight flags. AKS uses the default values of 400 and 200 requests for these flags, allowing a total of 600 requests to be dispatched at a given time. However, as we scale the api server to larger sizes we correspondingly increase the inflight requests too. APF specifies how these inflight request quota is further sub-divided among different request types
+The number of requests actively being processed by the API server at any given moment is determined by --max-requests-inflight and --max-mutating-requests-inflight flags. AKS uses the default values of 400 and 200 requests for these flags, allowing a total of 600 requests to be dispatched at a given time. As we scale the api server to larger sizes we correspondingly increase the inflight requests too.
 
-Two Kubernetes object types, [PriorityLevelConfiguration and FlowSchema (APF)](https://kubernetes.io/docs/concepts/cluster-administration/flow-control/), determine how the API server divides total request capacity across request types. These objects are managed automatically by the API server, and AKS uses the default configuration. Each PriorityLevelConfiguration is assigned a share of the total allowed requests. For example, workload-high is allocated 98 of the 600 total requests. To view the PriorityLevelConfiguration objects in your cluster and their allocated request shares, run the following command.
+Two Kubernetes object types, [PriorityLevelConfiguration and FlowSchema (APF)](https://kubernetes.io/docs/concepts/cluster-administration/flow-control/), determine how the API server divides total request capacity across request types. AKS uses the default configuration. 
+
+Each PriorityLevelConfiguration is assigned a share of the total allowed requests. To view the PriorityLevelConfiguration objects in your cluster and their allocated request shares, run the following command.
 
 ```bash
 kubectl get --raw /metrics | grep apiserver_flowcontrol_nominal_limit_seats
 ```
-
-The second object type is FlowSchema. It maps API server requests to a PriorityLevelConfiguration. If multiple FlowSchema objects match a request, the API server selects the one with the lowest matching precedence.
+FlowSchema maps API server requests to a PriorityLevelConfiguration. If multiple FlowSchema objects match a request, the API server selects the one with the lowest matching precedence.
 
 The mapping of FlowSchemas to PriorityLevelConfigurations can be viewed using this command:
 
@@ -92,13 +93,18 @@ LIST calls issued by unoptimized clients are often one of the biggest factors li
 - **Consider the number of objects (CRs) you expect to eventually exist** when defining a new resource type (CRD).
 - **The load on etcd and API server primarily relies on the size of the response**. - This guidance applies whether the client issues a small number of LIST requests for large objects or a large number of LIST requests for smaller objects
 
-#### Use Shared Informers
+#### Use Informers
 
 - If your code needs to maintain an updated list of objects in memory, using an [informer](https://pkg.go.dev/k8s.io/client-go/informers) from the client-go library will give you benefits of watching for changes to the resources based on events instead of polling for changes. This is the best approach to avoid unoptimized and repeated LISTs.
 
 #### Use API Server Cache
 
-- Use resourceVersion=0 to return results from the API server cache. This can prevent objects being fetched from etcd thereby reducing etcd load, but it does not support pagination.
+- Use resourceVersion=0 to return results from the API server cache. This can prevent objects being fetched from etcd thereby reducing etcd load, **but it does not support pagination**.
+
+```
+/api/v1/namespaces/default/pods?resourceVersion=0
+```
+
 
 #### Efficient Kubernetes API usage
 
@@ -125,10 +131,10 @@ Use watch with a resourceVersion set to be the most recent known value received 
 **Unoptimized LIST:**
 
 ```
-/api/v1/namespaces/default/pods
+/api/v1/pods
 ```
 
-- **Use pagination** to reduce the size of the LIST responses. The example below limits the number of retured objects to 100 using the limit arguement.
+- **Use pagination** to reduce the size of LIST responses if the client must fetch data from etcd. The following example uses the limit argument to restrict the response to 100 objects.
 
 ```
 /api/v1/namespaces/default/pods?fieldSelector=status.phase=Running&limit=100
@@ -151,7 +157,7 @@ kubectl get pods -n default --chunk-size=100
   ``` 
   lease_duration > renew_deadline > retry_period
   ```
-- **Consider the number of running instances of your client application**. There is a significant difference between a single controller listing objects and a DaemonSet with one pod on every node doing the same thing. If multiple instances of your client application periodically list large numbers of objects, the solution won't scale efficiently in large clusters.
+- **Consider the number of running instances of your client application**. There is a significant difference between a single controller listing objects and a DaemonSet with one pod on every node doing the same thing. If multiple instances of your client application periodically list large numbers of objects, the solution won't scale well in large clusters.
   - On clusters with thousands of nodes, creating a new DaemonSet, updating a DaemonSet, or increasing the number of nodes can result in a high load placed on the control plane. If DaemonSet pods issue expensive API server requests on pod start-up, they can cause high resource use on the control plane from a large number of concurrent requests.
   - Use a RollingUpdate strategy to roll out new DaemonSet pods gradually. When the DaemonSet template is updated, the controller replaces old pods with new ones in a controlled manner. When rolling update strategy isn't explciitly configured , Kubernetes will default to a creating a RollingUpdate with maxUnavailable as 1, maxSurge as 0, and minReadySeconds as 0s. Refer to the following example.
     ```yaml
@@ -164,6 +170,9 @@ kubectl get pods -n default --chunk-size=100
     ```
   - The RollingUpdate strategy only applies to existing DaemonSet pods. It does not limit the impact of adding new nodes, which creates additional DaemonSet pods, or deploying entirely new DaemonSets
 
+> [!NOTE]
+> You can analyze API server traffic and client behavior through Kube Audit logs. For more information, see [Troubleshoot the Kubernetes control plane](/troubleshoot/azure/azure-kubernetes/troubleshoot-apiserver-etcd).
+
 ### Etcd Optimizations
 
 - **Keep the overall Etcd size small** and do not use Etcd as a regular database. If your etcd database size is large (> 1Gb) consider utilizing some of object size reduction techniques listed below
@@ -171,12 +180,12 @@ kubectl get pods -n default --chunk-size=100
 - Split large secrets or ConfigMaps into smaller, more manageable pieces
 - Cleanup unused objects
   - Delete stale Jobs and completed Pods. Use ttlSecondsAfterFinished on Jobs so finished objects are removed automatically.
-  - Make sure controllers set ownerReferences.This enables Kubernetes garbage collection remove dependent objects automatically when the parent resource is deleted.
+  - Make sure controllers set ownerReferences. This enables Kubernetes garbage collection remove dependent objects automatically when the parent resource is deleted.
   - Limit CronJob history by setting successfulJobsHistoryLimit and failedJobsHistoryLimit to keep only a small number of completed Job records.
   - Reduce Deployment rollout history. Old ReplicaSets are stored as API objects too. The default value is 10.
 - Reduce helm revision history
 
-You can analyze API server traffic and client behavior through Kube Audit logs. For more information, see [Troubleshoot the Kubernetes control plane](/troubleshoot/azure/azure-kubernetes/troubleshoot-apiserver-etcd).
+
 
 ## Azure API and Platform throttling
 
