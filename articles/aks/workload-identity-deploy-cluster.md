@@ -1,5 +1,5 @@
 ---
-title: Deploy and configure an Azure Kubernetes Service (AKS) cluster with Microsoft Entra Workload ID
+title: Deploy and Configure an Azure Kubernetes Service (AKS) Cluster with Microsoft Entra Workload ID
 description: This article shows you how to deploy an AKS cluster and configure it with Microsoft Entra Workload ID, including creating a managed identity, Kubernetes service account, and federated identity credential.
 author: davidsmatlak
 ms.author: davidsmatlak
@@ -33,14 +33,14 @@ In this article, you learn how to deploy and configure an Azure Kubernetes Servi
 
 ## Create a resource group
 
-- Create a resource group using the [`az group create`][az-group-create] command.
+Create a resource group using the [`az group create`][az-group-create] command.
 
-    ```azurecli-interactive
-    export RANDOM_ID="$(openssl rand -hex 3)"
-    export RESOURCE_GROUP="myResourceGroup$RANDOM_ID"
-    export LOCATION="<your-preferred-region>"
-    az group create --name "${RESOURCE_GROUP}" --location "${LOCATION}"
-    ```
+```azurecli-interactive
+export RANDOM_ID="$(openssl rand -hex 3)"
+export RESOURCE_GROUP="myResourceGroup$RANDOM_ID"
+export LOCATION="<your-preferred-region>"
+az group create --name "${RESOURCE_GROUP}" --location "${LOCATION}"
+```
 
 ## Enable OIDC issuer and Microsoft Entra Workload ID on an AKS cluster
 
@@ -48,52 +48,52 @@ You can enable OIDC issuer and Microsoft Entra Workload ID on a new or existing 
 
 ### [Create a new AKS cluster](#tab/new-cluster)
 
-- Create an AKS cluster using the [`az aks create`][az-aks-create] command with the `--enable-oidc-issuer` parameter to enable OIDC issuer and the `--enable-workload-identity` parameter to enable Microsoft Entra Workload ID. The following example creates a cluster with a single node:
+Create an AKS cluster using the [`az aks create`][az-aks-create] command with the `--enable-oidc-issuer` parameter to enable OIDC issuer and the `--enable-workload-identity` parameter to enable Microsoft Entra Workload ID. The following example creates a cluster with a single node:
 
-    ```azurecli-interactive
-    export CLUSTER_NAME="myAKSCluster$RANDOM_ID"
-    az aks create \
-        --resource-group "${RESOURCE_GROUP}" \
-        --name "${CLUSTER_NAME}" \
-        --enable-oidc-issuer \
-        --enable-workload-identity \
-        --generate-ssh-keys
-    ```
+```azurecli-interactive
+export CLUSTER_NAME="myAKSCluster$RANDOM_ID"
+az aks create \
+    --resource-group "${RESOURCE_GROUP}" \
+    --name "${CLUSTER_NAME}" \
+    --enable-oidc-issuer \
+    --enable-workload-identity \
+    --generate-ssh-keys
+```
 
-    After a few minutes, the command completes and returns JSON-formatted information about the cluster.
+After a few minutes, the command completes and returns JSON-formatted information about the cluster.
 
 ### [Update an existing AKS cluster](#tab/existing-cluster)
 
-- Update an existing AKS cluster to enable OIDC issuer and Microsoft Entra Workload ID using the [`az aks update`][az-aks-update] command with the `--enable-oidc-issuer` and the `--enable-workload-identity` parameters.
+Update an existing AKS cluster to enable OIDC issuer and Microsoft Entra Workload ID using the [`az aks update`][az-aks-update] command with the `--enable-oidc-issuer` and the `--enable-workload-identity` parameters.
 
-    ```azurecli-interactive
-    az aks update \
-        --resource-group "${RESOURCE_GROUP}" \
-        --name "${CLUSTER_NAME}" \
-        --enable-oidc-issuer \
-        --enable-workload-identity
-    ```
+```azurecli-interactive
+az aks update \
+    --resource-group "${RESOURCE_GROUP}" \
+    --name "${CLUSTER_NAME}" \
+    --enable-oidc-issuer \
+    --enable-workload-identity
+```
 
 ---
 
 ## Retrieve the OIDC issuer URL
 
-- Get the OIDC issuer URL and save it to an environmental variable using the [`az aks show`][az-aks-show] command.
+Get the OIDC issuer URL using the [`az aks show`][az-aks-show] command and save it to an environmental variable.
 
-    ```azurecli-interactive
-    export AKS_OIDC_ISSUER="$(az aks show --name "${CLUSTER_NAME}" \
-        --resource-group "${RESOURCE_GROUP}" \
-        --query "oidcIssuerProfile.issuerUrl" \
-        --output tsv)"
-    ```
+```azurecli-interactive
+export AKS_OIDC_ISSUER="$(az aks show --name "${CLUSTER_NAME}" \
+    --resource-group "${RESOURCE_GROUP}" \
+    --query "oidcIssuerProfile.issuerUrl" \
+    --output tsv)"
+```
 
-    The environment variable should contain the issuer URL, similar to the following example:
+The environment variable should contain the issuer URL, similar to the following example:
 
-    ```output
-    https://eastus.oic.prod-aks.azure.com/00000000-0000-0000-0000-000000000000/11111111-1111-1111-1111-111111111111/
-    ```
+```output
+https://eastus.oic.prod-aks.azure.com/00000000-0000-0000-0000-000000000000/11111111-1111-1111-1111-111111111111/
+```
 
-    By default, the issuer is set to use the base URL `https://{region}.oic.prod-aks.azure.com/{tenant_id}/{uuid}`, where the value for `{region}` matches the location to which the AKS cluster is deployed. The value `{uuid}` represents the OIDC key, which is a randomly generated and immutable GUID for each cluster.
+By default, the issuer is set to use the base URL `https://{region}.oic.prod-aks.azure.com/{tenant_id}/{uuid}`, where the value for `{region}` matches the location to which the AKS cluster is deployed. The value `{uuid}` represents the OIDC key, which is a randomly generated and immutable GUID for each cluster.
 
 ## Create a managed identity
 
@@ -150,7 +150,7 @@ You can enable OIDC issuer and Microsoft Entra Workload ID on a new or existing 
     az aks get-credentials --name "${CLUSTER_NAME}" --resource-group "${RESOURCE_GROUP}"
     ```
 
-1. Create a Kubernetes service account and annotate it with the client ID of the managed identity by applying the following manifest using the `kubectl apply` command:
+1. Create a Kubernetes service account and annotate it with the client ID of the managed identity by applying the following manifest using the `kubectl apply` command.
 
     ```azurecli-interactive
     export SERVICE_ACCOUNT_NAME="workload-identity-sa$RANDOM_ID"
@@ -174,21 +174,21 @@ You can enable OIDC issuer and Microsoft Entra Workload ID on a new or existing 
 
 ## Create the federated identity credential
 
-- Create a federated identity credential between the managed identity, the service account issuer, and the subject using the [`az identity federated-credential create`][az-identity-federated-credential-create] command.
+Create a federated identity credential between the managed identity, the service account issuer, and the subject using the [`az identity federated-credential create`][az-identity-federated-credential-create] command.
 
-    ```azurecli-interactive
-    export FEDERATED_IDENTITY_CREDENTIAL_NAME="myFedIdentity$RANDOM_ID"
-    az identity federated-credential create \
-        --name ${FEDERATED_IDENTITY_CREDENTIAL_NAME} \
-        --identity-name "${USER_ASSIGNED_IDENTITY_NAME}" \
-        --resource-group "${RESOURCE_GROUP}" \
-        --issuer "${AKS_OIDC_ISSUER}" \
-        --subject system:serviceaccount:"${SERVICE_ACCOUNT_NAMESPACE}":"${SERVICE_ACCOUNT_NAME}" \
-        --audience api://AzureADTokenExchange
-    ```
+```azurecli-interactive
+export FEDERATED_IDENTITY_CREDENTIAL_NAME="myFedIdentity$RANDOM_ID"
+az identity federated-credential create \
+    --name ${FEDERATED_IDENTITY_CREDENTIAL_NAME} \
+    --identity-name "${USER_ASSIGNED_IDENTITY_NAME}" \
+    --resource-group "${RESOURCE_GROUP}" \
+    --issuer "${AKS_OIDC_ISSUER}" \
+    --subject system:serviceaccount:"${SERVICE_ACCOUNT_NAMESPACE}":"${SERVICE_ACCOUNT_NAME}" \
+    --audience api://AzureADTokenExchange
+```
 
-    > [!NOTE]
-    > It takes a few seconds for the federated identity credential to propagate after it's added. If a token request is made immediately after adding the federated identity credential, the request might fail until the cache is refreshed. To avoid this issue, you can add a slight delay after adding the federated identity credential.
+> [!NOTE]
+> It takes a few seconds for the federated identity credential to propagate after it's added. If a token request is made immediately after adding the federated identity credential, the request might fail until the cache is refreshed. To avoid this issue, you can add a slight delay after adding the federated identity credential.
 
 For more information about federated identity credentials in Microsoft Entra, see [Overview of federated identity credentials in Microsoft Entra ID][federated-identity-credential].
 
@@ -196,7 +196,7 @@ For more information about federated identity credentials in Microsoft Entra, se
 
 The following example shows how to use the Azure role-based access control (Azure RBAC) permission model to grant the pod access to the key vault. For more information about the Azure RBAC permission model for Azure Key Vault, see [Grant permission to applications to access an Azure key vault using Azure RBAC](/azure/key-vault/general/rbac-guide).
 
-1. Create a key vault with purge protection and Azure RBAC authorization enabled using the [`az keyvault create`][az-keyvault-create] command. You can also use an existing key vault if it's configured for both purge protection and Azure RBAC authorization:
+1. Create a key vault with purge protection and Azure RBAC authorization enabled using the [`az keyvault create`][az-keyvault-create] command. You can also use an existing key vault if it's configured for both purge protection and Azure RBAC authorization.
 
     ```azurecli-interactive
     export KEYVAULT_NAME="keyvault-workload-id$RANDOM_ID" # Ensure the key vault name is between 3-24 characters
@@ -265,7 +265,7 @@ The following example shows how to use the Azure role-based access control (Azur
         --assignee-principal-type ServicePrincipal
     ```
 
-1. Create an environment variable for the key vault URL using the [`az keyvault show`][az-keyvault-show] command:
+1. Create an environment variable for the key vault URL using the [`az keyvault show`][az-keyvault-show] command.
 
     ```azurecli-interactive
     export KEYVAULT_URL="$(az keyvault show \
@@ -334,18 +334,18 @@ The following example shows how to use the Azure role-based access control (Azur
     ```
 
     > [!IMPORTANT]
-    > Azure RBAC role assignments can take up to 10 minutes to propagate. If the pod is unable to access the secret, you might need to wait for the role assignment to propagate. For more information, see [Troubleshoot Azure RBAC](/azure/role-based-access-control/troubleshooting#).
+    > Azure RBAC role assignments can take up to 10 minutes to propagate. If the pod is unable to access the secret, you might need to wait for the role assignment to propagate. For more information, see [Troubleshoot Azure RBAC](/azure/role-based-access-control/troubleshooting).
 
 ## Disable Microsoft Entra Workload ID on an AKS cluster
 
-- Disable Microsoft Entra Workload ID on the AKS cluster where it's been enabled and configured, update the AKS cluster using the [`az aks update`][az-aks-update] command with the `--disable-workload-identity` parameter.
+Disable Microsoft Entra Workload ID on the AKS cluster where it's been enabled and configured, update the AKS cluster using the [`az aks update`][az-aks-update] command with the `--disable-workload-identity` parameter.
 
-    ```azurecli-interactive
-    az aks update \
-        --resource-group "${RESOURCE_GROUP}" \
-        --name "${CLUSTER_NAME}" \
-        --disable-workload-identity
-    ```
+```azurecli-interactive
+az aks update \
+    --resource-group "${RESOURCE_GROUP}" \
+    --name "${CLUSTER_NAME}" \
+    --disable-workload-identity
+```
 
 ## Related content
 
@@ -370,3 +370,11 @@ The [Service Connector](/azure/service-connector/overview) integration helps sim
 [az-identity-federated-credential-create]: /cli/azure/identity/federated-credential#az-identity-federated-credential-create
 [workload-identity-migration]: workload-identity-migrate-from-pod-identity.md
 [azure-identity-libraries]: /azure/active-directory/develop/reference-v2-libraries
+[az-aks-show]: /cli/azure/aks#az-aks-show
+[az-account-show]: /cli/azure/account#az-account-show
+[az-identity-show]: /cli/azure/identity#az-identity-show
+[az-keyvault-create]: /cli/azure/keyvault#az-keyvault-create
+[az-keyvault-show]: /cli/azure/keyvault#az-keyvault-show
+[az-ad-signed-in-user-show]: /cli/azure/ad/signed-in-user#az-ad-signed-in-user-show
+[az-role-assignment-create]: /cli/azure/role/assignment#az-role-assignment-create
+[az-keyvault-secret-set]: /cli/azure/keyvault/secret#az-keyvault-secret-set
