@@ -150,7 +150,7 @@ By default, the issuer is set to use the base URL `https://{region}.oic.prod-aks
     az aks get-credentials --name "${CLUSTER_NAME}" --resource-group "${RESOURCE_GROUP}"
     ```
 
-1. Create a Kubernetes service account and annotate it with the client ID of the managed identity by applying the following manifest using the `kubectl apply` command:
+1. Create a Kubernetes service account and annotate it with the client ID of the managed identity by applying the following manifest using the `kubectl apply` command.
 
     ```azurecli-interactive
     export SERVICE_ACCOUNT_NAME="workload-identity-sa$RANDOM_ID"
@@ -196,7 +196,7 @@ For more information about federated identity credentials in Microsoft Entra, se
 
 The following example shows how to use the Azure role-based access control (Azure RBAC) permission model to grant the pod access to the key vault. For more information about the Azure RBAC permission model for Azure Key Vault, see [Grant permission to applications to access an Azure key vault using Azure RBAC](/azure/key-vault/general/rbac-guide).
 
-1. Create a key vault with purge protection and Azure RBAC authorization enabled using the [`az keyvault create`][az-keyvault-create] command. You can also use an existing key vault if it's configured for both purge protection and Azure RBAC authorization:
+1. Create a key vault with purge protection and Azure RBAC authorization enabled using the [`az keyvault create`][az-keyvault-create] command. You can also use an existing key vault if it's configured for both purge protection and Azure RBAC authorization.
 
     ```azurecli-interactive
     export KEYVAULT_NAME="keyvault-workload-id$RANDOM_ID" # Ensure the key vault name is between 3-24 characters
@@ -265,7 +265,7 @@ The following example shows how to use the Azure role-based access control (Azur
         --assignee-principal-type ServicePrincipal
     ```
 
-1. Create an environment variable for the key vault URL using the [`az keyvault show`][az-keyvault-show] command:
+1. Create an environment variable for the key vault URL using the [`az keyvault show`][az-keyvault-show] command.
 
     ```azurecli-interactive
     export KEYVAULT_URL="$(az keyvault show \
