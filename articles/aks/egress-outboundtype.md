@@ -104,8 +104,8 @@ Each row shows whether the outbound type can be migrated to the types listed acr
 | From\|To                 | `loadBalancer` | `managedNATGatewayV2` | `managedNATGateway` | `none`        | `block`       |
 |--------------------------|----------------|---------------------|-----------------------|---------------|---------------|
 | `loadBalancer`           | N/A            | Supported           | Supported             | Supported     | Supported     |
-| `managedNATGatewayV2`    | Supported      | Supported           | Not Supported         | Not Supported | Not Supported |
-| `managedNATGateway`      | Not Supported  | Not Supported       | N/A                   | Supported     | Supported     |
+| `managedNATGatewayV2`    | Supported      | N/A                 | Not Supported         | Not Supported | Not Supported |
+| `managedNATGateway`      | Not Supported  | Supported           | N/A                   | Supported     | Supported     |
 | `none`                   | Supported      | Supported           | Supported             | N/A           | Supported     |
 | `block`                  | Supported      | Supported           | Supported             | Supported     | N/A           |
 
