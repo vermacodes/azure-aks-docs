@@ -1,5 +1,5 @@
 ---
-title: Create a private Azure Kubernetes Service (AKS) cluster
+title: Create a Private Azure Kubernetes Service (AKS) Cluster
 description: Learn how to create a private Azure Kubernetes Service (AKS) cluster with enhanced security and network control.
 ms.topic: how-to
 ms.author: schaffererin
@@ -30,20 +30,20 @@ Private clusters are available in public regions, Azure Government, and Microsof
 
 ## Prerequisites for private AKS clusters
 
-- The Azure CLI version 2.28.0 or higher. Run `az --version` to find the version, and run `az upgrade` to upgrade the version. If you need to install or upgrade, see [Install Azure CLI][install-azure-cli].
+- Azure CLI version 2.28.0 or higher. Find your version using the `az --version` command. If you need to install or upgrade, see [Install Azure CLI][install-azure-cli].
 - If using Azure Resource Manager (ARM) or the Azure REST API, the AKS API version must be _2021-05-01 or higher_.
 - To use a custom DNS server, add the Azure public IP address _168.63.129.16_ as the upstream DNS server in the custom DNS server, and make sure to add this public IP address as the _first_ DNS server. For more information about the Azure IP address, see [What is IP address 168.63.129.16?][virtual-networks-168.63.129.16]
   - The cluster's DNS zone should be what you forward to _168.63.129.16_. You can find more information on zone names in [Azure services DNS zone configuration][az-dns-zone].
 - Existing AKS clusters enabled with API Server VNet integration can have private cluster mode enabled. For more information, see [Enable or disable private cluster mode on an existing cluster with API Server VNet integration][api-server-vnet-integration].
+- If you need to enable Azure Container Registry on a private AKS cluster, [set up a private link for the container registry in the cluster virtual network (VNet)][container-registry-private-link] or set up peering between the container registry's VNet and the private cluster's VNet.
 
 [!INCLUDE [azure linux 2.0 retirement](./includes/azure-linux-retirement.md)]
 
-## Limitations and considerations for private AKS clusters
+## Limitations
 
-- You can't apply IP authorized ranges to the private API server endpoint - they only apply to the public API server.
+- IP authorized ranges only apply to the public API server. You can't apply these ranges to the private API server endpoint.
 - [Azure Private Link service limitations][private-link-service] apply to private clusters.
 - There's no support for Azure DevOps Microsoft-hosted Agents with private clusters. Consider using [self-hosted agents](/azure/devops/pipelines/agents/agents).
-- If you need to enable Azure Container Registry on a private AKS cluster, [set up a private link for the container registry in the cluster virtual network (VNet)][container-registry-private-link] or set up peering between the container registry's virtual network and the private cluster's virtual network.
 - Deleting or modifying the private endpoint in the customer subnet causes the cluster to stop functioning.
 - Azure Private Link service is supported on Standard Azure Load Balancer only. Basic Azure Load Balancer isn't supported.
 
@@ -51,89 +51,73 @@ Private clusters are available in public regions, Azure Government, and Microsof
 
 [Hub and spoke architectures](/azure/architecture/reference-architectures/hybrid-networking/hub-spoke) are commonly used to deploy networks in Azure. In many of these deployments, DNS settings in the spoke VNets are configured to reference a central DNS forwarder to allow for on-premises and Azure-based DNS resolution.
 
-![Private cluster hub and spoke](media/private-clusters/aks-private-hub-spoke.png)
+The following diagram illustrates a hub and spoke architecture for a private AKS cluster with custom DNS:
 
-Keep the following considerations in mind when deploying private AKS clusters in hub and spoke architectures with custom DNS:
+![Private cluster hub and spoke](media/private-clusters/aks-private-hub-spoke.png)
 
 - When a private cluster is created, a private endpoint (1) and a private DNS zone (2) are created in the cluster-managed resource group by default. The cluster uses an `A` record in the private zone to resolve the IP of the private endpoint for communication to the API server.
 - The private DNS zone is linked only to the VNet that the cluster nodes are attached to (3), which means that the private endpoint can only be resolved by hosts in that linked VNet. In scenarios where no custom DNS is configured on the VNet (default), it works without issue as hosts point at _168.63.129.16_ for DNS that can resolve records in the private DNS zone because of the link.
 - If you keep the default private DNS zone behavior, AKS tries to link the zone directly to the spoke VNet that hosts the cluster even when the zone is already linked to a hub VNet.
-  
-  In spoke VNets that use custom DNS servers, this action can fail if the cluster's managed identity lacks **Network Contributor** on the spoke VNet.
-
-  To prevent the failure, choose **one** of the following supported configurations:
-
-  - **Custom private DNS zone**: Provide a precreated private zone and set `privateDNSZone` / `--private-dns-zone` to its resource ID. Link that zone to the appropriate VNet (for example, the hub VNet) and set `publicDNS` to `false` / use `--disable-public-fqdn`.
-  - **Public DNS only**: Disable private zone creation by setting `privateDNSZone` / `--private-dns-zone` to `none` **and** leave `publicDNS` at its default value (`true`) / don't use `--disable-public-fqdn`.
-
+  - In spoke VNets that use custom DNS servers, this action can fail if the cluster's managed identity lacks **Network Contributor** on the spoke VNet. To prevent the failure, choose **one** of the following supported configurations:
+    - **Custom private DNS zone**: Provide an existing private zone and set `privateDNSZone` / `--private-dns-zone` to its resource ID. Link that zone to the appropriate VNet (for example, the hub VNet) and set `publicDNS` to `false` / use `--disable-public-fqdn`.
+    - **Public DNS only**: Disable private zone creation by setting `privateDNSZone` / `--private-dns-zone` to `none` **and** leave `publicDNS` at its default value (`true`) / don't use `--disable-public-fqdn`.
 - If you're using [bring your own (BYO) route table with kubenet](./configure-kubenet.md#bring-your-own-subnet-and-route-table-with-kubenet) and BYO DNS with private clusters, cluster creation fails. You need to associate the [`RouteTable`](./configure-kubenet.md#bring-your-own-subnet-and-route-table-with-kubenet) in the node resource group to the subnet after the cluster creation failed to make the creation successful.
 
-Keep the following limitations in mind when using custom DNS with private AKS clusters:
+### Limitations for private AKS clusters with custom DNS
 
 - Setting `privateDNSZone` / `--private-dns-zone` to `none` **and** `publicDNS: false` / `--disable-public-fqdn` at the same time **isn't supported**.
 - Conditional forwarding doesn't support subdomains.
 
+## Create a resource group
+
+Create a resource group using the [`az group create`][az-group-create] command. You can also use an existing resource group for your AKS cluster.
+
+```azurecli-interactive
+az group create \
+    --name <private-cluster-resource-group> \
+    --location <location>
+```
+
 ## Create a private AKS cluster with default basic networking
 
-1. Create a resource group using the [`az group create`][az-group-create] command. You can also use an existing resource group for your AKS cluster.
+Create a private cluster with default basic networking using the [`az aks create`][az-aks-create] command with the `--enable-private-cluster` flag.
 
-    ```azurecli-interactive
-    az group create \
-        --name <private-cluster-resource-group> \
-        --location <location>
-    ```
+**Key parameters in this command**:
 
-1. Create a private cluster with default basic networking using the [`az aks create`][az-aks-create] command with the `--enable-private-cluster` flag.
+- `--enable-private-cluster`: Enables private cluster mode.
 
-    **Key parameters in this command**:
-
-    - `--enable-private-cluster`: Enables private cluster mode.
-
-    ```azurecli-interactive
-    az aks create \
-        --name <private-cluster-name> \
-        --resource-group <private-cluster-resource-group> \
-        --load-balancer-sku standard \
-        --enable-private-cluster \
-        --generate-ssh-keys
-    ```
-
-1. [Configure kubectl to connect to the private AKS cluster](#configure-kubectl-to-connect-to-a-private-aks-cluster).
+```azurecli-interactive
+az aks create \
+    --name <private-cluster-name> \
+    --resource-group <private-cluster-resource-group> \
+    --load-balancer-sku standard \
+    --enable-private-cluster \
+    --generate-ssh-keys
+```
 
 ## Create a private AKS cluster with advanced networking
 
-1. Create a resource group using the [`az group create`][az-group-create] command. You can also use an existing resource group for your AKS cluster.
+Create a private cluster with advanced networking using the [`az aks create`][az-aks-create] command.
+**Key parameters in this command**:
 
-    ```azurecli-interactive
-    az group create \
-        --name <private-cluster-resource-group> \
-        --location <location>
-    ```
+- `--enable-private-cluster`: Enables private cluster mode.
+- `--network-plugin azure`: Specifies the Azure CNI networking plugin.
+- `--vnet-subnet-id <subnet-id>`: The resource ID of an existing subnet in a VNet.
+- `--dns-service-ip <dns-service-ip>`: An available IP address within the Kubernetes service address range to use for the cluster DNS service. For example, `10.2.0.10`.
+- `--service-cidr <service-cidr>`: A CIDR notation IP range from which to assign service cluster IPs. For example, `10.2.0.0/24`.
 
-1. Create a private cluster with advanced networking using the [`az aks create`][az-aks-create] command.
-
-     **Key parameters in this command**:
-
-    - `--enable-private-cluster`: Enables private cluster mode.
-    - `--network-plugin azure`: Specifies the Azure CNI networking plugin.
-    - `--vnet-subnet-id`: The resource ID of an existing subnet in a virtual network.
-    - `--dns-service-ip`: An available IP address within the Kubernetes service address range to use for the cluster DNS service.
-    - `--service-cidr`: A CIDR notation IP range from which to assign service cluster IPs.
-
-    ```azurecli-interactive
-    az aks create \
-        --resource-group <private-cluster-resource-group> \
-        --name <private-cluster-name> \
-        --load-balancer-sku standard \
-        --enable-private-cluster \
-        --network-plugin azure \
-        --vnet-subnet-id <subnet-id> \
-        --dns-service-ip 10.2.0.10 \
-        --service-cidr 10.2.0.0/24
-        --generate-ssh-keys
-    ```
-
-1. [Configure kubectl to connect to the private AKS cluster](#configure-kubectl-to-connect-to-a-private-aks-cluster).
+```azurecli-interactive
+az aks create \
+    --resource-group <private-cluster-resource-group> \
+    --name <private-cluster-name> \
+    --load-balancer-sku standard \
+    --enable-private-cluster \
+    --network-plugin azure \
+    --vnet-subnet-id <subnet-id> \
+    --dns-service-ip <dns-service-ip> \
+    --service-cidr <service-cidr> \
+    --generate-ssh-keys
+```
 
 ## Use custom domains with private AKS clusters
 
@@ -143,120 +127,122 @@ If you want to configure custom domains that can only be resolved internally, se
 
 ### Disable a public FQDN on a new cluster
 
-- Disable a public FQDN when creating a private AKS cluster using the [`az aks create`][az-aks-create] command with the `--disable-public-fqdn` flag.
+Disable a public FQDN when creating a private AKS cluster using the [`az aks create`][az-aks-create] command with the `--disable-public-fqdn` flag.
 
-    ```azurecli-interactive
-    az aks create \
-        --name <private-cluster-name> \
-        --resource-group <private-cluster-resource-group> \
-        --load-balancer-sku standard \
-        --enable-private-cluster \
-        --assign-identity <resource-id> \
-        --private-dns-zone <private-dns-zone-mode> \
-        --disable-public-fqdn \
-        --generate-ssh-keys
-    ```
+**Key parameters in this command**:
+
+- `--disable-public-fqdn`: Disables the public fully qualified domain name (FQDN) for the API server.
+- `--assign-identity <resource-id>`: Specifies the managed identity to use for the cluster.
+- `--private-dns-zone [system|none]`: Specifies the private DNS zone to use for the cluster. `system` is the default value when configuring a private DNS zone. If you omit `--private-dns-zone`, AKS creates a private DNS zone in the node resource group. `none` disables the creation of a private DNS zone.
+
+```azurecli-interactive
+az aks create \
+    --name <private-cluster-name> \
+    --resource-group <private-cluster-resource-group> \
+    --load-balancer-sku standard \
+    --enable-private-cluster \
+    --assign-identity <resource-id> \
+    --private-dns-zone [system|none] \
+    --disable-public-fqdn \
+    --generate-ssh-keys
+```
 
 ### Disable a public FQDN on an existing cluster
 
-- Disable a public FQDN on an existing AKS cluster using the [`az aks update`][az-aks-update] command with the `--disable-public-fqdn` flag.
+Disable a public FQDN on an existing AKS cluster using the [`az aks update`][az-aks-update] command with the `--disable-public-fqdn` flag.
 
-    ```azurecli-interactive
-    az aks update \
-        --name <private-cluster-name> \
-        --resource-group <private-cluster-resource-group> \
-        --disable-public-fqdn
-    ```
+**Key parameters in this command**:
 
-## Configure a private DNS zone, private DNS subzone, or custom subdomain for a private AKS cluster
+- `--disable-public-fqdn`: Disables the public fully qualified domain name (FQDN) for the API server.
+
+```azurecli-interactive
+az aks update \
+    --name <private-cluster-name> \
+    --resource-group <private-cluster-resource-group> \
+    --disable-public-fqdn
+```
+
+## Configuration options for private DNS
 
 You can configure private DNS settings for a private AKS cluster using the Azure CLI (with the `--private-dns-zone` parameter) or an Azure Resource Manager (ARM) template (with the `privateDNSZone` property). The following table outlines the options available for the `--private-dns-zone` parameter / `privateDNSZone` property:
 
 | Setting | Description |
-|---------|-------------|
+| ------- | ----------- |
 | `system` | The default value when configuring a private DNS zone. If you omit `--private-dns-zone` / `privateDNSZone`, AKS creates a private DNS zone in the node resource group. |
 | `none` | If you set `--private-dns-zone` / `privateDNSZone` to `none`, AKS doesn't create a private DNS zone. |
-| `<custom-private-dns-zone-resource-id>` | To use this parameter, you need to create a private DNS zone in the following format for Azure global cloud: `privatelink.<region>.azmk8s.io` or `<subzone>.privatelink.<region>.azmk8s.io`. You need the resource ID of the private DNS zone for future use. You also need a user-assigned identity or service principal with the [Private DNS Zone Contributor][private-dns-zone-contributor-role] and [Network Contributor][network-contributor-role] roles. For clusters using API Server VNet integration, a private DNS zone supports the naming format of `private.<region>.azmk8s.io` or `<subzone>.private.<region>.azmk8s.io`. You **can't change or delete this resource after creating the cluster**, as it can cause performance issues and cluster upgrade failures. You can use `--fqdn-subdomain <subdomain>` with `<custom-private-dns-zone-resource-id>` only to provide subdomain capabilities to `privatelink.<region>.azmk8s.io`. If you're specifying a subzone, there's a 32 character limit for the `<subzone>` name. |
+| `<custom-private-dns-zone-resource-id>` | To use this parameter, you need to create a private DNS zone in the following format for Azure global cloud: `privatelink.<region>.azmk8s.io` or `<subzone>.privatelink.<region>.azmk8s.io`. You need the resource ID of the private DNS zone for future use. You also need a user-assigned identity or service principal with the [Private DNS Zone Contributor][private-dns-zone-contributor-role] and [Network Contributor][network-contributor-role] roles. For clusters using API Server VNet integration, a private DNS zone supports the naming format of `private.<region>.azmk8s.io` or `<subzone>.private.<region>.azmk8s.io`. You **can't change or delete these resources resource after creating the cluster**, as it can cause performance issues and cluster upgrade failures. You can use `--fqdn-subdomain <subdomain>` with `<custom-private-dns-zone-resource-id>` only to provide subdomain capabilities to `privatelink.<region>.azmk8s.io`. If you're specifying a subzone, there's a 32 character limit for the `<subzone>` name. |
+
+### Considerations for private DNS
 
 Keep the following considerations in mind when configuring private DNS for a private AKS cluster:
 
-- If the private DNS zone is in a different subscription than the AKS cluster, you need to register the `Microsoft.ContainerServices` Azure provider in both subscriptions.
+- If the private DNS zone is in a different subscription than the AKS cluster, you need to register the `Microsoft.ContainerService` Azure provider in both subscriptions.
 - If your AKS cluster is configured with an Active Directory service principal, AKS doesn't support using a system-assigned managed identity with custom private DNS zone. The cluster must use [user-assigned managed identity authentication](./use-managed-identity.md).
 
 ## Create a private AKS cluster with a private DNS zone
 
-1. Create a private AKS cluster with a private DNS zone using the [`az aks create`][az-aks-create] command.
+Create a private AKS cluster with a private DNS zone using the [`az aks create`][az-aks-create] command.
 
-    **Key parameters in this command**:
+**Key parameters in this command**:
 
-    - `--enable-private-cluster`: Enables private cluster mode.
-    - `--private-dns-zone [system|none]`: Configures the private DNS zone for the cluster. The default value is `system`.
-    - `--assign-identity <resource-id>`: The resource ID of a user-assigned managed identity with the [Private DNS Zone Contributor][private-dns-zone-contributor-role] and [Network Contributor][network-contributor-role] roles.
+- `--enable-private-cluster`: Enables private cluster mode.
+- `--private-dns-zone [system|none]`: Configures the private DNS zone for the cluster. `system` is the default value when configuring a private DNS zone. If you omit `--private-dns-zone`, AKS creates a private DNS zone in the node resource group. `none` disables the creation of a private DNS zone.
+- `--assign-identity <resource-id>`: The resource ID of a user-assigned managed identity with the [Private DNS Zone Contributor][private-dns-zone-contributor-role] and [Network Contributor][network-contributor-role] roles.
 
-    ```azurecli-interactive
-    az aks create \
-        --name <private-cluster-name> \
-        --resource-group <private-cluster-resource-group> \
-        --load-balancer-sku standard \
-        --enable-private-cluster \
-        --assign-identity <resource-id> \
-        --private-dns-zone [system|none] \
-        --generate-ssh-keys
-    ```
-
-1. [Configure kubectl to connect to the private AKS cluster](#configure-kubectl-to-connect-to-a-private-aks-cluster).
+```azurecli-interactive
+az aks create \
+    --name <private-cluster-name> \
+    --resource-group <private-cluster-resource-group> \
+    --load-balancer-sku standard \
+    --enable-private-cluster \
+    --assign-identity <resource-id> \
+    --private-dns-zone [system|none] \
+    --generate-ssh-keys
+```
 
 ## Create a private AKS cluster with a custom private DNS zone or private DNS subzone
 
-1. Create a private AKS cluster with a custom private DNS zone or subzone using the [`az aks create`][az-aks-create] command.
+Create a private AKS cluster with a custom private DNS zone or subzone using the [`az aks create`][az-aks-create] command.
 
-    **Key parameters in this command**:
+**Key parameters in this command**:
 
-    - `--enable-private-cluster`: Enables private cluster mode.
-    - `--private-dns-zone <custom-private-dns-zone-resource-id>|<custom-private-dns-subzone-resource-id>`: The resource ID of a precreated private DNS zone or subzone in the following format for Azure global cloud: `privatelink.<region>.azmk8s.io` or `<subzone>.privatelink.<region>.azmk8s.io`.
-    - `--assign-identity <resource-id>`: The resource ID of a user-assigned managed identity with the [Private DNS Zone Contributor][private-dns-zone-contributor-role] and [Network Contributor][network-contributor-role] roles.
+- `--enable-private-cluster`: Enables private cluster mode.
+- `--private-dns-zone [<custom-private-dns-zone-resource-id>|<custom-private-dns-subzone-resource-id>]`: The resource ID of an existing private DNS zone or subzone in the following format for Azure global cloud: `privatelink.<region>.azmk8s.io` or `<subzone>.privatelink.<region>.azmk8s.io`.
+- `--assign-identity <resource-id>`: The resource ID of a user-assigned managed identity with the [Private DNS Zone Contributor][private-dns-zone-contributor-role] and [Network Contributor][network-contributor-role] roles.
 
-    ```azurecli-interactive
-    # The custom private DNS zone name should be in the following format: "<subzone>.privatelink.<region>.azmk8s.io"
-
-    az aks create \
-        --name <private-cluster-name> \
-        --resource-group <private-cluster-resource-group> \
-        --load-balancer-sku standard \
-        --enable-private-cluster \
-        --assign-identity <resource-id> \
-        --private-dns-zone [<custom-private-dns-zone-resource-id>|<custom-private-dns-subzone-resource-id>] \
-        --generate-ssh-keys
-    ```
-
-1. [Configure kubectl to connect to the private AKS cluster](#configure-kubectl-to-connect-to-a-private-aks-cluster).
+```azurecli-interactive
+az aks create \
+    --name <private-cluster-name> \
+    --resource-group <private-cluster-resource-group> \
+    --load-balancer-sku standard \
+    --enable-private-cluster \
+    --assign-identity <resource-id> \
+    --private-dns-zone [<custom-private-dns-zone-resource-id>|<custom-private-dns-subzone-resource-id>] \
+    --generate-ssh-keys
+```
 
 ## Create a private AKS cluster with a custom private DNS zone and custom subdomain
 
-1. Create a private AKS cluster with a custom private DNS zone and subdomain using the [`az aks create`][az-aks-create] command.
+Create a private AKS cluster with a custom private DNS zone and subdomain using the [`az aks create`][az-aks-create] command.
 
-    **Key parameters in this command**:
+**Key parameters in this command**:
 
-    - `--enable-private-cluster`: Enables private cluster mode.
-    - `--private-dns-zone <custom-private-dns-zone-resource-id>`: The resource ID of a precreated private DNS zone in the following format for Azure global cloud: `privatelink.<region>.azmk8s.io`.
-    - `--fqdn-subdomain <subdomain>`: The subdomain to use for the cluster FQDN within the custom private DNS zone.
-    - `--assign-identity <resource-id>`: The resource ID of a user-assigned managed identity with the [Private DNS Zone Contributor][private-dns-zone-contributor-role] and [Network Contributor][network-contributor-role] roles.
+- `--enable-private-cluster`: Enables private cluster mode.
+- `--private-dns-zone <custom-private-dns-zone-resource-id>`: The resource ID of an existing private DNS zone in the following format for Azure global cloud: `privatelink.<region>.azmk8s.io`.
+- `--fqdn-subdomain <subdomain>`: The subdomain to use for the cluster FQDN within the custom private DNS zone.
+- `--assign-identity <resource-id>`: The resource ID of a user-assigned managed identity with the [Private DNS Zone Contributor][private-dns-zone-contributor-role] and [Network Contributor][network-contributor-role] roles.
 
-    ```azurecli-interactive
-    # The custom private DNS zone name should be in one of the following formats: "privatelink.<region>.azmk8s.io" or "<subzone>.privatelink.<region>.azmk8s.io"
-
-    az aks create \
-        --name <private-cluster-name> \
-        --resource-group <private-cluster-resource-group> \
-        --load-balancer-sku standard \
-        --enable-private-cluster \
-        --assign-identity <resource-id> \
-        --private-dns-zone <custom-private-dns-zone-resource-id> \
-        --fqdn-subdomain <subdomain> \
-        --generate-ssh-keys
-    ```
-
-1. [Configure kubectl to connect to the private AKS cluster](#configure-kubectl-to-connect-to-a-private-aks-cluster).
+```azurecli-interactive
+az aks create \
+    --name <private-cluster-name> \
+    --resource-group <private-cluster-resource-group> \
+    --load-balancer-sku standard \
+    --enable-private-cluster \
+    --assign-identity <resource-id> \
+    --private-dns-zone <custom-private-dns-zone-resource-id> \
+    --fqdn-subdomain <subdomain> \
+    --generate-ssh-keys
+```
 
 ## Update an existing private AKS cluster from a private DNS zone to public
 
@@ -265,14 +251,14 @@ You can only update from `byo` (bring your own) or `system` to `none`. No other 
 > [!WARNING]
 > When you update a private cluster from `byo` or `system` to `none`, the agent nodes change to use a public FQDN. In an AKS cluster that uses Azure Virtual Machine Scale Sets, a [node image upgrade][node-image-upgrade] is performed to update your nodes with the public FQDN.
 
-- Update a private cluster from `byo` or `system` to `none` using the [`az aks update`][az-aks-update] command with the `--private-dns-zone` parameter set to `none`.
+Update a private cluster from `byo` or `system` to `none` using the [`az aks update`][az-aks-update] command with the `--private-dns-zone` parameter set to `none`.
 
-    ```azurecli-interactive
-    az aks update \
-        --name <private-cluster-name> \
-        --resource-group <private-cluster-resource-group> \
-        --private-dns-zone none
-    ```
+```azurecli-interactive
+az aks update \
+    --name <private-cluster-name> \
+    --resource-group <private-cluster-resource-group> \
+    --private-dns-zone none
+```
 
 ## Configure kubectl to connect to a private AKS cluster
 
