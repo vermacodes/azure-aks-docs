@@ -169,19 +169,19 @@ This coordinated approach ensures that `ResourcePlacement` provides the flexibil
 
 `ResourcePlacement` uses the same placement patterns as `ClusterResourcePlacement`:
 
-- **[Placement types](./concepts-resource-propagation.md#placement-types)**: `PickAll`, `PickFixed`, and `PickN` strategies work identically for both APIs.
+- **[Placement types](./concepts-resource-placement.md#placement-types)**: `PickAll`, `PickFixed`, and `PickN` strategies work identically for both APIs.
 - **[Rollout strategy](./concepts-rollout-strategy.md)**: Control how updates propagate across clusters with the same rolling update mechanisms.
 - **[Status and observability](./howto-understand-placement.md)**: Monitor deployment progress using `kubectl describe resourceplacement <name> -n <namespace>`.
-- **[Advanced features](./concepts-resource-propagation.md)**: Use tolerations, resource overrides, topology spread constraints, and affinity rules.
+- **[Advanced features](./concepts-resource-placement.md)**: Use tolerations, resource overrides, topology spread constraints, and affinity rules.
 
 The key difference is in **resource selection** scope. While `ClusterResourcePlacement` typically selects entire namespaces and their contents, `ResourcePlacement` provides fine-grained control over individual namespace-scoped resources.
 
-For complete details on these capabilities, refer to the [ClusterResourcePlacement documentation](./concepts-resource-propagation.md#resource-selection).
+For complete details on these capabilities, refer to the [ClusterResourcePlacement documentation](./concepts-resource-placement.md#resource-selection).
 
 ## Next steps
 
 - [Use ResourcePlacement to deploy namespace-scoped resources across multiple clusters](./quickstart-namespace-scoped-resource-propagation.md)
-- [Using ClusterResourcePlacement to deploy cluster-scoped resources](./concepts-resource-propagation.md)
+- [Using ClusterResourcePlacement to deploy cluster-scoped resources](./concepts-resource-placement.md)
 - [Multi-cluster resource placement using cluster resource placement](./quickstart-resource-propagation.md)
 - [Use overrides to customize namespace-scoped resources](./resource-override.md)
 - [Defining a rollout strategy for resource placement](./concepts-rollout-strategy.md)

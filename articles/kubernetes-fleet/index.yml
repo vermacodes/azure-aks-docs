@@ -23,7 +23,7 @@ landingContent:
           - text: Safe updates across multiple member clusters
             url: concepts-update-orchestration.md
           - text: Kubernetes resource placement and management
-            url: concepts-resource-propagation.md
+            url: concepts-resource-placement.md
           - text: Multi-cluster networking overview
             url: concepts-multi-cluster-networking-overview.md
           - text: Frequently asked questions

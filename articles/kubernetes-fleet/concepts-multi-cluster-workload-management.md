@@ -78,7 +78,7 @@ An example YAML file of how one can use Azure Kubernetes Fleet Manager API to ma
 
 ## Next steps
 
-* [Use cluster resource placement to manage workloads across multiple clusters](./concepts-resource-propagation.md).
+* [Use cluster resource placement to manage workloads across multiple clusters](./concepts-resource-placement.md).
 * [Use namespace-scoped resource placement for fine-grained control](./concepts-namespace-scoped-resource-propagation.md).
 
 <!-- LINKS - external -->

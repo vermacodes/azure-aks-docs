@@ -15,7 +15,7 @@ ms.custom:
 
 # Use envelope objects to safely place resources
 
-[Envelope objects](./concepts-resource-propagation.md#encapsulating-resources-using-envelope-objects) are a pair of Kubernetes custom resources defined by the Azure Kubernetes Fleet Manager that allow users to package resources for propagation to member clusters without causing unintended side effects on the hub cluster.
+[Envelope objects](./concepts-resource-placement.md#encapsulating-resources-using-envelope-objects) are a pair of Kubernetes custom resources defined by the Azure Kubernetes Fleet Manager that allow users to package resources for propagation to member clusters without causing unintended side effects on the hub cluster.
 
 This guide provides instructions on propagating a set of resources from the hub cluster to joined member clusters within an envelope object.
 
