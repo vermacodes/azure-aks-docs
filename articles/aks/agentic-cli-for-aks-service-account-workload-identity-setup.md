@@ -222,13 +222,33 @@ export USER_ASSIGNED_CLIENT_ID="$(az identity show \
 
 ### Assign necessary role to managed identity
 
-Assign the necessary role to the managed identity using the [`az role assignment create`](/cli/azure/role/assignment#az-role-assignment-create) command. The following example assigns the "Reader" role at the subscription scope, which allows the agentic CLI to read Azure resource information. Adjust the role and scope as needed for your use case.
+Assign the necessary roles to the managed identity using the [`az role assignment create`](/cli/azure/role/assignment#az-role-assignment-create) command. 
+
+The following example assigns the "Reader" role at the subscription scope, which allows the agentic CLI to read Azure resource information. Adjust the role and scope as needed for your use case.
 
 ```azurecli-interactive
 az role assignment create --role "Reader" \
     --assignee $USER_ASSIGNED_CLIENT_ID \
     --scope /subscriptions/${SUBSCRIPTION}
 ```
+
+If you're using Azure OpenAI with Microsoft Entra ID (keyless authentication), you must also assign the "Cognitive Services User" or "Azure AI User" role on the Azure OpenAI resource:
+
+```azurecli-interactive
+# Option 1: Assign Cognitive Services User role
+az role assignment create \
+    --role "Cognitive Services User" \
+    --assignee $USER_ASSIGNED_CLIENT_ID \
+    --scope /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.CognitiveServices/accounts/<openai-resource-name>
+
+# Option 2: Assign Azure AI User role
+az role assignment create \
+    --role "Azure AI User" \
+    --assignee $USER_ASSIGNED_CLIENT_ID \
+    --scope /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.CognitiveServices/accounts/<openai-resource-name>
+```
+
+Replace `<subscription-id>`, `<resource-group>`, and `<openai-resource-name>` with your actual values.
 
 ### Annotate the service account with workload identity (optional)
 

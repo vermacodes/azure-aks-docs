@@ -100,24 +100,6 @@ When you select "Azure Open AI (Microsoft Entra ID)" as your LLM provider, you c
 - **Client mode**: The local Azure CLI credentials must be assigned the **Cognitive Services User** or **Azure AI User** role on the Azure OpenAI resource.
 - **Cluster mode**: The workload identity must be assigned the **Cognitive Services User** or **Azure AI User** role on the Azure OpenAI resource.
 
-To assign the required role, use the following Azure CLI command:
-
-```azurecli-interactive
-# For client mode (using your Azure CLI identity)
-az role assignment create \
-  --role "Cognitive Services User" \
-  --assignee-object-id $(az ad signed-in-user show --query id -o tsv) \
-  --scope /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.CognitiveServices/accounts/<openai-resource-name>
-
-# For cluster mode (using workload identity client ID)
-az role assignment create \
-  --role "Cognitive Services User" \
-  --assignee <workload-identity-client-id> \
-  --scope /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.CognitiveServices/accounts/<openai-resource-name>
-```
-
-Replace `<subscription-id>`, `<resource-group>`, `<openai-resource-name>`, and `<workload-identity-client-id>` with your actual values.
-
 ### Other LLM providers
 
 If you're using another OpenAI-compatible provider, follow their documentation for instructions on how to create an account and retrieve the API key.
