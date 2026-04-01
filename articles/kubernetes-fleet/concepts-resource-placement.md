@@ -358,7 +358,7 @@ The following example shows how to deploy a resource onto three clusters. Only c
 apiVersion: placement.kubernetes-fleet.io/v1
 kind: ClusterResourcePlacement
 metadata:
-  name: crp-pickn-01
+  name: crp-pickn-critical-preferences
 spec:
   resourceSelectors:
     - group: ""
@@ -397,7 +397,7 @@ The following example shows how to spread resources out across multiple Azure re
 apiVersion: placement.kubernetes-fleet.io/v1
 kind: ClusterResourcePlacement
 metadata:
-  name: crp-pickn-02
+  name: crp-pickn-locations-updates
 spec:
   resourceSelectors:
     - group: ""
@@ -419,6 +419,10 @@ spec:
 
 For more information, see the [KubeFleet documentation on topology spread constraints][crp-topo].
 
+## Select clusters using labels and properties
+
+Fleet Manager intelligent resource placement provides a set of powerful criteria you can use when determining how clusters are selected when using the `PickN` and `PickAll` placement types. In this section we'll take a look at how you can use these options to build policies to suit your needs. 
+
 ### Placement policy options
 
 The table summarizes the available scheduling policy fields for each placement type.
@@ -429,11 +433,7 @@ The table summarizes the available scheduling policy fields for each placement t
 | `affinity`                  |    ❌     |   ✅    |  ✅   |
 | `clusterNames`              |    ✅     |   ❌    |  ❌   |
 | `numberOfClusters`          |    ❌     |   ❌    |  ✅   |
-| `topologySpreadConstraints` |    ❌     |   ❌    |  ✅   | 
-
-## How to select clusters using labels and properties
-
-Fleet Manager intelligent resource placement provides a set of powerful criteria you can use when determining how clusters are selected when using the `PickN` and `PickAll` placement types. In this section we'll take a look at how you can use these options to build policies to suit your needs.    
+| `topologySpreadConstraints` |    ❌     |   ❌    |  ✅   |    
 
 ### Member cluster labels
 
@@ -501,10 +501,13 @@ Here's an example placement policy to select only clusters with five or more nod
 apiVersion: placement.kubernetes-fleet.io/v1
 kind: ClusterResourcePlacement
 metadata:
-  name: crp
+  name: crp-pickall-five-nodes
 spec:
   resourceSelectors:
-    - ...
+    - group: ""
+      kind: Namespace
+      name: prod-deployment
+      version: v1
   policy:
     placementType: PickAll
     affinity:
@@ -600,33 +603,38 @@ To avoid those unnecessary side effects, Azure Kubernetes fleet manager provides
 
 ## Using Tolerations
 
-`ClusterResourcePlacement` objects support the specification of tolerations, which apply to the `ClusterResourcePlacement` object. Each toleration object consists of the following fields:
+Resource placements support the specification of tolerations where each toleration consists of the following fields:
 
 * `key`: The key of the toleration.
 * `value`: The value of the toleration.
 * `effect`: The effect of the toleration, such as `NoSchedule`.
 * `operator`: The operator of the toleration, such as `Exists` or `Equal`.
 
-Each toleration is used to tolerate one or more specific taints applied on the `ClusterResourcePlacement`. Once all taints on a [`MemberCluster`](./concepts-fleet.md#what-are-member-clusters) are tolerated, the scheduler can then propagate resources to the cluster. You can't update or remove tolerations from a `ClusterResourcePlacement` object once created.
+Each toleration is used to tolerate one or more specific taints applied on a `MemberCluster`. Once all taints are tolerated, the Flee Manager scheduler can distribute resources to the member cluster.
 
 For more information, see the [documentation on tolerations][fleet-tolerations].
 
 ## Configuring rollout strategy
 
-Fleet uses a rolling update strategy to control how updates are rolled out across clusters.
+Fleet Manager resource placement uses a default rolling update strategy to control how resources are rolled out across clusters.
 
 In the following example, the fleet scheduler rolls out updates to each cluster sequentially, waiting at least `unavailablePeriodSeconds` between clusters. Rollout status is considered successful if all resources were correctly applied to the cluster. Rollout status checking doesn't cascade to child resources, so for example, it doesn't confirm that pods created by a deployment become ready.
+
+:::zone target="docs" pivot="cluster-scope"
 
 ```yaml
 apiVersion: placement.kubernetes-fleet.io/v1
 kind: ClusterResourcePlacement
 metadata:
-  name: crp
+  name: crp-pick-all-rolling
 spec:
   resourceSelectors:
-    - ...
+    - group: ""
+      kind: Namespace
+      name: prod-deployment
+      version: v1
   policy:
-    ...
+    placementType: PickAll
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -634,6 +642,8 @@ spec:
       maxSurge: 25%
       unavailablePeriodSeconds: 60
 ```
+
+:::zone-end
 
 For more information, see the [documentation on rollout strategies][fleet-rollout].
 
