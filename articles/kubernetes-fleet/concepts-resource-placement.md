@@ -149,7 +149,7 @@ spec:
 
 :::zone-end
 
-### Resource selection
+### Resource selectors
 
 Select resources using one or more `resourceSelectors` in a placement. Each resource selector can specify:
 
@@ -161,7 +161,7 @@ Select resources using one or more `resourceSelectors` in a placement. Each reso
 
 #### Namespace selection scope (preview)
 
-When using CRP to select an entire namespace, you can use the `selectionScope` field to control whether to include all the child resources in the namespace, or just place an empty namespace.
+When using cluster-scoped placement to select an entire namespace, you can use the `selectionScope` field to control whether to include all the child resources in the namespace, or just place an empty namespace.
 
 * **Default behavior** (when `selectionScope` is not specified): distributes the namespace and all resources within it.
 * **`NamespaceOnly`**: distributes only the namespace resource, without any resources within the namespace. This is useful when you want to establish namespaces across clusters while managing individual resources separately using [`ResourcePlacement`](./concepts-namespace-scoped-resource-propagation.md).
@@ -169,7 +169,7 @@ When using CRP to select an entire namespace, you can use the `selectionScope` f
 > [!IMPORTANT]
 > The `selectionScope` field is available in the `placement.kubernetes-fleet.io/v1beta1` API version as a preview feature. It is not available in the `placement.kubernetes-fleet.io/v1` API.
 
-The following example shows how to propagate only the namespace without its contents using the v1beta1 API:
+This example shows how to distribute only the namespace without its contents.
 
 ```yaml
 apiVersion: placement.kubernetes-fleet.io/v1beta1
@@ -187,25 +187,25 @@ spec:
     placementType: PickAll
 ```
 
-This approach enables a workflow where platform administrators use `ClusterResourcePlacement` to establish namespaces, while application teams use [`ResourcePlacement`](./concepts-namespace-scoped-resource-propagation.md) for fine-grained control over specific resources within those namespaces.
+This approach enables a workflow where platform administrators use ClusterResourcePlacement to establish namespaces, while application teams use ResourcePlacement for fine-grained control over specific resources within those namespaces.
 
 :::zone-end
 
-### Placement policy types
+### Placement policy
 
 The following placement policy types are available for controlling the how clusters are selected by Fleet Manager resource placement:
 
-* **[PickFixed](#pickfixed-placement-type)** places the resource onto a specific list of member clusters by name.
-* **[PickAll](#pickall-placement-type)** places the resource onto all member clusters, or all member clusters that meet a criteria. This policy is useful for placing infrastructure workloads, like cluster monitoring or reporting applications.
-* **[PickN](#pickn-placement-type)** is the most flexible placement option and allows for selection of clusters based on affinity or topology spread constraints and is useful when spreading workloads across multiple appropriate clusters to ensure availability is desired.
+* **[PickFixed](#pickfixed-placement-type)** places resources onto member clusters using their cluster name.
+* **[PickAll](#pickall-placement-type)** places resources onto all member clusters, or all member clusters that meet a criteria. This policy is useful for placing infrastructure workloads, like cluster monitoring or reporting applications.
+* **[PickN](#pickn-placement-type)** is the most flexible placement option and allows for selection of clusters based on affinity or topology spread constraints and is useful when spreading workloads across multiple similar clusters to ensure availability is maintained.
 
 #### PickFixed placement type
 
-If you want to deploy a workload to a known set of member clusters, you can use a `PickFixed` placement policy to select the clusters by name.
+Use `PickFixed` to select the clusters by name, supplying names in the `clusterNames` array.
 
-`clusterNames` is the only valid policy option for this placement type.
+:::zone target="docs" pivot="cluster-scope"
 
-The following example shows how to deploy the `test-deployment` namespace onto member clusters `cluster1` and `cluster2`.
+This example shows how to deploy the `test-deployment` namespace onto member clusters `cluster1` and `cluster2`.
 
 ```yaml
 apiVersion: placement.kubernetes-fleet.io/v1
@@ -213,17 +213,45 @@ kind: ClusterResourcePlacement
 metadata:
   name: crp-fixed
 spec:
-  policy:
-    placementType: PickFixed
-    clusterNames:
-    - cluster1
-    - cluster2
   resourceSelectors:
     - group: ""
       kind: Namespace
       name: test-deployment
       version: v1
+  policy:
+    placementType: PickFixed
+    clusterNames:
+    - cluster1
+    - cluster2
 ```
+
+:::zone target="docs" pivot="namespace-scope"
+
+This sample ResourcePlacement (RP) places the ConfigMap labeled `app=my-application` in the namespace `my-app` into the matching namespace on the two named clusters.
+
+```yaml
+apiVersion: placement.kubernetes-fleet.io/v1
+kind: ResourcePlacement
+metadata:
+  name: app-configs-rp
+  namespace: my-app
+spec:
+  resourceSelectors:
+    - group: ""
+      kind: ConfigMap
+      version: v1
+      labelSelector:
+        matchLabels:
+          app: my-application
+  policy:
+    placementType: PickFixed
+    clusterNames:
+    - cluster1
+    - cluster2
+```
+
+:::zone-end
+
 
 #### PickAll placement type
 
