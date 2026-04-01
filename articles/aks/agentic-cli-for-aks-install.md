@@ -93,6 +93,13 @@ Before proceeding with installation, you need to set up your LLM API key. We rec
 1. [Deploy the model](/azure/ai-foundry/openai/how-to/create-resource?pivots=web-portal#deploy-a-model). For the deployment name, use the same name as the model name, such as _gpt-4o_ or _gpt-4o-mini_, depending on the access. You can use any region where you have access and quota for the model. In the deployment, select a token-per-minute (TPM) limit as high as possible. We recommend upward of _1-million TPM_ for good performance.
 1. After the deployment completes, note your API base URL and API key. The API version isn't the model version. You can use any API version that's available and supported in [Azure OpenAI in Microsoft Foundry Models v1 API](/azure/ai-foundry/openai/api-version-lifecycle). The Azure API base refers to the Azure OpenAI endpoint (which usually ends in `openai.azure.com/`), not the target URI of the deployment in Foundry.
 
+### Azure OpenAI with Microsoft Entra ID (keyless authentication)
+
+When you select "Azure Open AI (Microsoft Entra ID)" as your LLM provider, you can configure keyless authentication using Microsoft Entra ID. With this option, you don't need to provide an API key. Instead, this authentication method requires the following role assignments:
+
+- **Client mode**: The local Azure CLI credentials must be assigned the **Cognitive Services User** or **Azure AI User** role on the Azure OpenAI resource.
+- **Cluster mode**: The workload identity must be assigned the **Cognitive Services User** or **Azure AI User** role on the Azure OpenAI resource.
+
 ### Other LLM providers
 
 If you're using another OpenAI-compatible provider, follow their documentation for instructions on how to create an account and retrieve the API key.
@@ -156,11 +163,12 @@ If you're using another OpenAI-compatible provider, follow their documentation f
 
     ```output
     Welcome to AKS Agent LLM configuration setup. Type '/exit' to exit.
-     1. Azure Open AI
-     2. openai
-     3. anthropic
-     4. gemini
-     5. openai_compatible
+     1. Azure Open AI (API Key)
+     1. Azure Open AI (Microsoft Entra ID)
+     3. OpenAI
+     4. Anthropic
+     5. Gemini
+     6. Openai Compatible
     Enter the number of your LLM provider: 1
     Your selected provider: azure
     Enter value for MODEL_NAME:  (Hint: should be consistent with your deployed name, e.g., gpt-4.1) gpt-4.1
