@@ -48,6 +48,8 @@ With CRP, you can:
 
 For scenarios requiring fine-grained control over individual namespace-scoped resources within a namespace, see [namespace-scoped resource placement](./concepts-namespace-scoped-resource-propagation.md?pivots=namespace-scope#overview-of-namespace-scoped-resource-placement), which enables distribution of specific resources rather than entire namespaces.
 
+:::zone-end
+
 :::zone target="docs" pivot="namespace-scope"
 
 ## Overview of namespace-scoped resource placement
