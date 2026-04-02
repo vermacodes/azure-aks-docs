@@ -33,7 +33,7 @@ This article covers the various types of outbound connectivity that are availabl
 
 You can configure an AKS cluster using the following outbound types: load balancer, NAT gateway, or user-defined routing. The outbound type impacts only the egress traffic of your cluster. For more information, see [setting up ingress controllers](ingress-basic.md).
 
-### Outbound type: Load Balancer
+### <a id="outbound-type-of-loadbalancer"></a>Outbound type: Load Balancer
 
 The load balancer is used for egress through an AKS-assigned public IP. An outbound type of `loadBalancer` supports Kubernetes services of type `loadBalancer`, which expect egress out of the load balancer created by the AKS resource provider.
 
