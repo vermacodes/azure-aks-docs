@@ -1,7 +1,7 @@
 ---
 title: "Introducing Azure Kubernetes Fleet Manager intelligent resource placement"
 description: This article describes the concepts of Azure Kubernetes Fleet Manager intelligent resource placement
-ms.date: 04/01/2026
+ms.date: 04/02/2026
 author: sjwaight
 ms.author: simonwaight
 ms.service: azure-kubernetes-fleet-manager
@@ -346,7 +346,7 @@ When creating this type of placement the following cluster affinity types can be
 
 You can set both required and preferred affinities. Required affinities prevent placement to clusters that don't match. Preferred affinities provide ordering of matched clusters.
 
-##### `PickN` with affinities
+##### PickN with affinities
 
 Using affinities with a `PickN` placement policy functions similarly to using affinities with pod scheduling on a single Kubernetes cluster. 
 
@@ -421,7 +421,7 @@ spec:
 
 :::zone-end
 
-##### `PickN` with topology spread constraints
+##### PickN with topology spread constraints
 
 Use topology spread constraints to force placements across topology boundaries in order to satisfy availability requirements.
 
@@ -433,7 +433,6 @@ You can configure the behavior of topology spread constraints by using the `when
 The following example shows how to spread resources across multiple Azure regions and attempts to schedule across member clusters with different update days using a custom label `updateDay`.
 
 When the Azure region spread can't be met, placement will fail. If the `updateDay` constraint isn't met, the placement will still happen. 
-
 
 :::zone target="docs" pivot="cluster-scope"
 
@@ -793,13 +792,23 @@ For more information, see the documentation on [envelope objects][envelope-objec
 
 ## Determine placement status
 
-The Fleet scheduler provides two ways to view placement status depending on your access level and requirements:
+Fleet Manager resource placement provides two ways to view status depending on your hub cluster access level and requirements:
 
 :::zone target="docs" pivot="cluster-scope"
 
-* **ClusterResourcePlacement status**: View placement status directly on the cluster-scoped `ClusterResourcePlacement` object. Use this approach when you have cluster-level permissions and need to view status for any placement across the fleet. This approach is the primary method for platform administrators.
+* **ClusterResourcePlacement status**: View placement status directly on the cluster-scoped `ClusterResourcePlacement` resource. Use when you have cluster-level permissions and need to view status for any placement across the fleet.
 
-* **ClusterResourcePlacementStatus (preview)**: View placement status through a namespace-scoped `ClusterResourcePlacementStatus` object. Use this approach when you want to enable namespace users to view placement status without granting cluster-level permissions. This approach requires using the v1beta1 API and setting `statusReportingScope: NamespaceAccessible` on the `ClusterResourcePlacement`. For more information, see the [ClusterResourcePlacementStatus section](#clusterresourceplacementstatus-preview).
+:::zone-end
+
+:::zone target="docs" pivot="namespace-scope"
+
+* **ResourcePlacement status**: View placement status directly on the namespace-scoped `ResourcePlacement` resource. Use when you have namespace-level permissions and need to view status for a namespace-scoped placement across the fleet.
+
+:::zone-end
+
+:::zone target="docs" pivot="cluster-scope"
+
+* **ClusterResourcePlacementStatus (preview)**: View placement status through a namespace-scoped `ClusterResourcePlacementStatus` resource. Use when namespace-scoped users need to view placement status without granting cluster-level permissions. For more information, see the [ClusterResourcePlacementStatus section](#clusterresourceplacementstatus-preview).
 
 Both approaches provide the following information:
 
@@ -810,10 +819,10 @@ Both approaches provide the following information:
 
 The following example shows viewing status directly from a `ClusterResourcePlacement` that deployed the `test` namespace and the `test-1` ConfigMap into two member clusters using `PickN`. The placement was successfully completed and the resources were placed into the `aks-member-1` and `aks-member-2` clusters.
 
-You can view this information using the `kubectl describe crp <name>` command.
+You can view this information using the `kubectl describe clusterresourceplacement <name>` command.
 
 ```bash
-kubectl describe crp crp-1
+kubectl describe clusterresourceplacement crp-1
 ```
 
 ```output
@@ -1011,6 +1020,8 @@ While CRP assumes that namespaces represent application boundaries, real-world u
 This granular approach ensures that `ResourcePlacement` can adapt to diverse organizational structures and workload patterns while maintaining the simplicity and power of the Fleet scheduling framework.
 
 :::zone-end
+
+:::zone target="docs" pivot="namespace-scope"
 
 ## Key differences between ResourcePlacement and ClusterResourcePlacement
 

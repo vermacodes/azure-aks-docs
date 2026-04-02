@@ -2,7 +2,7 @@
 title: "Intelligent Cross-Cluster Kubernetes Resource Placement Using Azure Kubernetes Fleet Manager"
 description: Learn how to use Azure Kubernetes Fleet Manager to intelligently place your workloads on target member clusters based on cost and resource availability.
 ms.topic: how-to
-ms.date: 12/04/2025
+ms.date: 04/02/2026
 author: sjwaight
 ms.author: simonwaight
 ms.service: azure-kubernetes-fleet-manager
@@ -128,7 +128,7 @@ Next, publish a workload to the hub cluster so that it can be placed onto member
    kubectl create namespace test-app 
    ```
 
-1. The sample workload can be deployed to the new namespace on the hub cluster. Because these Kubernetes resource types don't require [encapsulating](./concepts-resource-placement.md#encapsulating-resources-using-envelope-objects), you can deploy them without change.
+1. The sample workload can be deployed to the new namespace on the hub cluster. Because these Kubernetes resource types don't require [encapsulating](./concepts-resource-placement.md#using-envelope-resources), you can deploy them without change.
 
    1. Save the following YAML into a file named `sample-workload.yaml`:
 
@@ -395,8 +395,7 @@ To remove a resource placement:
 
 ## Next steps
 
-* [Cluster-scoped resource placement using ClusterResourcePlacement](./concepts-resource-placement.md)
-* [Namespace-scoped resource placement using ResourcePlacement](./concepts-namespace-scoped-resource-propagation.md)
+* [Introducing Fleet Manager intelligent resource placement](./concepts-resource-placement.md)
 * [Use cluster resource placement to deploy workloads across multiple clusters](./quickstart-resource-propagation.md)
 * [Use namespace-scoped resource placement to deploy workloads across multiple clusters](./quickstart-namespace-scoped-resource-propagation.md)
 * [Define a rollout strategy for a resource placement](./concepts-rollout-strategy.md)
