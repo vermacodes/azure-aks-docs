@@ -816,7 +816,7 @@ kubectl describe resourceplacement place-cmap-1
 
 :::zone target="docs" pivot="cluster-scope"
 
-* **ClusterResourcePlacementStatus (preview)**: View placement status through a namespace-scoped `ClusterResourcePlacementStatus` resource. Use when namespace-scoped users need to view placement status without granting cluster-level permissions. For more information, see the [ClusterResourcePlacementStatus section](#clusterresourceplacementstatus-preview).
+* **ClusterResourcePlacementStatus (preview)**: View placement status through a namespace-scoped `ClusterResourcePlacementStatus` resource. Use when namespace-scoped users need to view placement status without granting cluster-level permissions. For more information, see the [ClusterResourcePlacementStatus section](#use-clusterresourceplacementstatus-resource-preview).
 
 Both approaches provide the following information:
 
