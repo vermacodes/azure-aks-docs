@@ -1230,6 +1230,8 @@
               href: node-auto-provisioning.md
             - name: Enable or disable NAP
               href: use-node-auto-provisioning.md
+            - name: Migrate from Cluster Autoscaler to NAP
+              href: migrate-from-autoscaler-to-node-auto-provisioning.md
             - name: Use NAP in a custom VNet
               href: node-auto-provisioning-custom-vnet.md
             - name: Update NAP node images
