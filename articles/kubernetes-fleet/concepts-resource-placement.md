@@ -352,7 +352,6 @@ Using affinities with a `PickN` placement policy functions similarly to using af
 
 The following example shows how to deploy a resource onto three clusters. Only clusters with the `critical-allowed: "true"` label are valid placement targets, and preference is given to clusters with the label `critical-level: 1`:
 
-
 :::zone target="docs" pivot="cluster-scope"
 
 ```yaml
@@ -499,7 +498,7 @@ Fleet Manager intelligent resource placement provides a set of powerful criteria
 
 ### Placement policy options
 
-The table summarizes the available scheduling policy fields for each placement type.
+Available scheduling policy fields for each placement type are shown in the table.
 
 |       Policy Field          | PickFixed | PickAll | PickN |
 |-----------------------------|-----------|---------|-------|
@@ -641,73 +640,23 @@ A property sorter consists of:
 * **Name**: Name of the cluster property.
 * **Sort order**: Sort order can be either `Ascending` or `Descending`. When `Ascending` order is used, member clusters with lower observed values are preferred. When `Descending` order is used, member clusters with higher observed value are preferred.
 
-##### Descending order
-
-For sort order Descending, the proportional weight is calculated using the formula:
-
-```
-((Observed Value - Minimum observed value) / (Maximum observed value - Minimum observed value)) * Weight
-```
-
-For example, let's say you want to rank clusters based on the property of available CPU capacity in descending order and that you have a fleet of three clusters with the following available CPU:
-
-| Cluster | Available CPU capacity |
-| -------- | ------- |
-| `cluster-a` | 100 |
-| `cluster-b` | 20 |
-| `cluster-c` | 10 |
-
-In this case, the sorter computes the following weights:
-
-| Cluster | Available CPU capacity | Calculation | Weight |
-| -------- | ------- | ------- | ------- | 
-| `cluster-a` | 100 | (100 - 10) / (100 - 10) | 100% |
-| `cluster-b` | 20 | (20 - 10) / (100 - 10) | 11.11% |
-| `cluster-c` | 10 | (10 - 10) / (100 - 10) | 0% |
-
-##### Ascending order
-
-For sort order Ascending, the proportional weight is calculated using the formula:
-
-```
-(1 - ((Observed Value - Minimum observed value) / (Maximum observed value - Minimum observed value))) * Weight
-```
-
-For example, let's say you want to rank clusters based on their per-CPU-core-cost in ascending order and that you have a fleet of three clusters with the following CPU core costs:
-
-| Cluster | Per-CPU core cost |
-| -------- | ------- |
-| `cluster-a` | 1 |
-| `cluster-b` | 0.2 |
-| `cluster-c` | 0.1 |
-
-In this case, the sorter computes the following weights:
-
-| Cluster | Per-CPU core cost | Calculation | Weight |
-| -------- | ------- | ------- | ------- | 
-| `cluster-a` | 1 | 1 - ((1 - 0.1) / (1 - 0.1)) | 0% |
-| `cluster-b` | 0.2 | 1 - ((0.2 - 0.1) / (1 - 0.1)) | 88.89% |
-| `cluster-c` | 0.1 | 1 - (0.1 - 0.1) / (1 - 0.1) | 100% |
-
-## Resource snapshots
-
-Fleet Manager keeps a history of the 10 most recently used placement scheduling policies, along with resource versions the placement has selected.
-
-These snapshots can be used with [staged rollout strategies][fleet-staged-rollout] to control the version deployed.
-
-For more information, see the [documentation on snapshots][fleet-snapshots].
+For more information, see the [KubeFleet documentation on property-based scheduling][kubefleet-props].
 
 ## Encapsulating resources using envelope objects
 
-When propagating resources to member clusters following the [hub and spoke model](./concepts-multi-cluster-workload-management.md), it's important to understand that the hub cluster itself is also a Kubernetes cluster. Any resource you want to propagate would first be applied directly to the hub cluster, which can lead to some potential side effects:
+It's important to understand that the Fleet Manager hub cluster is also a Kubernetes cluster. Any resource you want to distribute is first applied to the hub cluster, which can lead to:
 
-1. **Unintended Side Effects**: Resources like ValidatingWebhookConfigurations, MutatingWebhookConfigurations, or Admission Controllers would become active on the hub cluster, potentially intercepting and affecting hub cluster operations.
+1. **Unintended side effects**: ValidatingWebhookConfigurations, MutatingWebhookConfigurations, or Admission Controllers become active on the hub cluster, potentially intercepting and affecting hub cluster operations.
 
-2. **Security Risks**: RBAC resources (Roles, ClusterRoles, RoleBindings, ClusterRoleBindings) intended for member clusters could grant unintended permissions on the hub cluster.
+2. **Security Risks**: RBAC resources (Roles, ClusterRoles, RoleBindings, ClusterRoleBindings) intended for member clusters could grant or restrict permissions on the hub cluster.
 
-3. **Resource Limitations**: ResourceQuotas, FlowSchema, or LimitRanges defined for member clusters would take effect on the hub cluster. While those side effects generally do no harm, there might be cases where you want to avoid these constraints on the hub cluster.
+3. **Resource Limitations**: ResourceQuotas, FlowSchema, or LimitRanges defined for member clusters take effect on the hub cluster.
 
-To avoid those unnecessary side effects, Azure Kubernetes fleet manager provides custom resources to wrap objects to solve these problems. The envelope object itself is applied to the hub, but the resources it contains are only extracted and applied when they reach the member clusters. In this way, one can define resources that should be propagated without actually deploying their contents on the hub cluster. For more information, see the documentation on [envelope objects][envelope-object].
+To avoid unnecessary side effects, Fleet Manager provides custom envelope resources (ClusterResourceEnvelope and ResourceEnvelope) to wrap objects to avoid these potential problems. 
+
+The envelope resource is applied to the hub cluster, but the resources it contains are extracted and applied when they reach member clusters. 
+
+For more information, see the documentation on [envelope objects][envelope-object].
 
 ## Using Tolerations
 
@@ -724,9 +673,9 @@ For more information, see the [documentation on tolerations][fleet-tolerations].
 
 ## Configuring rollout strategy
 
-Fleet Manager resource placement uses a default rolling update strategy to control how resources are rolled out across clusters.
+Fleet Manager resource placement uses a default `RollingUpdate` strategy to control how resources are distributed to member clusters.
 
-In the following example, the fleet scheduler rolls out updates to each cluster sequentially, waiting at least `unavailablePeriodSeconds` between clusters. Rollout status is considered successful if all resources were correctly applied to the cluster. Rollout status checking doesn't cascade to child resources, so for example, it doesn't confirm that pods created by a deployment become ready.
+In the following example, the placement rolls out to each member cluster sequentially, waiting at least `unavailablePeriodSeconds` between clusters. 
 
 :::zone target="docs" pivot="cluster-scope"
 
@@ -752,6 +701,36 @@ spec:
 ```
 
 :::zone-end
+
+:::zone target="docs" pivot="namespace-scope"
+
+```yaml
+apiVersion: placement.kubernetes-fleet.io/v1
+kind: ResourcePlacement
+metadata:
+  name: app-configs-rp-pickall-rolling
+  namespace: my-app
+spec:
+  resourceSelectors:
+    - group: ""
+      kind: ConfigMap
+      version: v1
+      labelSelector:
+        matchLabels:
+          app: my-application
+  policy:
+    placementType: PickAll
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+      unavailablePeriodSeconds: 60
+```
+
+:::zone-end
+
+Rollout status is considered successful if all resources were correctly applied to the cluster. This status doesn't cascade child resource status, so for example, it doesn't confirm that pods created on a member cluster by a deployment become ready.
 
 For more information, see the [documentation on rollout strategies][fleet-rollout].
 
@@ -1083,6 +1062,7 @@ The key difference is in **resource selection** scope. While `ClusterResourcePla
 
 <!-- LINKS - external -->
 [fleet-github]: https://kubefleet.dev/docs/
+[kubefleet-props]: https://kubefleet.dev/docs/how-tos/property-based-scheduling/
 [envelope-object]: ./quickstart-envelope-reserved-resources.md
 [crp-topo]: https://kubefleet.dev/docs/how-tos/topology-spread-constraints/
 [fleet-rollout]: ./concepts-rollout-strategy.md
