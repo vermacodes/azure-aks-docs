@@ -277,4 +277,4 @@ To learn more about GPUs on Azure Kubernetes Service, see:
 [az-aks-get-credentials]: /cli/azure/aks#az-aks-get-credentials
 
 <!-- LINKS - external-->
-[NVIDIA MIG]:https://www.nvidia.com/technologies/multi-instance-gpu/
+[NVIDIA MIG]:https://www.nvidia.com/en-us/technologies/multi-instance-gpu/
