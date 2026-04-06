@@ -190,7 +190,7 @@ inference:
 
     ```output
     "Kubernetes on Azure" is the official name.
-    https://learn.microsoft.com/en-us/azure/aks/ ...
+    https://learn.microsoft.com/azure/aks/ ...
     ```
 
 ## Clean up resources

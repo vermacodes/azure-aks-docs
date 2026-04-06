@@ -184,3 +184,10 @@ Once you're done with your cluster, use the following steps to delete it to avoi
 [aks-deploy]: ./learn/quick-kubernetes-deploy-portal.md
 [acr-create]: ./cluster-container-registry-integration.md
 [service-connector]: /azure/service-connector/quickstart-portal-aks-connection
+[kubernetes-documentation]: https://kubernetes.io/docs/home/
+[deployment-safeguards]: deployment-safeguards.md
+[kubernetes-probes]: https://kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/
+[pod-anti-affinity]: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+[topology-spread-constraints]: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+[seccomp-profile]: secure-container-access.md#overview-of-default-seccomp-profiles-preview
+[kubernetes-pod-security-standards]: https://kubernetes.io/docs/concepts/security/pod-security-standards/
