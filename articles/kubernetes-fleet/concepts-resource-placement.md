@@ -1,7 +1,7 @@
 ---
 title: "Introducing Azure Kubernetes Fleet Manager intelligent resource placement"
 description: This article describes the concepts of Azure Kubernetes Fleet Manager intelligent resource placement
-ms.date: 04/02/2026
+ms.date: 04/07/2026
 author: sjwaight
 ms.author: simonwaight
 ms.service: azure-kubernetes-fleet-manager
@@ -110,7 +110,7 @@ In multi-cluster environments, workloads often consist of both cluster-scoped an
 A resource placement, regardless of scope (cluster or namespace) consists of the following components:
 
 - **[Resource selectors](#resource-selectors)**: select the resources to include via `resourceSelectors`.
-- **[Placement policy](#placement-policy)**: define how to pick clusters via `placeType` using one of `PickAll`, `PickFixed`, or `PickN` types.
+- **[Placement policy](#placement-policy)**: define how to pick clusters via `placementType` using one of `PickAll`, `PickFixed`, or `PickN` types.
 - **[Rollout strategy](#configuring-rollout-strategy)**: control how resources rollout across selected clusters by including an optional `strategy`.
 
 :::zone target="docs" pivot="cluster-scope"
@@ -511,13 +511,13 @@ The `MemberCluster` resource on the hub cluster can be labeled like any Kubernet
 
 Additionally, Fleet Manager automatically adds the following read only labels to all member clusters. 
 
-| Label                           | Description                                                                    |
-|---------------------------------|--------------------------------------------------------------------------------|
-| fleet.azure.com/location        | Azure Region of the cluster (`westus`)                                         |
-| fleet.azure.com/resource-group  | Azure Resource Group of the cluster (`rg_prodapps_01`)                         |
-| fleet.azure.com/subscription-id | Azure Subscription Identifier the cluster resides in. Formatted as UUID/GUID.  |
-| fleet.azure.com/cluster-name    | The name of the cluster associated with the Fleet member cluster resource.     |
-| fleet.azure.com/member-name     | The name of the Fleet Manager member cluster name corresponding to the cluster |
+| Label                           | Description                                                                     |
+|---------------------------------|---------------------------------------------------------------------------------|
+| fleet.azure.com/location        | Azure Region of the cluster (`westus`)                                          |
+| fleet.azure.com/resource-group  | Azure Resource Group of the cluster (`rg_prodapps_01`)                          |
+| fleet.azure.com/subscription-id | Azure Subscription Identifier the cluster resides in. Formatted as UUID/GUID.   |
+| fleet.azure.com/cluster-name    | The name of the cluster associated with the Fleet member cluster resource.      |
+| fleet.azure.com/member-name     | The name of the Fleet Manager member cluster name corresponding to the cluster. |
 
 ### Cluster properties
 
