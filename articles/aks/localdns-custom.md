@@ -323,7 +323,7 @@ To ensure AKS nodes pick up the new Vnet DNS server settings:
 
 This process ensures the AKS Resource Provider is aware of the DNS changes and applies them to all nodes in the node pool.
 
-### Allow DNS Resolution when using Azure CNI Powered by Cilium
+### Update Cilium Network Policies to allow DNS Resolution with LocalDNS
 If you deploy Cilium Network Policies in your cluster, you must explicitly allow pod egress to the LocalDNS IP addresses.
 
 Network policies enforce a default‑deny model for destinations that aren’t specified, so DNS traffic to LocalDNS is blocked unless it’s explicitly permitted.
