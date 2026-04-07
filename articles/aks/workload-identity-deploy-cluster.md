@@ -313,7 +313,7 @@ resource "azurerm_user_assigned_identity" "this" {
     az aks get-credentials --name "${CLUSTER_NAME}" --resource-group "${RESOURCE_GROUP}"
     ```
 
-1. Create a Kubernetes service account and annotate it with the client ID of the managed identity by applying the following manifest using the `kubectl apply` command.
+1. Create a Kubernetes service account and annotate it with the client ID of the managed identity by applying the following manifest using the [`kubectl apply`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#apply) command.
 
     ```azurecli-interactive
     export SERVICE_ACCOUNT_NAME="workload-identity-sa$RANDOM_ID"
@@ -586,7 +586,7 @@ resource "azurerm_key_vault_secret" "this" {
     EOF
     ```
 
-1. Wait for the pod to be in the `Ready` state using the `kubectl wait` command.
+1. Wait for the pod to be in the `Ready` state using the [`kubectl wait`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#wait) command.
 
     ```bash
     kubectl wait --namespace ${SERVICE_ACCOUNT_NAMESPACE} --for=condition=Ready pod/sample-workload-identity-key-vault --timeout=120s
@@ -604,7 +604,7 @@ resource "azurerm_key_vault_secret" "this" {
     SECRET_NAME: ${KEYVAULT_SECRET_NAME}
     ```
 
-1. Verify that pods can get a token and access the resource using the `kubectl logs` command.
+1. Verify that pods can get a token and access the resource using the [`kubectl logs`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#logs) command.
 
     ```bash
     kubectl logs sample-workload-identity-key-vault
@@ -698,7 +698,7 @@ terraform apply
     ```
 
 1. Check the status of the verification pod using the [`kubectl get pods`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#get) command.
-1. Once the pod reaches a `Ready` state, verify it can access the key vault secret by checking the pod logs using the `kubectl logs` command.
+1. Once the pod reaches a `Ready` state, verify it can access the key vault secret by checking the pod logs using the [`kubectl logs`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#logs) command.
 
     ```bash
     kubectl logs workload-identity-test
