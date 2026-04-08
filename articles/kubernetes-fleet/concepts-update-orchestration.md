@@ -1,7 +1,7 @@
 ---
 title: "Update Kubernetes and node images across multiple member clusters"
 description: This article describes the concept of update orchestration across multiple clusters.
-ms.date: 03/24/2026
+ms.date: 04/08/2026
 author: sjwaight
 ms.author: simonwaight
 ms.service: azure-kubernetes-fleet-manager
@@ -186,11 +186,11 @@ Examples:
 
 > [!NOTE]
 > The upper limits of `MaxConcurrency` values are:
-> * **Stage level**: Can't exceed the system limit of **10**.
+> * **Stage level**: Can't exceed the system limit of **50**.
 > * **Group level**: Can't exceed the stage-level `MaxConcurrency` value, and can't exceed the number of clusters in the group.
 > * If a configured value exceeds these limits, the operation is rejected.
 >
-> When no `MaxConcurrency` is specified, the system defaults to `stage.maxConcurrency = 10` and `group.maxConcurrency = 1`. 
+> When no `MaxConcurrency` is specified, the system defaults to `stage.maxConcurrency = 50` and `group.maxConcurrency = 1`. 
 > 
 > Existing update strategies and update runs created before this feature was available automatically receive these defaults the next time the resource is updated.
 
