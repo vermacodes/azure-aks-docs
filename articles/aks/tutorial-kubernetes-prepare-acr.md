@@ -63,7 +63,11 @@ Before creating an ACR instance, you need a resource group. An Azure resource gr
 1. Create an ACR instance using the [`az acr create`][az-acr-create] command and provide your own unique registry name. The _Basic_ SKU is a cost-optimized entry point for development purposes that provides a balance of storage and throughput.
 
     ```azurecli-interactive
-    az acr create --resource-group $RESOURCE_GROUP --location $LOCATION --name $ACRNAME --sku Basic
+    az acr create \
+      --resource-group $RESOURCE_GROUP \
+      --location $LOCATION \
+      --name $ACRNAME \
+      --sku Basic
     ```
 
 ### [Azure PowerShell](#tab/azure-powershell)
