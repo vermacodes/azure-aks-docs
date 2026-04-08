@@ -1,6 +1,6 @@
 ---
-title: Troubleshoot Container Network Optimization Agent on AKS
-description: Troubleshoot common issues you might encounter when deploying, configuring, or using Container Network Optimization Agent on Azure Kubernetes Service (AKS).
+title: Troubleshoot Container Network Insight Agent on AKS
+description: Troubleshoot common issues you might encounter when deploying, configuring, or using Container Network Insight Agent on Azure Kubernetes Service (AKS).
 author: shaifaligargmsft
 ms.author: shaifaligarg
 ms.date: 03/05/2026
@@ -8,11 +8,11 @@ ms.topic: troubleshooting
 ms.service: azure-kubernetes-service
 ---
 
-# Troubleshoot Container Network Optimization Agent on AKS
+# Troubleshoot Container Network Insight Agent on AKS
 
-This article covers common issues you might encounter when deploying, setting up, or using Container Network Optimization Agent on AKS. Each section follows a **Symptom → Cause → Resolution** format.
+This article covers common issues you might encounter when deploying, setting up, or using Container Network Insight Agent on AKS. Each section follows a **Symptom → Cause → Resolution** format.
 
-For deployment instructions, see [Deploy and use Container Network Optimization Agent on AKS](./how-to-configure-container-network-optimization-agent.md).
+For deployment instructions, see [Deploy and use Container Network Insight Agent on AKS](./how-to-configure-container-network-insight-agent.md).
 
 ## Extension installation fails
 
@@ -181,7 +181,7 @@ For deployment instructions, see [Deploy and use Container Network Optimization 
    > [!NOTE]
    > Only `localhost` redirect URIs are currently supported. Public LoadBalancer URLs aren't supported for redirect URIs.
 
-1. Ensure the App Registration has the required Microsoft Graph delegated permissions: `openid`, `profile`, `User.Read`. If admin consent is required, grant it:
+1. Ensure the App Registration has the required Microsoft Graph delegated permissions: `openid`, `profile`, `User.Read`, `offline_access`. If admin consent is required, grant it:
 
    ```azurecli-interactive
    az ad app permission admin-consent --id <app-registration-object-id>
@@ -356,7 +356,7 @@ RuntimeError: Missing required Azure OpenAI environment variable(s): AZURE_OPENA
 
 **Resolution:**
 
-Container Network Optimization Agent has three rate limiting layers:
+Container Network Insight Agent has three rate limiting layers:
 
 | Rate limiter | Default | Behavior |
 |--------------|---------|----------|
@@ -404,7 +404,7 @@ Container Network Optimization Agent has three rate limiting layers:
 
 **Symptom:** The first chat message after deployment or pod restart takes 10-30 seconds to respond.
 
-**Cause:** Container Network Optimization Agent maintains a pool of pre-warmed agents to reduce latency. After a pod restart, the warmup pool needs time to initialize each agent, which requires MCP plugin startup, Azure credential setup, and AI framework initialization.
+**Cause:** Container Network Insight Agent maintains a pool of pre-warmed agents to reduce latency. After a pod restart, the warmup pool needs time to initialize each agent, which requires MCP plugin startup, Azure credential setup, and AI framework initialization.
 
 **Resolution:** This is expected behavior. Wait for the `/ready` endpoint to return HTTP 200 before sending requests — that confirms at least one pre-warmed agent is available. Subsequent requests use the pre-warmed pool and respond faster (typically 5-10 seconds for simple queries).
 
@@ -470,7 +470,7 @@ To reduce latency:
 
 **Symptom:** You are logged out without warning during an active session, or your session ends after a period of inactivity even though you were using the extension.
 
-**Cause:** Container Network Optimization Agent enforces session timeouts for security. Two independent limits apply:
+**Cause:** Container Network Insight Agent enforces session timeouts for security. Two independent limits apply:
 
 | Timeout type | Default | Behavior |
 |--------------|---------|----------|
@@ -488,7 +488,7 @@ To reduce latency:
 
 **Symptom:** After approximately 15 exchanges, the agent seems to forget earlier parts of the conversation or doesn't reference context from earlier in the session.
 
-**Cause:** Container Network Optimization Agent summarizes conversation history to stay within the Azure OpenAI token limit. When the context window reaches approximately 20 messages, older messages are replaced by an automatically generated summary. The most recent messages and the summary are retained and passed to the model.
+**Cause:** Container Network Insight Agent summarizes conversation history to stay within the Azure OpenAI token limit. When the context window reaches approximately 15 messages, older messages are replaced by an automatically generated summary. The most recent messages and the summary are retained and passed to the model.
 
 **Resolution:** This is expected behavior. The summarization preserves key diagnostic context while managing Azure OpenAI token limits. If you need to reference something from much earlier in the conversation:
 - Repeat the relevant context: "Earlier you found X — can you investigate further?"
@@ -511,14 +511,14 @@ To reduce latency:
 
 ## Debug DaemonSet persists after a crash
 
-**Symptom:** The `retina-debug-daemonset` DaemonSet remains in the `kube-system` namespace after a diagnostic session.
+**Symptom:** The `rx-troubleshooting-debug` DaemonSet remains in the `kube-system` namespace after a diagnostic session.
 
-**Cause:** Container Network Optimization Agent deploys a lightweight debug DaemonSet during packet drop diagnostics. If the agent pod crashes unexpectedly during this diagnostic, the cleanup step doesn't run.
+**Cause:** Container Network Insight Agent deploys a lightweight debug DaemonSet during packet drop diagnostics. If the agent pod crashes unexpectedly during this diagnostic, the cleanup step doesn't run.
 
 **Resolution:** Manually delete the DaemonSet:
 
 ```azurecli-interactive
-kubectl delete ds retina-debug-daemonset -n kube-system
+kubectl delete ds rx-troubleshooting-debug -n kube-system
 ```
 
 ---
@@ -527,14 +527,14 @@ kubectl delete ds retina-debug-daemonset -n kube-system
 
 **Symptom:** When asking the agent to investigate packet drops, it reports errors deploying diagnostic pods or cannot collect node-level statistics.
 
-**Cause:** Packet drop diagnostics deploy a lightweight DaemonSet (`retina-debug-daemonset`) to each node to collect host-level network statistics (ethtool stats, softnet counters, ring buffer state). Failures occur if the agent's service account doesn't have permission to create DaemonSets in `kube-system`, or if nodes block the required privileged access to collect host network statistics.
+**Cause:** Packet drop diagnostics deploy a lightweight DaemonSet (`rx-troubleshooting-debug`) to each node to collect host-level network statistics (ethtool stats, softnet counters, ring buffer state). Failures occur if the agent's service account doesn't have permission to create DaemonSets in `kube-system`, or if nodes block the required privileged access to collect host network statistics.
 
 **Resolution:**
 
 1. Check whether the DaemonSet was created:
 
    ```azurecli-interactive
-   kubectl get daemonset -n kube-system retina-debug-daemonset
+   kubectl get daemonset -n kube-system rx-troubleshooting-debug
    ```
 
    If it doesn't exist, the deployment step failed. Check pod logs:
@@ -633,7 +633,7 @@ After enabling, re-run the federated credential setup steps from the deployment 
 
 ## Azure OpenAI model not available in the selected region
 
-**Symptom:** Azure OpenAI deployment creation fails, or the container agent startup fails with an endpoint or model error immediately after deployment.
+**Symptom:** Azure OpenAI deployment creation fails, or the Container Network Insight Agent startup fails with an endpoint or model error immediately after deployment.
 
 **Cause:** The Azure OpenAI model you selected isn't available in your chosen Azure region.
 
@@ -692,7 +692,7 @@ az k8s-extension show \
   --query "{state:provisioningState, version:version}" -o table
 
 # ──── Cleanup Stuck Resources ────
-kubectl delete daemonset retina-debug-daemonset -n kube-system    # Leftover diagnostic DaemonSet
+kubectl delete daemonset rx-troubleshooting-debug -n kube-system    # Leftover diagnostic DaemonSet
 kubectl delete pod -n kube-system -l app=container-networking-agent    # Force pod restart
 ```
 
@@ -700,7 +700,7 @@ kubectl delete pod -n kube-system -l app=container-networking-agent    # Force p
 
 ## Next steps
 
-- [Deploy and use Container Network Optimization Agent on AKS](./how-to-configure-container-network-optimization-agent.md)
-- [Container Network Optimization Agent overview](./container-network-optimization-agent-overview.md)
+- [Deploy and use Container Network Insight Agent on AKS](./how-to-configure-container-network-insight-agent.md)
+- [Container Network Insight Agent overview](./container-network-insight-agent-overview.md)
 - [Advanced Container Networking Services overview](/azure/aks/advanced-container-networking-services-overview)
 - [Azure CNI powered by Cilium](/azure/aks/azure-cni-powered-by-cilium)

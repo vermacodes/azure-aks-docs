@@ -1,6 +1,6 @@
 ﻿---
-title: Deploy and use Container Network Optimization Agent on AKS
-description: Learn how to deploy Container Network Optimization Agent as an AKS extension to troubleshoot networking issues in Azure Kubernetes Service (AKS) clusters.
+title: Deploy and use Container Network Insight Agent on AKS
+description: Learn how to deploy Container Network Insight Agent as an AKS extension to troubleshoot networking issues in Azure Kubernetes Service (AKS) clusters.
 author: shaifaligargmsft
 ms.author: shaifaligarg
 ms.date: 02/23/2026
@@ -8,22 +8,22 @@ ms.topic: how-to
 ms.service: azure-kubernetes-service
 ---
 
-# Deploy and use Container Network Optimization Agent on AKS
+# Deploy and use Container Network Insight Agent on AKS
 
-This article shows how to deploy Container Network Optimization Agent on your Azure Kubernetes Service (AKS) cluster, configure authentication and identity, and use the agent to troubleshoot networking issues.
+This article shows how to deploy Container Network Insight Agent on your Azure Kubernetes Service (AKS) cluster, configure authentication and identity, and use the agent to troubleshoot networking issues.
 
-Container Network Optimization Agent is an AI-powered diagnostic assistant that runs as an in-cluster web application. You describe networking problems in natural language, and the agent runs diagnostic commands (`kubectl`, `cilium`, `hubble`) against your cluster. It returns structured, evidence-backed reports with root cause analysis and remediation guidance.
+Container Network Insight Agent is an AI-powered diagnostic assistant that runs as an in-cluster web application. You describe networking problems in natural language, and the agent runs diagnostic commands (`kubectl`, `cilium`, `hubble`) against your cluster. It returns structured, evidence-backed reports with root cause analysis and remediation guidance.
 
-Container Network Optimization Agent helps you troubleshoot:
+Container Network Insight Agent helps you troubleshoot:
 
 - DNS failures, including CoreDNS misconfigurations, network policies blocking DNS traffic, NodeLocal DNS issues, and Cilium FQDN egress restrictions.
 - Packet drops, including NIC-level RX drops, kernel packet loss, socket buffer overflow, SoftIRQ saturation, and ring buffer exhaustion across cluster nodes.
 - Kubernetes networking issues, including pod connectivity failures, service port misconfigurations, network policy conflicts, missing endpoints, and Hubble flow analysis.
 - Cluster resource queries for quick answers about pods, services, deployments, nodes, and namespaces.
 
-Container Network Optimization Agent operates with read-only access to your cluster. It doesn't modify running workloads, configurations, or network policies. Remediation guidance is advisory only.
+Container Network Insight Agent operates with read-only access to your cluster. It doesn't modify running workloads, configurations, or network policies. Remediation guidance is advisory only.
 
-Container Network Optimization Agent deploys as an AKS extension (`microsoft.containernetworkingagent`). It integrates with the Azure resource management plane, and is managed through the `az k8s-extension` CLI commands.
+Container Network Insight Agent deploys as an AKS extension (`microsoft.containernetworkingagent`). It integrates with the Azure resource management plane, and is managed through the `az k8s-extension` CLI commands.
 
 **Supported regions:** centralus, eastus, eastus2, uksouth, westus2.
 
@@ -73,9 +73,9 @@ Before you begin, ensure you have the following tools, permissions, and informat
 - The cluster must be able to pull container images from `acnpublic.azurecr.io`.
 
 > [!TIP]
-> Container Network Optimization Agent works on clusters without Cilium or ACNS, but with reduced diagnostic capabilities. On non-ACNS clusters, the agent provides DNS, packet drop, and standard Kubernetes networking diagnostics. Hubble flow analysis and Cilium policy diagnostics aren't available.
+> Container Network Insight Agent works on clusters without Cilium or ACNS, but with reduced diagnostic capabilities. On non-ACNS clusters, the agent provides DNS, packet drop, and standard Kubernetes networking diagnostics. Hubble flow analysis and Cilium policy diagnostics aren't available.
 
-## Deploy Container Network Optimization Agent
+## Deploy Container Network Insight Agent
 
 [!INCLUDE [preview features callout](~/reusable-content/ce-skilling/azure/includes/aks/includes/preview/preview-callout.md)]
 Follow these steps to deploy the agent:
@@ -160,7 +160,7 @@ az aks get-credentials \
 
 ### Step 3: Create an Azure OpenAI resource and deploy a model
 
-Container Network Optimization Agent uses Azure OpenAI Service to power its AI reasoning. When you describe a networking issue, the agent sends your query and the collected diagnostic evidence to Azure OpenAI for analysis and response generation. In this step, you create an Azure OpenAI resource and deploy a model (for example, GPT-4o or later) that the agent uses at runtime.
+Container Network Insight Agent uses Azure OpenAI Service to power its AI reasoning. When you describe a networking issue, the agent sends your query and the collected diagnostic evidence to Azure OpenAI for analysis and response generation. In this step, you create an Azure OpenAI resource and deploy a model (for example, GPT-4o or later) that the agent uses at runtime.
 
 > [!NOTE]
 > If you already have an Azure OpenAI resource with a deployed model, skip the resource and model creation commands below. Instead, set the following environment variables to match your existing resource and continue to the next step:
@@ -359,13 +359,13 @@ az identity federated-credential create \
     --audiences "api://AzureADTokenExchange"
 ```
 
-Container Network Optimization Agent uses [AKS workload identity](/azure/aks/workload-identity-overview) to authenticate to Azure OpenAI and other Azure services. At runtime, AKS automatically injects a federated token into the agent pod. The agent exchanges this token for a Microsoft Entra ID access token to call Azure OpenAI. This approach eliminates the need for secrets or connection strings in your cluster.
+Container Network Insight Agent uses [AKS workload identity](/azure/aks/workload-identity-overview) to authenticate to Azure OpenAI and other Azure services. At runtime, AKS automatically injects a federated token into the agent pod. The agent exchanges this token for a Microsoft Entra ID access token to call Azure OpenAI. This approach eliminates the need for secrets or connection strings in your cluster.
 
 ### Step 7: Create an App Registration for Entra ID authentication
 
-Create an Entra ID App Registration so users can sign in to Container Network Optimization Agent using Microsoft Entra ID (MSAL) with OAuth2/OIDC. This step is required for production deployments.
+Create an Entra ID App Registration so users can sign in to Container Network Insight Agent using Microsoft Entra ID (MSAL) with OAuth2/OIDC. This step is required for production deployments.
 
-Container Network Optimization Agent supports two methods for user sign-in:
+Container Network Insight Agent supports two methods for user sign-in:
 
 | Method | Use case |
 |--------|----------|
@@ -457,7 +457,7 @@ az ad app federated-credential list --id $APP_CLIENT_ID --query "[].{name:name, 
 
 ### Step 8: Install the extension
 
-Install the Container Network Optimization Agent AKS extension using the [`az k8s-extension create`](/cli/azure/k8s-extension#az-k8s-extension-create) command. Use the command that matches your cluster configuration.
+Install the Container Network Insight Agent AKS extension using the [`az k8s-extension create`](/cli/azure/k8s-extension#az-k8s-extension-create) command. Use the command that matches your cluster configuration.
 
 ```azurecli-interactive
 export TENANT_ID=$(az account show --query tenantId -o tsv)
@@ -536,7 +536,7 @@ kubectl get serviceaccount container-networking-agent-reader -n kube-system -o y
 
 The annotation `azure.workload.identity/client-id` should match your managed identity client ID.
 
-## Use Container Network Optimization Agent
+## Use Container Network Insight Agent
 
 After deployment and validation, access the agent through the web chat interface.
 
@@ -549,7 +549,7 @@ After deployment and validation, access the agent through the web chat interface
    ```
 
 2. Open `http://localhost:8080` in your browser.
-   - You should see the Container Network Optimization Agent chat interface.
+   - You should see the Container Network Insight Agent chat interface.
    - If you face an internal server error, check if federated credentials are correctly configured.
 
 3. Sign in using either simple username login (development) or Microsoft Entra ID (production), depending on your configuration.
@@ -604,7 +604,7 @@ Start a new conversation for unrelated issues to keep context fresh.
 
 ## Cluster access and security
 
-Container Network Optimization Agent uses a dedicated service account (`container-networking-agent-reader`) with a read-only ClusterRole in the `kube-system` namespace. The RBAC configuration uses the principle of least privilege:
+Container Network Insight Agent uses a dedicated service account (`container-networking-agent-reader`) with a read-only ClusterRole in the `kube-system` namespace. The RBAC configuration uses the principle of least privilege:
 
 - **Read access** to core Kubernetes resources: Pods, Services, Nodes, Namespaces, ConfigMaps, Events, Deployments, ReplicaSets, DaemonSets, StatefulSets, Ingresses, NetworkPolicies, Endpoints, EndpointSlices, PersistentVolumes, and PersistentVolumeClaims.
 - **Read access** to Cilium CRDs: CiliumNetworkPolicies, CiliumEndpoints, CiliumIdentities, CiliumLoadBalancerIPPools, CiliumL2AnnouncementPolicies, and other Cilium resources.
@@ -614,7 +614,7 @@ Container Network Optimization Agent uses a dedicated service account (`containe
 
 The agent pod makes outbound HTTPS calls to your Azure OpenAI endpoint. If you use egress restrictions (network policies, Azure Firewall, or NSGs), allow outbound traffic from the `kube-system` namespace to your Azure OpenAI endpoint on port 443.
 
-For packet drop diagnostics, the agent deploys a lightweight debug DaemonSet (`retina-debug-daemonset`) in `kube-system` that requires `hostNetwork` and `NET_ADMIN` capabilities. This DaemonSet is shared across diagnostic sessions and cleaned up automatically.
+For packet drop diagnostics, the agent deploys a lightweight debug DaemonSet (`rx-troubleshooting-debug`) in `kube-system` that requires `hostNetwork` and `NET_ADMIN` capabilities. This DaemonSet is shared across diagnostic sessions and cleaned up automatically.
 
 The agent doesn't persist diagnostic data externally. The pod stores session data (chat history, agent assignments) in memory, and this data is lost if the pod restarts.
 
@@ -647,11 +647,11 @@ az k8s-extension delete \
 
 ## Troubleshoot
 
-If you encounter issues deploying, configuring, or using Container Network Optimization Agent, see [Troubleshoot Container Network Optimization Agent on AKS](./troubleshoot-container-network-optimization-agent.md) for detailed guidance on common problems including identity and permission errors, Azure OpenAI connectivity issues, extension installation failures, and more.
+If you encounter issues deploying, configuring, or using Container Network Insight Agent, see [Troubleshoot Container Network Insight Agent on AKS](./troubleshoot-container-network-insight-agent.md) for detailed guidance on common problems including identity and permission errors, Azure OpenAI connectivity issues, extension installation failures, and more.
 
 ## Next steps
 
-- [Troubleshoot Container Network Optimization Agent on AKS](./troubleshoot-container-network-optimization-agent.md)
-- [Container Network Optimization Agent overview](./container-network-optimization-agent-overview.md)
+- [Troubleshoot Container Network Insight Agent on AKS](./troubleshoot-container-network-insight-agent.md)
+- [Container Network Insight Agent overview](./container-network-insight-agent-overview.md)
 - [Advanced Container Networking Services overview](/azure/aks/advanced-container-networking-services-overview)
 - [Azure CNI powered by Cilium](/azure/aks/azure-cni-powered-by-cilium)

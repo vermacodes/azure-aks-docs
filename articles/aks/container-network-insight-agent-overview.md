@@ -1,6 +1,6 @@
 ---
-title: Container Network Optimization Agent for AKS overview (Public Preview)
-description: Learn about Container Network Optimization Agent, an AI-powered diagnostic assistant that helps you troubleshoot networking issues in Azure Kubernetes Service (AKS) clusters.
+title: Container Network Insight Agent for AKS overview (Public Preview)
+description: Learn about Container Network Insight Agent, an AI-powered diagnostic assistant that helps you troubleshoot networking issues in Azure Kubernetes Service (AKS) clusters.
 author: shaifaligargmsft
 ms.author: shaifaligarg
 ms.date: 02/18/2026
@@ -8,22 +8,22 @@ ms.topic: overview
 ms.service: azure-kubernetes-service
 ---
 
-# What is Container Network Optimization Agent for AKS? (Public Preview)
+# What is Container Network Insight Agent for AKS? (Public Preview)
 
-Container Network Optimization (CNO) agent is an AI-powered diagnostic assistant that helps you identify and resolve networking issues in your Azure Kubernetes Service (AKS) clusters. Describe a problem in natural language, such as DNS failures, packet drops, unreachable services, or blocked traffic. The agent collects evidence from your cluster and returns a structured report with root cause analysis and remediation guidance.
+Container Network Insight Agent is an AI-powered diagnostic assistant that helps you identify and resolve networking issues in your Azure Kubernetes Service (AKS) clusters. Describe a problem in natural language, such as DNS failures, packet drops, unreachable services, or blocked traffic. The agent collects evidence from your cluster and returns a structured report with root cause analysis and remediation guidance.
 
-Unlike tools that operate only at the Kubernetes layer, CNO agent can also gather **host-level network statistics** through its Linux Networking plugin. The agent can inspect NIC ring buffers, kernel packet counters, SoftIRQ distribution, and socket buffer utilization across your cluster nodes. This surfaces low-level issues such as packet drops, network bottlenecks, and hardware-level saturation that are otherwise difficult to diagnose in a Kubernetes environment.
+Unlike tools that operate only at the Kubernetes layer, Container Network Insight Agent can also gather **host-level network statistics** through its Linux Networking plugin. The agent can inspect NIC ring buffers, kernel packet counters, SoftIRQ distribution, and socket buffer utilization across your cluster nodes. This surfaces low-level issues such as packet drops, network bottlenecks, and hardware-level saturation that are otherwise difficult to diagnose in a Kubernetes environment.
 
 The agent runs as an in-cluster web application deployed as an [AKS cluster extension](/azure/aks/cluster-extensions). You access it through your browser. It provides insights, analysis, and recommended actions. You review the findings and apply any suggested changes yourself.
 
 > [!NOTE]
-> CNO agent is a cloud-only feature for Azure Kubernetes Service (AKS). It isn't supported on AKS hybrid, AKS on Azure Stack HCI, or Arc-enabled Kubernetes clusters.
+> Container Network Insight Agent is a cloud-only feature for Azure Kubernetes Service (AKS). It isn't supported on AKS hybrid, AKS on Azure Stack HCI, or Arc-enabled Kubernetes clusters.
 
 [!INCLUDE [preview features callout](~/reusable-content/ce-skilling/azure/includes/aks/includes/preview/preview-callout.md)]
 
-## What can you do with CNO agent?
+## What can you do with Container Network Insight Agent?
 
-CNO agent helps you troubleshoot the most common and most time-consuming categories of AKS networking issues:
+Container Network Insight Agent helps you troubleshoot the most common and most time-consuming categories of AKS networking issues:
 
 | Capability | What it does |
 |-----------|-------------|
@@ -34,9 +34,9 @@ CNO agent helps you troubleshoot the most common and most time-consuming categor
 
 Each diagnostic produces a structured report that includes what was checked, what's healthy, what failed, the identified root cause, and the exact commands to fix and verify the issue.
 
-## When to use CNO agent
+## When to use Container Network Insight Agent
 
-### Use CNO agent when you need to
+### Use Container Network Insight Agent when you need to
 
 - **Describe the problem in plain English**: No need to construct CLI commands or know which tool handles each networking layer. The agent determines the right diagnostic steps automatically.
 - **Trace issues across Kubernetes and host networking in one conversation**: Go from network policies and pod scheduling down to NIC ring buffers and kernel counters without switching tools or SSH-ing into nodes.
@@ -44,7 +44,7 @@ Each diagnostic produces a structured report that includes what was checked, wha
 - **Get automated root cause analysis with ready-to-use fixes**: The agent correlates evidence from multiple cluster data sources and delivers a structured report with remediation commands you can copy and run.
 - **Troubleshoot on any AKS cluster with no additional setup**: DNS, packet drop, and Kubernetes networking diagnostics work out of the box. Enable [Advanced Container Networking Services (ACNS)](/azure/aks/advanced-container-networking-services-overview) for Cilium policy and Hubble flow analysis.
 
-### CNO agent isn't designed for
+### Container Network Insight Agent isn't designed for
 
 - Application code debugging or software development assistance
 - Storage, PersistentVolume, or disk troubleshooting
@@ -55,14 +55,14 @@ Each diagnostic produces a structured report that includes what was checked, wha
 
 ## How it works
 
-When you describe a networking issue, CNO agent follows a structured diagnostic workflow:
+When you describe a networking issue, Container Network Insight Agent follows a structured diagnostic workflow:
 
 ```
 You describe the issue → Agent classifies it → Collects evidence from the cluster → Analyzes findings → Reports results
 ```
-:::image type="content" source="./media/advanced-container-networking-services/container-networking-agent-working.png" alt-text="Architecture diagram showing the CNO agent inside an AKS cluster, its connections to cluster data sources, and its integration with Azure OpenAI Service." lightbox="./media/advanced-container-networking-services/container-networking-agent-working.png":::
+:::image type="content" source="./media/advanced-container-networking-services/container-networking-agent-working.png" alt-text="Architecture diagram showing the Container Network Insight Agent inside an AKS cluster, its connections to cluster data sources, and its integration with Azure OpenAI Service." lightbox="./media/advanced-container-networking-services/container-networking-agent-working.png":::
 
-CNO agent runs as a pod inside your AKS cluster. You interact with it through a web browser over HTTPS. Inside the cluster, the agent executes diagnostic commands through the [AKS MCP server](/azure/aks/aks-model-context-protocol-server) and connects to five data sources through specialized plugins:
+Container Network Insight Agent runs as a pod inside your AKS cluster. You interact with it through a web browser over HTTPS. Inside the cluster, the agent executes diagnostic commands through the [AKS MCP server](/azure/aks/aks-model-context-protocol-server) and connects to five data sources through specialized plugins:
 
 - **Kubernetes API Server**: Queries pods, services, nodes, network policies, and other cluster resources via `kubectl` through the AKS MCP server.
 - **CoreDNS**: Collects DNS health status and metrics through the DNS plugin.
@@ -86,7 +86,7 @@ The diagnostic workflow follows four steps:
 
 ### Integrations
 
-CNO agent works with the AKS networking tools you already use:
+Container Network Insight Agent works with the AKS networking tools you already use:
 
 | Integration | How it's used |
 |------------|---------------|
@@ -98,15 +98,15 @@ CNO agent works with the AKS networking tools you already use:
 | **Azure OpenAI** | Powers the conversational AI that interprets your questions and generates diagnostic reports |
 
 > [!TIP]
-> For the full diagnostic feature set, including Hubble flow analysis and Cilium policy diagnostics, deploy CNO agent on an AKS cluster with [Azure CNI powered by Cilium](/azure/aks/azure-cni-powered-by-cilium) and [Advanced Container Networking Services (ACNS)](/azure/aks/advanced-container-networking-services-overview) enabled.
+> For the full diagnostic feature set, including Hubble flow analysis and Cilium policy diagnostics, deploy Container Network Insight Agent on an AKS cluster with [Azure CNI powered by Cilium](/azure/aks/azure-cni-powered-by-cilium) and [Advanced Container Networking Services (ACNS)](/azure/aks/advanced-container-networking-services-overview) enabled.
 
 ## Safety model and limitations
 
 ### How the agent interacts with your cluster
 
-CNO agent collects diagnostic data from your cluster to generate insights, reports, and recommended actions. It executes cluster operations through the [AKS MCP server](/azure/aks/aks-model-context-protocol-server) and uses a dedicated Kubernetes service account (`container-networking-agent-reader`) with minimal permissions scoped to the data it needs for diagnostics.
+Container Network Insight Agent collects diagnostic data from your cluster to generate insights, reports, and recommended actions. It executes cluster operations through the [AKS MCP server](/azure/aks/aks-model-context-protocol-server) and uses a dedicated Kubernetes service account (`container-networking-agent-reader`) with minimal permissions scoped to the data it needs for diagnostics.
 
-CNO agent doesn't make changes to your cluster. It provides remediation commands and recommendations, but you review and apply them yourself.
+Container Network Insight Agent doesn't make changes to your cluster. It provides remediation commands and recommendations, but you review and apply them yourself.
 
 ### Scope restrictions
 
@@ -124,13 +124,13 @@ The agent responds only to networking and Kubernetes-related questions and doesn
 
 ### Concurrency
 
-CNO agent supports 1–7 concurrent users under typical conditions. Packet drop diagnostics on larger clusters (25+ nodes) may require limiting concurrent users to avoid API server load. For details, see [Scale guidance](#scale-guidance).
+Container Network Insight Agent supports 1–7 concurrent users under typical conditions. Packet drop diagnostics on larger clusters (25+ nodes) may require limiting concurrent users to avoid API server load. For details, see [Scale guidance](#scale-guidance).
 
 ## Example scenarios and sample prompts
 
 ### DNS troubleshooting
 
-DNS resolution failures are one of the most common networking issues in Kubernetes. When pods can't resolve service names, external domains, or both, CNO agent runs a comprehensive DNS diagnostic that checks CoreDNS health, configuration, DNS resolution from multiple paths, and network policies that might block DNS traffic.
+DNS resolution failures are one of the most common networking issues in Kubernetes. When pods can't resolve service names, external domains, or both, Container Network Insight Agent runs a comprehensive DNS diagnostic that checks CoreDNS health, configuration, DNS resolution from multiple paths, and network policies that might block DNS traffic.
 
 **Common situations:**
 
@@ -165,7 +165,7 @@ The DNS diagnostic checks CoreDNS pod health, service endpoints, and CoreDNS con
 
 ### RX / Packet drop troubleshooting
 
-Packet drops are difficult to diagnose because they can occur at multiple layers: NIC hardware, the kernel networking stack, or application socket buffers. CNO agent deploys a lightweight debug pod to each node to collect host-level network statistics. It then uses delta measurements to identify where packets are lost.
+Packet drops are difficult to diagnose because they can occur at multiple layers: NIC hardware, the kernel networking stack, or application socket buffers. Container Network Insight Agent deploys a lightweight debug pod to each node to collect host-level network statistics. It then uses delta measurements to identify where packets are lost.
 
 **Common situations:**
 
@@ -202,7 +202,7 @@ The packet drop diagnostic examines NIC ring buffer utilization (`ethtool`), ker
 
 ### Kubernetes networking troubleshooting
 
-When pods can't communicate with services, network policies block expected traffic, or services have no endpoints, CNO agent investigates the full networking path. The agent checks pod scheduling and readiness, service endpoint registration, network policy evaluation, and Hubble flow observation.
+When pods can't communicate with services, network policies block expected traffic, or services have no endpoints, Container Network Insight Agent investigates the full networking path. The agent checks pod scheduling and readiness, service endpoint registration, network policy evaluation, and Hubble flow observation.
 
 **Common situations:**
 
@@ -237,7 +237,7 @@ The Kubernetes networking diagnostic examines pod status and scheduling, service
 - Cilium agent pods not healthy
 
 > [!NOTE]
-> Hubble flow analysis (`hubble observe`) requires [Advanced Container Networking Services (ACNS)](/azure/aks/advanced-container-networking-services-overview) to be enabled on your cluster. On clusters without ACNS, CNO agent still provides full diagnostics using `kubectl` and standard Kubernetes resources, but flow-level visibility is unavailable.
+> Hubble flow analysis (`hubble observe`) requires [Advanced Container Networking Services (ACNS)](/azure/aks/advanced-container-networking-services-overview) to be enabled on your cluster. On clusters without ACNS, Container Network Insight Agent still provides full diagnostics using `kubectl` and standard Kubernetes resources, but flow-level visibility is unavailable.
 
 ## Known issues and product limitations
 
@@ -255,48 +255,48 @@ The first query from a new user might take longer if all agents in the pre-warme
 
 | Issue | Description | Workaround |
 |-------|-------------|------------|
-| **Debug DaemonSet persists after crash** | If the CNO agent pod crashes during a packet drop diagnostic, the `rx-troubleshooting-debug` DaemonSet may remain in `kube-system` | Run `kubectl delete ds rx-troubleshooting-debug -n kube-system` |
+| **Debug DaemonSet persists after crash** | If the Container Network Insight Agent pod crashes during a packet drop diagnostic, the `rx-troubleshooting-debug` DaemonSet may remain in `kube-system` | Run `kubectl delete ds rx-troubleshooting-debug -n kube-system` |
 | **First packet drop diagnostic is slower** | The debug DaemonSet takes 30–60 seconds to schedule and become ready on first use | Subsequent diagnostics reuse existing pods and are faster |
 | **Non-Cilium clusters have reduced diagnostics** | Cilium policy analysis and Hubble flow observation aren't available | Agent still provides full DNS, packet drop, and standard Kubernetes diagnostics |
 | **Non-ACNS clusters lack Hubble** | `hubble observe` commands fail on clusters without Advanced Container Networking Services | Enable ACNS, or rely on `kubectl`-based diagnostics |
-| **DNS tests run from agent pod** | DNS resolution tests execute from the CNO agent pod, which may have a different DNS policy than the affected pod | Agent notes its own DNS policy in the evidence for comparison |
+| **DNS tests run from agent pod** | DNS resolution tests execute from the Container Network Insight Agent pod, which may have a different DNS policy than the affected pod | Agent notes its own DNS policy in the evidence for comparison |
 | **Session data is in-memory** | Session state (chat history, agent assignments) is lost if the pod restarts | Log back in to start a new session; no persistent conversation history |
 | **Chat context window** | The agent retains only the last ~15 exchanges in its working context | For unrelated issues, start a new conversation to avoid context confusion |
 
 ### Extension availability
 
-When deployed as an AKS extension (`microsoft.containernetworkingagent`), CNO agent is available in: **centralus**, **eastus**, **eastus2**, **uksouth**, **westus2**.
+When deployed as an AKS extension (`microsoft.containernetworkingagent`), Container Network Insight Agent is available in: **centralus**, **eastus**, **eastus2**, **uksouth**, **westus2**.
 
 ## Pricing
 
-CNO agent runs as a pod in your AKS cluster. Direct costs include:
+Container Network Insight Agent runs as a pod in your AKS cluster. Direct costs include:
 
 - **Azure OpenAI usage**: Token consumption depends on conversation length and diagnostic complexity. See [Azure OpenAI pricing](https://azure.microsoft.com/pricing/details/cognitive-services/openai-service/) for current rates.
-- **AKS node compute**: The CNO agent pod and (for packet drop diagnostics) the debug DaemonSet consume cluster compute resources.
+- **AKS node compute**: The Container Network Insight Agent pod and (for packet drop diagnostics) the debug DaemonSet consume cluster compute resources.
 
-CNO agent itself has no separate licensing fee during public preview.
+Container Network Insight Agent itself has no separate licensing fee during public preview.
 
-## Access and use CNO agent
+## Access and use Container Network Insight Agent
 
-CNO agent is a browser-based chatbot that runs inside your AKS cluster. After deployment, open the application URL in any modern browser to start a conversation. You don't need a CLI tool on your workstation or a portal blade to navigate. It's a standalone chat interface designed for network diagnostics.
+Container Network Insight Agent is a browser-based chatbot that runs inside your AKS cluster. After deployment, open the application URL in any modern browser to start a conversation. You don't need a CLI tool on your workstation or a portal blade to navigate. It's a standalone chat interface designed for network diagnostics.
 
 ### Sign up
 
-When you first open the CNO agent URL, the application prompts you to sign in. Depending on how your administrator configured the deployment, you sign in with either a simple username (development environments) or your Microsoft Entra ID credentials (production environments).
+When you first open the Container Network Insight Agent URL, the application prompts you to sign in. Depending on how your administrator configured the deployment, you sign in with either a simple username (development environments) or your Microsoft Entra ID credentials (production environments).
 
-:::image type="content" source="./media/advanced-container-networking-services/container-networking-signup-page.png" alt-text="Screenshot of the CNO agent sign-up page where users enter credentials to access the diagnostic assistant." lightbox="./media/advanced-container-networking-services/container-networking-signup-page.png":::
+:::image type="content" source="./media/advanced-container-networking-services/container-networking-signup-page.png" alt-text="Screenshot of the Container Network Insight Agent sign-up page where users enter credentials to access the diagnostic assistant." lightbox="./media/advanced-container-networking-services/container-networking-signup-page.png":::
 
 ### Grant permissions
 
 After signing in, the application might prompt you to grant permissions. Review the requested permissions and select **Accept** to continue.
 
-:::image type="content" source="./media/advanced-container-networking-services/container-networking-agent-permission-page.png" alt-text="Screenshot of the CNO agent permission authorization page requesting user consent." lightbox="./media/advanced-container-networking-services/container-networking-agent-permission-page.png":::
+:::image type="content" source="./media/advanced-container-networking-services/container-networking-agent-permission-page.png" alt-text="Screenshot of the Container Network Insight Agent permission authorization page requesting user consent." lightbox="./media/advanced-container-networking-services/container-networking-agent-permission-page.png":::
 
 ### Chat interface
 
 After you authenticate, you land on the chat interface. The server maintains your session, so you can close and reopen the browser tab within the session timeout window without losing your conversation.
 
-:::image type="content" source="./media/advanced-container-networking-services/container-networking-agent-home-page.png" alt-text="Screenshot of the CNO agent chat interface showing a user prompt and a structured diagnostic response." lightbox="./media/advanced-container-networking-services/container-networking-agent-home-page.png":::
+:::image type="content" source="./media/advanced-container-networking-services/container-networking-agent-home-page.png" alt-text="Screenshot of the Container Network Insight Agent chat interface showing a user prompt and a structured diagnostic response." lightbox="./media/advanced-container-networking-services/container-networking-agent-home-page.png":::
 
 The chat interface is where you:
 
@@ -307,7 +307,7 @@ The chat interface is where you:
 
 ### Report issues
 
-If you encounter a problem with CNO agent:
+If you encounter a problem with Container Network Insight Agent:
 
 1. Note the **session ID** and **timestamp** of the issue (visible in the chat interface)
 2. Check the health endpoints: `/health`, `/ready`, `/live`
@@ -316,7 +316,7 @@ If you encounter a problem with CNO agent:
 
 ## Next steps
 
-- [Quickstart: Deploy CNO agent](./how-to-configure-container-network-optimization-agent.md)
-- [Troubleshoot CNO agent on AKS](./troubleshoot-container-network-optimization-agent.md)
+- [Quickstart: Deploy Container Network Insight Agent](./how-to-configure-container-network-insight-agent.md)
+- [Troubleshoot Container Network Insight Agent on AKS](./troubleshoot-container-network-insight-agent.md)
 - [Advanced Container Networking Services overview](/azure/aks/advanced-container-networking-services-overview)
 - [Azure CNI powered by Cilium](/azure/aks/azure-cni-powered-by-cilium)
