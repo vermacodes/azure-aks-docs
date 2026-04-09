@@ -27,7 +27,7 @@ For more information about AVMs, see [Azure Verified Modules](/community/content
     ```
 
 - Azure CLI installed and configured. Find your version using the `az --version` command. If you need to install or upgrade, see [Install Azure CLI](/cli/azure/install-azure-cli).
-- [kubectl](https://kubernetes.io/releases/download/) installed. You can install it locally using the [`az aks install-cli`][az-aks-install-cli] command.
+- [kubectl](https://kubernetes.io/releases/download/) installed. You can install it locally using the [`az aks install-cli`](/cli/azure/aks#az_aks_install_cli) command.
 - Terraform installed locally. For installation instructions, see [Install Terraform](https://developer.hashicorp.com/terraform/install).
 
 ## Understand the Terraform configuration
@@ -143,7 +143,7 @@ terraform apply
 
 ## Connect to the AKS cluster
 
-1. Configure kubectl to connect to your Kubernetes cluster using the [`az aks get-credentials`][az-aks-get-credentials] command. This command downloads credentials and configures the Kubernetes CLI to use them.
+1. Configure kubectl to connect to your Kubernetes cluster using the [`az aks get-credentials`](/cli/azure/aks#az_aks_get_credentials) command. This command downloads credentials and configures the Kubernetes CLI to use them.
 
     ```azurecli-interactive
     az aks get-credentials --resource-group <resource-group> --name <cluster-name>
