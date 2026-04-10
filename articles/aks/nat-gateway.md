@@ -133,7 +133,7 @@ Update the outbound IPs, outbound IP prefixes, managed outbound IP count, or idl
 
 ## Create an AKS cluster with a `managedNATgateway`
 
-* Create an AKS cluster with a managed Standard NAT gateway using the `az aks create` command with `--outbound-type managedNATGateway`. `--nat-gateway-managed-outbound-ip-count`, and `--nat-gateway-idle-timeout` parameters. IF you want the NAT gateway to operate out of specific availability zone, specify the zone using `--zones`.
+* Create an AKS cluster with a managed Standard NAT gateway using the `az aks create` command with `--outbound-type managedNATGateway`. `--nat-gateway-managed-outbound-ip-count`, and `--nat-gateway-idle-timeout` parameters. If you want the NAT gateway to operate out of specific availability zone, specify the zone using `--zones`.
 
 * A managed NAT gateway resource can't be used across multiple availability zones. For zone-redundant outbound connectivity, consider using #create-an-aks-cluster-with-a-managed-nat-gateway-v2.
 * If no zone is specified when creating a managed NAT gateway, then NAT gateway is deployed to "no zone" by default. When NAT gateway is placed in **no zone**, Azure places the resource in a zone for you. For more information on non-zonal deployment model, see [non-zonal NAT gateway](/azure/nat-gateway/nat-availability-zones#non-zonal).
