@@ -138,7 +138,7 @@ Update the outbound IPs, outbound IP prefixes, managed outbound IP count, or idl
 * A managed NAT gateway resource can't be used across multiple availability zones. For zone-redundant outbound connectivity, consider using #create-an-aks-cluster-with-a-managed-nat-gateway-v2.
 * If no zone is specified when creating a managed NAT gateway, then NAT gateway is deployed to "no zone" by default. When NAT gateway is placed in **no zone**, Azure places the resource in a zone for you. For more information on non-zonal deployment model, see [non-zonal NAT gateway](/azure/nat-gateway/nat-availability-zones#non-zonal).
   
-## Create an AKS cluster with a `userAssignedNatGateway`
+## <a name="create-an-aks-cluster-with-a-user-assigned-nat-gateway"></a>Create an AKS cluster with a `userAssignedNatGateway`
 
 This configuration requires bring-your-own networking (via [Azure CNI][byo-vnet-azure-cni]) and that the NAT gateway is preconfigured on the subnet. Both Standard and StandardV2 NAT gateways are supported for this `outbound-type`. The following commands create the required resources to deploy a StandardV2 NAT gateway resource for your AKS cluster.
 
