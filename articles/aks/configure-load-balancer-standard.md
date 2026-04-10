@@ -466,7 +466,7 @@ The following table summarizes the port-specific annotations that can be used to
 
 ## Exclude node pool from Load Balancer backend pool
 
-In certain scenarios, you may want to prevent a node pool from being part of the load balancer’s backend pool. To do this, apply the label `node.kubernetes.io/exclude-from-external-load-balancers=true` to the node pool. 
+In certain scenarios, you may want to prevent a node pool from being part of the load balancer's backend pool. To do this, apply the label `node.kubernetes.io/exclude-from-external-load-balancers=true` to the node pool. 
 
 > [!NOTE]
 > Although the label resides on individual nodes, it must be applied at the node pool level to ensure long-term persistence.
@@ -489,7 +489,6 @@ To learn more about using internal load balancer for inbound traffic, see the [A
 [kubernetes-services]: https://kubernetes.io/docs/concepts/services-networking/service/
 
 <!-- LINKS - Internal -->
-[augmented-security-rules]: /azure/virtual-network/network-security-groups-overview#augmented-security-rules
 [azure-lb-outbound-connections]: /azure/load-balancer/load-balancer-outbound-connections
 [azure-lb-outbound-preallocatedports]: /azure/load-balancer/load-balancer-outbound-connections#preallocatedports
 [azure-lb-outbound-rules-overview]: /azure/load-balancer/load-balancer-outbound-connections#outboundrules
