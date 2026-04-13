@@ -5,7 +5,7 @@ ms.topic: overview
 ms.custom: build-2024, biannual
 ms.date: 04/13/2026
 author: wangyira
-ms.author: wangyira
+ms.author: wangamanda
 #Customer intent: As a cluster administrator or developer, I want to simplify AKS cluster management and deployment by using preconfigured settings, built-in best practices, and automated features for production-ready applications.
 ---
 
