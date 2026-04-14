@@ -68,9 +68,9 @@ sections:
           No. Moving your AKS cluster between subscriptions is currently unsupported.
 
       - question: |
-          Can I move or migrate my cluster to another vnet?
+          Can I move or migrate my cluster to another virtual network?
         answer: |
-          No. Moving your AKS cluster to another vnet is currently unsupported.
+          No. Moving your AKS cluster to another virtual network is currently unsupported.
           
       - question: |
           Can I move my AKS cluster or AKS infrastructure resources to other resource groups or rename them?
