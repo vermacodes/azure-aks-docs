@@ -231,7 +231,8 @@ AKS exposes the following platform metrics in Azure Monitor for monitoring API s
 | `etcd_database_usage_percentage` | Maximum utilization of the etcd database across instances. Monitor this closely to avoid exceeding the etcd storage limit. |
 
 Consistently monitor `apiserver_cpu_usage_percentage` and `apiserver_memory_usage_percentage` to detect resource pressure on the API server. If `etcd_database_usage_percentage` is consistently above 50%, review the [Etcd Optimizations](#etcd-optimizations) section to reduce database size. For the full list of available metrics, see [AKS monitoring data reference](/azure/aks/monitor-aks-reference#metrics).
- Feature limitations
+
+## Feature limitations
 As you scale your AKS clusters to larger scale points, keep the following feature limitations in mind:
 
 - AKS supports scaling up to 5,000 nodes by default for all Standard Tier / LTS clusters. AKS scales your cluster's control plane at runtime based on cluster size and API server resource utilization. If you can't scale up to the supported limit, enable [control plane metrics (Preview)](./monitor-control-plane-metrics.md) with the [Azure Monitor managed service for Prometheus](/azure/azure-monitor/essentials/prometheus-metrics-overview) to monitor the control plane. To help troubleshoot scaling performance or reliability issues, see the following resources:
