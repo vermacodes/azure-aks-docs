@@ -22,11 +22,12 @@ Keep in mind that *large* is a relative term. Kubernetes has a multi-dimensional
 In this article, you learn about:
 
 > [!div class="checklist"]
+> - Node scaling
 > - AKS and Kubernetes control plane scalability.
-> - Kubernetes Client best practices, including backoff, watches, and pagination.
+> - Kubernetes client best practices, including backoff, watches, and pagination.
 > - Azure API and platform throttling limits.
 > - Feature limitations.
-> - Networking and node pool scaling best practices.
+> - Networking best practices.
 
 ## Node scaling
 
