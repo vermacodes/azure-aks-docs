@@ -190,7 +190,7 @@ lease_duration > renew_deadline > retry_period
 
 ### Etcd Optimizations
 
-- **Keep the overall Etcd size small** and do not use Etcd as a regular database. If your etcd database size is large (> 2 GB) consider utilizing some of the object size reduction techniques listed below.
+- **Keep the overall etcd size small and do not etcd as a general-purpose database**. AKS provides 8 GB of etcd storage by default, but larger etcd databases increase defragmentation time, which can lead to read and write performance issues. Larger etcd databases can also increase the probability of API server and etcd reliability issues if an unoptimized client fetches large numbers of objects from etcd frequently. If your etcd database size exceeds 2 GB, consider using the object size reduction techniques listed below.
 - To reduce pod specification sizes, move environment variables from pod specifications to ConfigMaps.
 - Split large secrets or ConfigMaps into smaller, more manageable pieces.
 - Store secrets in [Azure Key Vault](/azure/key-vault/general/overview) instead of Kubernetes Secrets when possible to reduce the number of secrets stored in etcd.
