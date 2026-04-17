@@ -140,7 +140,7 @@ Before you install the NVIDIA plugins, you need to specify which multi-instance 
 > Helm installation of the NVIDIA device plugin consolidates the Kubernetes device plugin and GFD repositories. Separate helm installation of the GFD software component is not recommended when using AKS-managed multi-instance GPU.
 
 > [!NOTE]
-> If you deploy the NVIDIA device plugin via a custom DaemonSet manifest instead of Helm, you must include the environment variable `NVIDIA_MIG_MONITOR_DEVICES=all` in the device plugin container.
+> If you deploy the NVIDIA device plugin on Azure Linux via a custom DaemonSet manifest instead of Helm, you must include the environment variable `NVIDIA_MIG_MONITOR_DEVICES=all` in the device plugin container.
 
 ## Confirm multi-instance GPU capability
 
