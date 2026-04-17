@@ -3,7 +3,7 @@ title: Performance and scaling best practices for large workloads in Azure Kuber
 titleSuffix: Azure Kubernetes Service
 description: Learn the best practices for performance and scaling for large workloads in Azure Kubernetes Service (AKS).
 ms.topic: best-practice
-ms.date: 01/18/2024
+ms.date: 04/17/2026
 author: schaffererin
 ms.author: schaffererin
 
@@ -61,7 +61,7 @@ To confirm if your control plane has been scaled up, look for the configmap `lar
 kubectl describe configmap large-cluster-control-plane-scaling-status -n kube-system
 ```
 
-## Kubernetes Scale Envelope and Control Plane Considerations
+## Kubernetes scale envelope and control plane considerations
 
 Kubernetes clients are application components, such as operators or monitoring agents, that run in the cluster and communicate with the kube-apiserver to read or modify resources. It's important to optimize how these clients behave to reduce the load they place on the kube-apiserver and the Kubernetes control plane. 
 
@@ -88,75 +88,75 @@ To confirm if any requests are being dropped due to APF, run the following comma
 kubectl get --raw /metrics | grep apiserver_flowcontrol_rejected_requests_total
 ```
 
-### Kubernetes Client Best Practices
+### Kubernetes client best practices
 
 LIST calls issued by unoptimized clients are often one of the biggest factors limiting a cluster's scalability. When working with lists that might have more than a few thousand small objects or more than a few hundred large objects, you should consider the following guidelines:
 
 - **Consider the number of objects (CRs) you expect to eventually exist** when defining a new resource type (CRD).
 - **The load on etcd and API server primarily relies on the size of the response.** This guidance applies whether the client issues a small number of LIST requests for large objects or a large number of LIST requests for smaller objects.
 
-#### Use Informers
+#### Use informers
 
 - If your code needs to maintain an updated list of objects in memory, using an [informer](https://pkg.go.dev/k8s.io/client-go/informers) from the client-go library will give you benefits of watching for changes to the resources based on events instead of polling for changes. This is the best approach to avoid unoptimized and repeated LISTs.
 
-#### Use API Server Cache
+#### Use API server cache
 
 - Use `resourceVersion=0` to return results from the API server cache. This can prevent objects being fetched from etcd thereby reducing etcd load, **but it doesn't support pagination**.
 
-```
-/api/v1/namespaces/default/pods?resourceVersion=0
-```
+  ```
+  /api/v1/namespaces/default/pods?resourceVersion=0
+  ```
 #### Efficient Kubernetes API usage
 
 - It's recommended to use the watch argument whenever possible. With no arguments the default behavior is to list objects. Refer to the example below.
+  
+  ```
+  /api/v1/namespaces/default/pods?watch=true
+  ```
+  
+  Use watch with a `resourceVersion` set to be the most recent known value received from preceding list or watch. This is handled automatically in client-go. But verify if you are using a Kubernetes client in other languages.
 
-```
-/api/v1/namespaces/default/pods?watch=true
-```
-
-Use watch with a `resourceVersion` set to be the most recent known value received from preceding list or watch. This is handled automatically in client-go. But verify if you are using a Kubernetes client in other languages.
-
-```
-/api/v1/namespaces/default/pods?watch=true&resourceVersion=<resourceversion>
-```
+  ```
+  /api/v1/namespaces/default/pods?watch=true&resourceVersion=<resourceversion>
+  ```
 
 - If controllers or operators must use LIST calls, they should avoid polling cluster-wide resources without label or field selectors, especially in large clusters. The following examples show optimized and unoptimized LIST calls.
 
-**Optimized LIST:**
-
-```
-/api/v1/namespaces/default/pods?fieldSelector=status.phase=Running
-```
-
-**Unoptimized LIST:**
-
-```
-/api/v1/pods
-```
+  **Optimized LIST:**
+  
+  ```
+  /api/v1/namespaces/default/pods?fieldSelector=status.phase=Running
+  ```
+  
+  **Unoptimized LIST:**
+  
+  ```
+  /api/v1/pods
+  ```
 
 - **Use pagination** to reduce the size of LIST responses if the client must fetch data from etcd. The following example uses the limit argument to restrict the response to 100 objects.
 
-```
-/api/v1/namespaces/default/pods?fieldSelector=status.phase=Running&limit=100
-```
-
-If you want the LIST to continue returning all the pod objects in the example above use the continue argument with limit.
-
-```
-/api/v1/namespaces/default/pods?fieldSelector=status.phase=Running&limit=100&continue=<continue_token>
-```
-
-If kubectl is being utilized, `--chunk-size` argument can be directly applied to paginate responses.
-
-```bash
-kubectl get pods -n default --chunk-size=100
-```
+  ```
+  /api/v1/namespaces/default/pods?fieldSelector=status.phase=Running&limit=100
+  ```
+  
+  If you want the LIST to continue returning all the pod objects in the example above use the continue argument with limit.
+  
+  ```
+  /api/v1/namespaces/default/pods?fieldSelector=status.phase=Running&limit=100&continue=<continue_token>
+  ```
+  
+  If kubectl is being utilized, `--chunk-size` argument can be directly applied to paginate responses.
+  
+  ```bash
+  kubectl get pods -n default --chunk-size=100
+  ```
 
 - If your controllers or operators use lease updates for leader election, make sure they are resilient to transient connectivity issues by tuning `leaseDuration`, `renewDeadline`, and `retryPeriod` that are optimal for your workloads. For Kubernetes controllers that use client-go leader election, use the following formula:
  
-``` 
-lease_duration > renew_deadline > retry_period
-```
+  ``` 
+  lease_duration > renew_deadline > retry_period
+  ```
 
 #### Daemonsets
 
@@ -187,7 +187,7 @@ lease_duration > renew_deadline > retry_period
 > [!NOTE]
 > You can analyze API server traffic and client behavior through Kube Audit logs. For more information, see [Troubleshoot the Kubernetes control plane](/troubleshoot/azure/azure-kubernetes/troubleshoot-apiserver-etcd).
 
-### etcd Optimizations
+### etcd optimizations
 
 - **Keep the overall etcd size small and don't use etcd as a general-purpose database**. AKS provides 8 GB of etcd storage by default, but larger etcd databases increase defragmentation time, which can lead to read and write performance issues. Larger etcd databases can also increase the probability of API server and etcd reliability issues if an unoptimized client fetches large numbers of objects from etcd frequently. If your etcd database size exceeds 2 GB, consider using the object size reduction techniques listed below.
 - To reduce pod specification sizes, move environment variables from pod specifications to ConfigMaps.
@@ -200,7 +200,7 @@ lease_duration > renew_deadline > retry_period
   - Reduce Deployment rollout history. Old ReplicaSets are stored as API objects too. The default value is 10.
 - Reduce Helm revision history with the `--history-max` argument. In large clusters, keep it below 5.
 
-## Monitor AKS Control Plane metrics and logs
+## Monitor AKS control plane metrics and logs
 
 Monitoring control plane metrics in large AKS clusters is crucial for ensuring the stability and performance of Kubernetes workloads. These metrics provide visibility into the health and behavior of critical components like the API server, etcd, controller manager, and scheduler. In large-scale environments, where resource contention and high API call volumes are common, monitoring control plane metrics helps identify bottlenecks, detect anomalies, and optimize resource usage. By analyzing these metrics, operators can proactively address issues such as API server latency, high etcd objects, or excessive control plane resource consumption, ensuring efficient cluster operation and minimizing downtime.
 
@@ -238,14 +238,14 @@ As you scale your AKS clusters to larger scale points, keep the following featur
   - [AKS at scale troubleshooting guide](/troubleshoot/azure/azure-kubernetes/aks-at-scale-troubleshoot-guide) 
   - [Troubleshoot the Kubernetes control plane](/troubleshoot/azure/azure-kubernetes/troubleshoot-apiserver-etcd)
 
-> [!NOTE]
-> During the operation to scale the control plane, you might encounter elevated API server latency or timeouts for up to 15 minutes. If you continue to have problems scaling to the supported limit, open a [support ticket](/azure/azure-portal/supportability/how-to-create-azure-support-request).
+  > [!NOTE]
+  > During the operation to scale the control plane, you might encounter elevated API server latency or timeouts for up to 15 minutes. If you continue to have problems scaling to the supported limit, open a [support ticket](/azure/azure-portal/supportability/how-to-create-azure-support-request).
 
 - [Azure Network Policy Manager (Azure npm)](/azure/virtual-network/kubernetes-network-policies) only supports up to 250 nodes.
 - Some AKS node metrics, including node disk usage, node CPU/memory usage, and network in/out, won't be accessible in [Azure monitor platform metrics](/azure/azure-monitor/reference/supported-metrics/microsoft-containerservice-managedclusters-metrics) after the control plane is scaled up. 
 - You can't use the Stop and Start feature with clusters that have more than 100 nodes. For more information, see [Stop and start an AKS cluster](./start-stop-cluster.md).
 
-## Azure API and Platform throttling
+## Azure API and platform throttling
 
 The load on a cloud application can vary over time based on factors such as the number of active users or the types of actions that users perform. If the processing requirements of the system exceed the capacity of the available resources, the system can become overloaded and suffer from poor performance and failures.
 
@@ -270,9 +270,11 @@ As you scale your AKS clusters to larger scale points, keep the following networ
 
 - Use Managed NAT for cluster egress with at least two public IPs on the NAT gateway. For more information, see [Create a managed NAT gateway for your AKS cluster](./nat-gateway.md).
 - If you are using Azure Standard Load Balancer, use at least [2 Outbound Public IPs](./configure-load-balancer-standard.md#calculate-and-verify-outbound-ports-and-ips-needed). Also consider LoadBalancer service backend rule limits when planning for large clusters. Azure Standard Load Balancers support up to 10,000 backend IP configurations per frontend IP. Each type: LoadBalancer service creates one load balancing rule per exposed port and associates all cluster nodes with the load balancer backend pool. For example, exposing 5 ports for a single service will hit this limit at 2000 nodes.
-```
-1 service * 5 ports * 2000 nodes = 10000 backend IP configurations
-```
+
+  ```
+  1 service * 5 ports * 2000 nodes = 10000 backend IP configurations
+  ```
+
 - Use Azure CNI Overlay to scale up to 200,000 pods and 5,000 nodes per cluster. For more information, see [Configure Azure CNI Overlay networking in AKS][azure-cni-overlay].
 - If your application needs direct pod-to-pod communication across clusters, use Azure CNI with dynamic IP allocation and scale up to 50,000 application pods per cluster with one routable IP per pod. For more information, see [Configure Azure CNI networking for dynamic IP allocation in AKS][azure-cni-dynamic-ip].
 - When using internal Kubernetes services behind an internal load balancer, we recommend creating an internal load balancer or service below a 750 node scale for optimal scaling performance and load balancer elasticity.
