@@ -242,7 +242,7 @@ As you scale your AKS clusters to larger scale points, keep the following featur
 > During the operation to scale the control plane, you might encounter elevated API server latency or timeouts for up to 15 minutes. If you continue to have problems scaling to the supported limit, open a [support ticket](/azure/azure-portal/supportability/how-to-create-azure-support-request).
 
 - [Azure Network Policy Manager (Azure npm)](/azure/virtual-network/kubernetes-network-policies) only supports up to 250 nodes.
-- Some AKS node metrics, including node disk usage, node CPU/memory usage, and network in/out, won't be accessible in [azure monitor platform metrics](/azure/azure-monitor/reference/supported-metrics/microsoft-containerservice-managedclusters-metrics) after the control plane is scaled up. 
+- Some AKS node metrics, including node disk usage, node CPU/memory usage, and network in/out, won't be accessible in [Azure monitor platform metrics](/azure/azure-monitor/reference/supported-metrics/microsoft-containerservice-managedclusters-metrics) after the control plane is scaled up. 
 - You can't use the Stop and Start feature with clusters that have more than 100 nodes. For more information, see [Stop and start an AKS cluster](./start-stop-cluster.md).
 
 ## Azure API and Platform throttling
