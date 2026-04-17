@@ -22,7 +22,7 @@ Keep in mind that *large* is a relative term. Kubernetes has a multi-dimensional
 In this article, you learn about:
 
 > [!div class="checklist"]
-> - Node scaling
+> - Node scaling.
 > - AKS and Kubernetes control plane scalability.
 > - Kubernetes client best practices, including backoff, watches, and pagination.
 > - Azure API and platform throttling limits.
@@ -42,7 +42,7 @@ As you scale your AKS clusters to larger scale points, keep the following node s
 
 In Kubernetes, all objects running in a cluster are managed by the control plane, which is managed by AKS. While AKS optimizes the Kubernetes control plane and its components for scalability and performance, it's still bound by the upstream project limits.
 
-Kubernetes has a multi-dimensional scale envelope, with each resource type representing a dimension — and not all resources are alike in their cost. For example, Secrets are often watched by multiple controllers and pods, each of which makes an initial LIST call to sync state. Because secrets are typically large and frequently updated, they place more load on the control plane than less frequently watched resources.
+Kubernetes has a multi-dimensional scale envelope, with each resource type representing a dimension, and not all resources are alike in their cost. For example, Secrets are often watched by multiple controllers and pods, each of which makes an initial LIST call to sync state. Because secrets are typically large and frequently updated, they place more load on the control plane than less frequently watched resources.
 
 The more you scale the cluster within a given dimension, the less you can scale within other dimensions. For example, running hundreds of thousands of pods in an AKS cluster impacts how much pod churn rate (pod mutations per second) the control plane can support.
 
@@ -64,9 +64,9 @@ kubectl describe configmap large-cluster-control-plane-scaling-status -n kube-sy
 
 ## Kubernetes Scale Envelope and Control Plane Considerations
 
-Kubernetes clients are application components, such as operators or monitoring agents, that run in the cluster and communicate with the kube-apiserver to read or modify resources. It's important to optimize how these clients behave to reduce the load they place on the kube-apiserver and the kubernetes control plane. 
+Kubernetes clients are application components, such as operators or monitoring agents, that run in the cluster and communicate with the kube-apiserver to read or modify resources. It's important to optimize how these clients behave to reduce the load they place on the kube-apiserver and the Kubernetes control plane. 
 
-The number of requests actively being processed by the API server at any given moment is determined by --max-requests-inflight and --max-mutating-requests-inflight flags. AKS uses the default values of 400 and 200 requests for these flags, allowing a total of 600 requests to be dispatched at a given time. As we scale the API server to larger sizes we correspondingly increase the inflight requests too.
+The number of requests actively being processed by the API server at any given moment is determined by `--max-requests-inflight` and `--max-mutating-requests-inflight` flags. AKS uses the default values of 400 and 200 requests for these flags, allowing a total of 600 requests to be dispatched at a given time. As we scale the API server to larger sizes we correspondingly increase the inflight requests too.
 
 Two Kubernetes object types, [PriorityLevelConfiguration and FlowSchema (APF)](https://kubernetes.io/docs/concepts/cluster-administration/flow-control/), determine how the API server divides total request capacity across request types. AKS uses the default configuration. 
 
@@ -102,20 +102,20 @@ LIST calls issued by unoptimized clients are often one of the biggest factors li
 
 #### Use API Server Cache
 
-- Use resourceVersion=0 to return results from the API server cache. This can prevent objects being fetched from etcd thereby reducing etcd load, **but it does not support pagination**.
+- Use `resourceVersion=0` to return results from the API server cache. This can prevent objects being fetched from etcd thereby reducing etcd load, **but it doesn't support pagination**.
 
 ```
 /api/v1/namespaces/default/pods?resourceVersion=0
 ```
 #### Efficient Kubernetes API usage
 
-- It is recommended to use watch argument whenever possible. With no arguments the default behavior is to list objects. Refer to the example below.
+- It's recommended to use the watch argument whenever possible. With no arguments the default behavior is to list objects. Refer to the example below.
 
 ```
 /api/v1/namespaces/default/pods?watch=true
 ```
 
-Use watch with a resourceVersion set to be the most recent known value received from preceding list or watch. This is handled automatically in client-go. But verify if you are using a k8s client in other languages.
+Use watch with a `resourceVersion` set to be the most recent known value received from preceding list or watch. This is handled automatically in client-go. But verify if you are using a Kubernetes client in other languages.
 
 ```
 /api/v1/namespaces/default/pods?watch=true&resourceVersion=<resourceversion>
@@ -138,8 +138,7 @@ Use watch with a resourceVersion set to be the most recent known value received 
 - **Use pagination** to reduce the size of LIST responses if the client must fetch data from etcd. The following example uses the limit argument to restrict the response to 100 objects.
 
 ```
-/api/v1/namespaces/default/pods?fieldSelector=status.phase=Running&limit=100
-```
+/api/v1/namespaces/default/pods?fieldSelector=status.phase=Running&limit=100```
 
 If you want the LIST to continue returning all the pod objects in the example above use the continue argument with limit.
 
@@ -153,7 +152,7 @@ If kubectl is being utilized, `--chunk-size` argument can be directly applied to
 kubectl get pods -n default --chunk-size=100
 ```
 
-- If your controllers or operators use lease updates for leader election, make sure they are resilient to transient connectivity issues by tuning leaseDuration, renewDeadline, and retryPeriod that is optimal for your workloads. For Kubernetes controllers that use client-go leader election, use the following formula:
+- If your controllers or operators use lease updates for leader election, make sure they are resilient to transient connectivity issues by tuning `leaseDuration`, `renewDeadline`, and `retryPeriod` that are optimal for your workloads. For Kubernetes controllers that use client-go leader election, use the following formula:
  
 ``` 
 lease_duration > renew_deadline > retry_period
@@ -173,8 +172,8 @@ lease_duration > renew_deadline > retry_period
         maxSurge: 0
         maxUnavailable: 1
   ```
-- The RollingUpdate strategy only applies to existing DaemonSet pods. It does not limit the impact of adding new nodes, which creates additional DaemonSet pods, or deploying entirely new DaemonSets.
-- To prevent DaemonSets from issuing simultaneous LIST requests to the API server during startup after node scale-out or new DaemonSet deployments, implement startup jitter in the container entrypoint and configure appropriate [exponential backoff](https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait) and [retry policies](https://pkg.go.dev/k8s.io/client-go/util/retry) for 5xx or 429 responses to prevent repeated retry of large LIST requests. 
+- The RollingUpdate strategy only applies to existing DaemonSet pods. It doesn't limit the impact of adding new nodes, which creates additional DaemonSet pods, or deploying entirely new DaemonSets.
+- To prevent DaemonSets from issuing simultaneous LIST requests to the API server during startup after node scale-out or new DaemonSet deployments, implement startup jitter in the container entrypoint and configure appropriate [exponential backoff](https://pkg.go.dev/k8s.io/apimachinery/pkg/util/wait) and [retry policies](https://pkg.go.dev/k8s.io/client-go/util/retry) for 5xx or 429 responses to prevent repeated retry of large LIST requests.
   
   ```yaml
     spec:
@@ -190,11 +189,11 @@ lease_duration > renew_deadline > retry_period
 
 ### Etcd Optimizations
 
-- **Keep the overall etcd size small and do not etcd as a general-purpose database**. AKS provides 8 GB of etcd storage by default, but larger etcd databases increase defragmentation time, which can lead to read and write performance issues. Larger etcd databases can also increase the probability of API server and etcd reliability issues if an unoptimized client fetches large numbers of objects from etcd frequently. If your etcd database size exceeds 2 GB, consider using the object size reduction techniques listed below.
+- **Keep the overall etcd size small and don't use etcd as a general-purpose database**. AKS provides 8 GB of etcd storage by default, but larger etcd databases increase defragmentation time, which can lead to read and write performance issues. Larger etcd databases can also increase the probability of API server and etcd reliability issues if an unoptimized client fetches large numbers of objects from etcd frequently. If your etcd database size exceeds 2 GB, consider using the object size reduction techniques listed below.
 - To reduce pod specification sizes, move environment variables from pod specifications to ConfigMaps.
 - Split large secrets or ConfigMaps into smaller, more manageable pieces.
 - Store secrets in [Azure Key Vault](/azure/key-vault/general/overview) instead of Kubernetes Secrets when possible to reduce the number of secrets stored in etcd.
-- Cleanup unused objects
+- Clean up unused objects
   - Delete stale Jobs and completed Pods. Use ttlSecondsAfterFinished on Jobs so finished objects are removed automatically.
   - Make sure controllers set ownerReferences. This enables Kubernetes garbage collection to remove dependent objects automatically when the parent resource is deleted.
   - Limit CronJob history by setting successfulJobsHistoryLimit and failedJobsHistoryLimit to keep only a small number of completed Job records.
@@ -240,7 +239,7 @@ As you scale your AKS clusters to larger scale points, keep the following featur
   - [Troubleshoot the Kubernetes control plane](/troubleshoot/azure/azure-kubernetes/troubleshoot-apiserver-etcd)
 
 > [!NOTE]
-> During the operation to scale the control plane, you might encounter elevated API server latency or timeouts for up to 15 minutes. If you continue to have problems scaling to the supported limit, open a [support ticket](https://portal.azure.com/#create/Microsoft.Support/Parameters/%7B%0D%0A%09%22subId%22%3A+%22%22%2C%0D%0A%09%22pesId%22%3A+%225a3a423f-8667-9095-1770-0a554a934512%22%2C%0D%0A%09%22supportTopicId%22%3A+%2280ea0df7-5108-8e37-2b0e-9737517f0b96%22%2C%0D%0A%09%22contextInfo%22%3A+%22AksLabelDeprecationMarch22%22%2C%0D%0A%09%22caller%22%3A+%22Microsoft_Azure_ContainerService+%2B+AksLabelDeprecationMarch22%22%2C%0D%0A%09%22severity%22%3A+%223%22%0D%0A%7D).
+> During the operation to scale the control plane, you might encounter elevated API server latency or timeouts for up to 15 minutes. If you continue to have problems scaling to the supported limit, open a [support ticket](/azure/azure-portal/supportability/how-to-create-azure-support-request).
 
 - [Azure Network Policy Manager (Azure npm)](/azure/virtual-network/kubernetes-network-policies) only supports up to 250 nodes.
 - Some AKS node metrics, including node disk usage, node CPU/memory usage, and network in/out, won't be accessible in [azure monitor platform metrics](/azure/azure-monitor/reference/supported-metrics/microsoft-containerservice-managedclusters-metrics) after the control plane is scaled up. 
@@ -277,13 +276,13 @@ As you scale your AKS clusters to larger scale points, keep the following networ
 - Use Azure CNI Overlay to scale up to 200,000 pods and 5,000 nodes per cluster. For more information, see [Configure Azure CNI Overlay networking in AKS][azure-cni-overlay].
 - If your application needs direct pod-to-pod communication across clusters, use Azure CNI with dynamic IP allocation and scale up to 50,000 application pods per cluster with one routable IP per pod. For more information, see [Configure Azure CNI networking for dynamic IP allocation in AKS][azure-cni-dynamic-ip].
 - When using internal Kubernetes services behind an internal load balancer, we recommend creating an internal load balancer or service below a 750 node scale for optimal scaling performance and load balancer elasticity.
-- Azure npm only supports up to 250 nodes. If you want to enforce network policies for larger clusters, consider using [Azure CNI powered by Cilium](./azure-cni-powered-by-cilium.md), which combines the robust control plane of Azure CNI with the Cilium data plane to provide high performance networking and security.
+- Azure Network Policy Manager (NPM) only supports up to 250 nodes. If you want to enforce network policies for larger clusters, consider using [Azure CNI powered by Cilium](./azure-cni-powered-by-cilium.md), which combines the robust control plane of Azure CNI with the Cilium data plane to provide high performance networking and security.
 - Enable [LocalDNS](./localdns-custom.md) on your node pools to reduce DNS resolution latency and offload centralized CoreDNS pods. In large clusters with high DNS query volumes, centralized DNS resolution can become a bottleneck. LocalDNS deploys a DNS proxy as a `systemd` service on each node, resolving queries locally, eliminating `conntrack` table pressure, and upgrading connections to TCP to avoid `conntrack` race conditions. LocalDNS also supports serving stale cached responses when upstream DNS is unavailable, improving workload resilience during transient failures. For more information, see [DNS resolution in AKS](./dns-concepts.md).
 
 ## Cluster upgrade considerations and best practices
 
 - When a cluster reaches the 5,000 node limit, cluster upgrades are blocked. This limit prevents an upgrade because there isn't available node capacity to perform rolling updates within the max surge property limit. If you have a cluster at this limit, we recommend [scaling down the cluster](./concepts-scale.md) under 3,000 nodes before attempting a cluster upgrade. This will provide extra capacity for node churn and minimize load on the control plane.
-- When upgrading clusters with more than 500 nodes, it is recommended to use a [max surge configuration](./upgrade-aks-cluster.md#set-max-surge-value) of 10-20% of the node pool's capacity. AKS configures upgrades with a default value of 10% for max surge. You can customize the max surge settings per node pool to enable a trade-off between upgrade speed and workload disruption. When you increase the max surge settings, the upgrade process completes faster, but you might experience disruptions during the upgrade process. For more information, see [Customize node surge upgrade](upgrade-aks-cluster.md#customize-node-surge-upgrade).
+- When upgrading clusters with more than 500 nodes, it's recommended to use a [max surge configuration](./upgrade-aks-cluster.md#set-max-surge-value) of 10-20% of the node pool's capacity. AKS configures upgrades with a default value of 10% for max surge. You can customize the max surge settings per node pool to enable a trade-off between upgrade speed and workload disruption. When you increase the max surge settings, the upgrade process completes faster, but you might experience disruptions during the upgrade process. For more information, see [Customize node surge upgrade](upgrade-aks-cluster.md#customize-node-surge-upgrade).
 - For more cluster upgrade information, see [Upgrade an AKS cluster](upgrade-cluster.md).
 
 <!-- LINKS - Internal --->
