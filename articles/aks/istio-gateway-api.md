@@ -638,7 +638,7 @@ You can modify these settings for all Istio `Gateways` at a `GatewayClass` level
 
 `Telemetry` CRDs are installed automatically with the Istio add-on. You can use the `Telemetry API` to configure access logging for `Gateway` pods.
 
-Create the resource in the `aks-istio-system` namespace to enable access logs for all gateways in the mesh, or in a specific namespace to enable access logs only for gateways in that namespace.
+Create the resource in the `aks-istio-system` namespace to enable access logs for all `Gateway` pods in the mesh, or in a specific namespace to enable access logs only for `Gateway` pods in that namespace.
 
 The following example shows a `Telemetry` resource that enables `Gateway` access logging:
 
