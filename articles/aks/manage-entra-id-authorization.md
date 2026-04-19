@@ -17,7 +17,7 @@ ai-usage: ai-assisted
 
 This article shows how to authorize calls to the Kubernetes API in Azure Kubernetes Service (AKS) using Microsoft Entra ID identities. Entra ID authorization for the Kubernetes API uses Azure RBAC role assignments under the hood and can be optionally extended with Azure ABAC conditions to filter access to specific custom resource types.
 
-For a conceptual overview of the available Kubernetes API authorization options in AKS, see [Kubernetes API authorization concepts](concepts-authentication-authorization.md).
+For a conceptual overview of the available Kubernetes API authorization options in AKS, see [Cluster authorization concepts](concepts-cluster-authorization.md).
 
 > [!NOTE]
 > When you use [integrated authentication between Microsoft Entra ID and AKS](managed-azure-ad.md), you can use Microsoft Entra users, groups, or service principals as subjects in [Kubernetes role-based access control (Kubernetes RBAC)][kubernetes-rbac]. With Entra ID authorization, you don't need to separately manage user identities and credentials for Kubernetes. However, you still need to set up and manage Entra ID role assignments and any Kubernetes RBAC bindings separately.
@@ -374,7 +374,7 @@ AKS created the [`kubelogin`](https://github.com/Azure/kubelogin) plugin to help
 
 To learn more about AKS authentication, authorization, Kubernetes RBAC, and Azure RBAC, see:
 
-* [Kubernetes API authorization concepts for AKS](concepts-authentication-authorization.md)
+* [Cluster authorization concepts for AKS](concepts-cluster-authorization.md)
 * [Access and identity options for AKS](/azure/aks/concepts-identity)
 * [What is Azure RBAC?](/azure/role-based-access-control/overview)
 * [What are Azure ABAC conditions?](/azure/role-based-access-control/conditions-overview)
@@ -404,4 +404,4 @@ To learn more about AKS authentication, authorization, Kubernetes RBAC, and Azur
 [az-role-definition-create]: /cli/azure/role/definition#az-role-definition-create
 [az-role-definition-delete]: /cli/azure/role/definition#az-role-definition-delete
 [az-aks-get-credentials]: /cli/azure/aks#az-aks-get-credentials
-[kubernetes-rbac]: concepts-authentication-authorization.md
+[kubernetes-rbac]: kubernetes-rbac-entra-id.md

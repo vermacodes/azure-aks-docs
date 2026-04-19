@@ -1,36 +1,23 @@
 ---
-title: Authentication and authorization concepts in Azure Kubernetes Service (AKS)
+title: Cluster authorization concepts in Azure Kubernetes Service (AKS)
 titleSuffix: Azure Kubernetes Service
-description: Learn how authentication and authorization for the Kubernetes API work in Azure Kubernetes Service (AKS), and how to choose between Kubernetes RBAC and Microsoft Entra ID authorization.
+description: Learn how authorization for the Kubernetes API works in Azure Kubernetes Service (AKS), and how to choose between Kubernetes RBAC and Microsoft Entra ID authorization with optional Azure ABAC conditions.
 ms.topic: concept-article
 ms.subservice: aks-security
 ms.date: 04/19/2026
 author: shashankbarsin
 ms.author: shasb
 ai-usage: ai-assisted
-# Customer intent: "As a cluster operator, I want to understand how authentication and authorization for the Kubernetes API work in AKS so that I can choose the right model for governing access at scale across my clusters."
+# Customer intent: "As a cluster operator, I want to understand how authorization for the Kubernetes API works in AKS so that I can choose the right model for governing access at scale across my clusters."
 ---
 
-# Authentication and authorization concepts in Azure Kubernetes Service (AKS)
+# Cluster authorization concepts in Azure Kubernetes Service (AKS)
 
-This article describes how AKS handles **control-plane access** — that is, who can authenticate to the Kubernetes API and what they're allowed to do once they're in. It covers the recommended authentication path, the two authorization models AKS supports, fine-grained custom resource control with ABAC conditions, and how to lock down break-glass access.
+This article describes how Azure Kubernetes Service (AKS) decides what an authenticated caller is allowed to do against the Kubernetes API. It covers the two authorization models AKS supports and fine-grained custom resource control with Azure ABAC conditions.
 
-For the other identity scenarios in AKS, see:
-
-* [Managed identities in AKS](use-managed-identity.md) for cluster-to-Azure access (such as pulling images from ACR or attaching disks).
-* [Microsoft Entra Workload ID overview](workload-identity-overview.md) for pod-to-Azure access (such as workloads calling Key Vault).
+For how AKS *authenticates* callers in the first place, see [Cluster authentication concepts](concepts-cluster-authentication.md).
 
 For an orientation across all four AKS identity scenarios, see [Access and identity options for AKS](concepts-identity.md).
-
-## Authenticate cluster users with Microsoft Entra ID
-
-Kubernetes itself doesn't provide an identity directory. Without an external identity provider, you'd need to manage local credentials per cluster, which doesn't scale and creates audit gaps.
-
-We recommend deploying AKS clusters with [Microsoft Entra ID authentication for the control plane][entra-id-cp-auth]. With this integration, the cluster validates incoming Kubernetes API requests against Microsoft Entra ID and uses the caller's Entra identity for authorization decisions. Microsoft Entra ID centralizes the identity layer — any change in user or group status is automatically reflected in cluster access — and enables Conditional Access, multifactor authentication, and Privileged Identity Management.
-
-![Cluster-level authentication for Microsoft Entra integration with AKS](media/operator-best-practices-identity/cluster-level-authentication-flow.png)
-
-For setup, see [Enable Microsoft Entra ID authentication for the AKS control plane][entra-id-cp-auth].
 
 ## Authorize the Kubernetes API
 
@@ -104,28 +91,17 @@ For Kubernetes API authorization, you can filter access to custom resources by t
 
 For background on Azure ABAC, see [What are Azure role assignment conditions?](/azure/role-based-access-control/conditions-overview). For step-by-step setup, see [Restrict custom resource access using ABAC conditions](manage-entra-id-authorization.md#restrict-custom-resource-access-using-abac-conditions-preview).
 
-## Disable local accounts and enforce Conditional Access
-
-Local accounts use a built-in cluster admin certificate that bypasses Entra ID, breaking centralized audit and Conditional Access. In production, disable local accounts on AKS clusters so that all access flows through Microsoft Entra ID. Apply Conditional Access policies (multifactor authentication, location restrictions) and use Privileged Identity Management for break-glass access. For details, see:
-
-* [Manage local accounts in AKS](local-accounts.md)
-* [Cluster and node access control with Conditional Access](access-control-managed-azure-ad.md)
-* [Cluster and node access control with Privileged Identity Management](privileged-identity-management.md)
-
 ## Requirements and limitations
 
 * Entra ID authorization for the Kubernetes API requires Microsoft Entra ID authentication to be enabled on the cluster. To enable, see [Enable Microsoft Entra ID authentication for the AKS control plane][entra-id-cp-auth].
 * The Microsoft Entra tenant configured for cluster authentication must be the same as the tenant of the subscription that holds the AKS cluster.
-* For non-interactive logins or older `kubectl` versions, use the [`kubelogin`](https://github.com/Azure/kubelogin) plugin.
 * ABAC conditions are in preview. To use ABAC conditions, enable Entra ID authorization at cluster creation. Some clusters that have Entra ID authorization enabled post-creation might not evaluate ABAC conditions in the authorization webhook.
 
 ## Next steps
 
-* [Enable Microsoft Entra ID authentication for the AKS control plane][entra-id-cp-auth]
 * [Use Microsoft Entra ID authorization for the Kubernetes API](manage-entra-id-authorization.md)
 * [Use Kubernetes RBAC with Microsoft Entra integration](kubernetes-rbac-entra-id.md)
-* [Managed identities in AKS](use-managed-identity.md)
-* [Microsoft Entra Workload ID overview](workload-identity-overview.md)
+* [Cluster authentication concepts](concepts-cluster-authentication.md)
 * [What are Azure role assignment conditions?](/azure/role-based-access-control/conditions-overview)
 
 <!-- INTERNAL LINKS -->

@@ -132,7 +132,7 @@ In this article, you learned how to update or rotate service principal and Micro
 [install-azure-cli]: /cli/azure/install-azure-cli
 [az-aks-show]: /cli/azure/aks#az-aks-show
 [az-aks-update-credentials]: /cli/azure/aks#az-aks-update-credentials
-[best-practices-identity]: concepts-authentication-authorization.md
+[best-practices-identity]: concepts-cluster-authentication.md
 [aad-integration]: ./azure-ad-integration-cli.md
 [create-aad-app]: ./azure-ad-integration-cli.md#create-azure-ad-server-component
 [az-ad-sp-create]: /cli/azure/ad/sp#az-ad-sp-create-for-rbac

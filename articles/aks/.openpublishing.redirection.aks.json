@@ -22,12 +22,17 @@
         },
         {
             "source_path_from_root": "/articles/aks/operator-best-practices-identity.md",
-            "redirect_url": "/azure/aks/concepts-authentication-authorization",
+            "redirect_url": "/azure/aks/concepts-cluster-authentication",
             "redirect_document_id": false
         },
         {
             "source_path_from_root": "/articles/aks/concepts-kubernetes-api-authorization.md",
-            "redirect_url": "/azure/aks/concepts-authentication-authorization",
+            "redirect_url": "/azure/aks/concepts-cluster-authorization",
+            "redirect_document_id": false
+        },
+        {
+            "source_path_from_root": "/articles/aks/concepts-authentication-authorization.md",
+            "redirect_url": "/azure/aks/concepts-cluster-authorization",
             "redirect_document_id": false
         },
         {

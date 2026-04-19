@@ -737,12 +737,12 @@
       items:
         - name: Access and identity overview
           href: concepts-identity.md
-        - name: Authentication and authorization concepts
-          href: concepts-authentication-authorization.md
         - name: AKS service permissions reference
           href: aks-service-permissions.md
         - name: Cluster authentication
           items:
+            - name: Cluster authentication concepts
+              href: concepts-cluster-authentication.md
             - name: Microsoft Entra ID authentication to cluster
               href: entra-id-control-plane-authentication.md
             - name: External identity provider authentication to cluster (overview)
@@ -767,6 +767,8 @@
               href: update-credentials.md
         - name: Cluster authorization
           items:
+            - name: Cluster authorization concepts
+              href: concepts-cluster-authorization.md
             - name: Use Microsoft Entra ID authorization for the Kubernetes API
               href: manage-entra-id-authorization.md
             - name: Use Kubernetes RBAC with Microsoft Entra integration
@@ -916,7 +918,7 @@
           href: operator-best-practices-container-image-management.md
         - name: Remove vulnerable images with Image Cleaner
           href: image-cleaner.md
-        - name: Build- and registry-time scanning
+        - name: Build and registry time scanning
           items:
             - name: Scan images in your CI/CD workflow
               href: /azure/defender-for-cloud/defender-cli-overview?toc=/azure/aks/toc.json&bc=/azure/aks/breadcrumb/toc.json

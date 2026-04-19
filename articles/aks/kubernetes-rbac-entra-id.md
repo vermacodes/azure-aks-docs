@@ -500,6 +500,6 @@ az ad group delete --group opssre
 [az-ad-group-member-add]: /cli/azure/ad/group/member#az-ad-group-member-add
 [az-ad-group-show]: /cli/azure/ad/group#az-ad-group-show
 [rbac-authorization]: concepts-identity.md#kubernetes-rbac
-[operator-best-practices-identity]: concepts-authentication-authorization.md
+[operator-best-practices-identity]: concepts-cluster-authentication.md
 [terraform-on-azure]: /azure/developer/terraform/overview
 [enable-azure-ad-integration-existing-cluster]: managed-azure-ad.md#use-an-existing-cluster
