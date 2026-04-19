@@ -745,26 +745,24 @@
               href: concepts-cluster-authentication.md
             - name: Microsoft Entra ID authentication to cluster
               href: entra-id-control-plane-authentication.md
-            - name: External identity provider authentication to cluster (overview)
-              href: external-identity-provider-authentication-overview.md
-            - name: Set up external identity provider authentication to cluster
-              href: external-identity-provider-authentication-configure.md
             - name: Microsoft Entra ID authentication to cluster control plane (Legacy)
               href: azure-ad-integration-cli.md
-            - name: Group Managed Service Accounts (Windows)
-              href: use-group-managed-service-accounts.md
-            - name: Disable local cluster admin accounts
-              href: local-accounts.md
             - name: Conditional Access for cluster and node access
               href: access-control-managed-azure-ad.md
             - name: Privileged Identity Management for cluster and node access
               href: privileged-identity-management.md
+            - name: Group Managed Service Accounts (Windows)
+              href: use-group-managed-service-accounts.md
             - name: Authenticate with kubelogin
               href: kubelogin-authentication.md
             - name: Control access to kubeconfig
               href: control-kubeconfig-access.md
-            - name: Rotate cluster credentials
-              href: update-credentials.md
+            - name: Disable local cluster admin accounts
+              href: local-accounts.md
+            - name: External identity provider authentication to cluster (overview)
+              href: external-identity-provider-authentication-overview.md
+            - name: Set up external identity provider authentication to cluster
+              href: external-identity-provider-authentication-configure.md
         - name: Cluster authorization
           items:
             - name: Cluster authorization concepts
@@ -785,6 +783,8 @@
               href: pre-created-kubelet-managed-identity.md
             - name: Service principal as cluster identity
               href: kubernetes-service-principal.md
+            - name: Rotate cluster credentials
+              href: update-credentials.md
         - name: Workload identity (pod to Azure)
           items:
             - name: Workload identity overview
