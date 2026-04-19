@@ -40,8 +40,8 @@ For an in-depth look at how AKS authenticates Kubernetes API requests, see [Clus
 
 After a caller is authenticated, AKS authorizes the request using one (or both) of two models:
 
-* **Kubernetes RBAC.** The native Kubernetes `Role` / `ClusterRole` / `RoleBinding` model evaluated by the API server. Permissions live in the cluster as Kubernetes manifests.
-* **Microsoft Entra ID authorization.** An AKS authorization webhook delegates authorization decisions to Microsoft Entra ID using Azure role assignments, optionally extended with Azure ABAC conditions. Permissions are managed centrally in Microsoft Entra ID and can govern many clusters from a single role assignment at subscription, management group, or resource group scope.
+* **Kubernetes RBAC.** The native Kubernetes `Role` / `ClusterRole` / `RoleBinding` model evaluated by the API server. Permissions live in the cluster as Kubernetes objects.
+* **Microsoft Entra ID authorization.** An AKS authorization webhook delegates authorization decisions to Microsoft Entra ID using Azure role assignments. Azure RBAC role assignments with `dataActions` are supported for all standard Kubernetes API resources, and role assignments with Azure ABAC conditions are supported for custom resources. Permissions are managed centrally in Microsoft Entra ID and can govern many clusters from a single role assignment at subscription, management group, or resource group scope.
 
 For a side-by-side comparison and guidance on when to use each model, see [Cluster authorization concepts](concepts-cluster-authorization.md).
 
@@ -76,7 +76,7 @@ Don't use the deprecated [Microsoft Entra pod-managed identity](use-azure-ad-pod
 | Sign users into the cluster with Microsoft Entra ID | [Enable Microsoft Entra integration](entra-id-control-plane-authentication.md) |
 | Govern who can do what in the Kubernetes API across many clusters | [Use Microsoft Entra ID authorization for the Kubernetes API](manage-entra-id-authorization.md) |
 | Restrict access to specific custom resource types | [ABAC conditions in Entra ID authorization](manage-entra-id-authorization.md#restrict-custom-resource-access-using-abac-conditions-preview) |
-| Author per-cluster, per-namespace permissions as Kubernetes manifests | [Use Kubernetes RBAC with Entra integration](kubernetes-rbac-entra-id.md) |
+| Author per-cluster, per-namespace permissions as Kubernetes objects | [Use Kubernetes RBAC with Entra integration](kubernetes-rbac-entra-id.md) |
 | Let the cluster pull from ACR or attach disks | [Managed identities in AKS](use-managed-identity.md) |
 | Let pods reach Key Vault or Storage without secrets | [Microsoft Entra Workload ID overview](workload-identity-overview.md) |
 | Restrict who can download the cluster `kubeconfig` | [Limit access to cluster configuration file](control-kubeconfig-access.md) |
