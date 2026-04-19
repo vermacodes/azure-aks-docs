@@ -846,6 +846,12 @@
           href: kubernetes-service-principal.md
         - name: Enable Entra ID authentication to control plane
           href: entra-id-control-plane-authentication.md
+        - name: Manage local accounts
+          href: local-accounts.md
+        - name: Cluster and node access control with Conditional Access
+          href: access-control-managed-azure-ad.md
+        - name: Cluster and node access control with Privileged Identity Management
+          href: privileged-identity-management.md
         - name: Microsoft Entra integration (legacy)
           href: azure-ad-integration-cli.md
         - name: Enable GMSA integration
@@ -858,12 +864,6 @@
           href: manage-entra-id-authorization.md
         - name: Use Kubernetes RBAC with Microsoft Entra integration
           href: kubernetes-rbac-entra-id.md
-        - name: Manage local accounts
-          href: local-accounts.md
-        - name: Cluster and node access control with Conditional Access
-          href: access-control-managed-azure-ad.md
-        - name: Cluster and node access control with Privileged Identity Management
-          href: privileged-identity-management.md
         - name: Update cluster credentials
           href: update-credentials.md
         - name: Limit access to cluster configuration file
