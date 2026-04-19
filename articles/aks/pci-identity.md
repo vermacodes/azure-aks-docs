@@ -248,7 +248,7 @@ It's critical that you maintain thorough documentation about the processes and p
 
 #### AKS feature support
 
-Because of AKS and Microsoft Entra integration, you can take advantage of identity management and authorization capabilities, including access management, identifier objects management, and others. For more information, see [AKS-managed Microsoft Entra integration](/azure/aks/managed-aad).
+Because of AKS and Microsoft Entra integration, you can take advantage of identity management and authorization capabilities, including access management, identifier objects management, and others. For more information, see [Microsoft Entra integration](/azure/aks/managed-aad).
 
 #### Your responsibilities
 

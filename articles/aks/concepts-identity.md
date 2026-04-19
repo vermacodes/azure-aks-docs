@@ -30,7 +30,7 @@ The rest of this article gives a brief orientation to each scenario.
 
 Control-plane authentication establishes the identity of a user or service principal calling the Kubernetes API server. AKS supports:
 
-* **Microsoft Entra ID (recommended).** Use Entra ID identities and groups to sign in to the cluster. AKS-managed Entra integration provisions and rotates the integration on your behalf. To enable, see [Use AKS-managed Microsoft Entra integration](entra-id-control-plane-authentication.md).
+* **Microsoft Entra ID (recommended).** Use Entra ID identities and groups to sign in to the cluster. Microsoft Entra integration provisions and rotates the integration on your behalf. To enable, see [Use Microsoft Entra integration](entra-id-control-plane-authentication.md).
 * **Local accounts.** A built-in cluster admin certificate that bypasses Entra ID. We recommend disabling local accounts in production. See [Manage local accounts](local-accounts.md).
 * **External identity providers.** Use an OIDC-compliant identity provider other than Microsoft Entra ID. See [External identity provider authentication](external-identity-provider-authentication-overview.md).
 
@@ -73,7 +73,7 @@ Don't use the deprecated [Microsoft Entra pod-managed identity](use-azure-ad-pod
 
 | Goal | Use these docs |
 |---|---|
-| Sign users into the cluster with Microsoft Entra ID | [Enable AKS-managed Entra integration](entra-id-control-plane-authentication.md) |
+| Sign users into the cluster with Microsoft Entra ID | [Enable Microsoft Entra integration](entra-id-control-plane-authentication.md) |
 | Govern who can do what in the Kubernetes API across many clusters | [Use Microsoft Entra ID authorization for the Kubernetes API](manage-entra-id-authorization.md) |
 | Restrict access to specific custom resource types | [ABAC conditions in Entra ID authorization](manage-entra-id-authorization.md#restrict-custom-resource-access-using-abac-conditions-preview) |
 | Author per-cluster, per-namespace permissions as Kubernetes manifests | [Use Kubernetes RBAC with Entra integration](kubernetes-rbac-entra-id.md) |

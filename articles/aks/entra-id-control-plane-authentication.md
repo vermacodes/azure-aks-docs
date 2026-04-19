@@ -14,7 +14,7 @@ ai-usage: ai-assisted
 
 # Enable Microsoft Entra ID authentication for the AKS control plane
 
-The AKS-managed Microsoft Entra integration simplifies the Microsoft Entra integration process. Previously, you were required to create a client and server app, and the Microsoft Entra tenant had to assign [Directory Readers][directory-readers-rbac-role] role permissions. Now, the Azure Kubernetes Service (AKS) resource provider manages the client and server apps for you.
+The Microsoft Entra integration simplifies the Microsoft Entra integration process. Previously, you were required to create a client and server app, and the Microsoft Entra tenant had to assign [Directory Readers][directory-readers-rbac-role] role permissions. Now, the Azure Kubernetes Service (AKS) resource provider manages the client and server apps for you.
 
 Cluster administrators can configure Kubernetes role-based access control (Kubernetes RBAC) based on a user's identity or directory group membership. Microsoft Entra authentication is provided to AKS clusters with OpenID Connect. OpenID Connect is an identity layer built on top of the OAuth 2.0 protocol. For more information on OpenID Connect, see the [OpenID Connect documentation][open-id-connect].
 
@@ -63,7 +63,7 @@ To install the AKS addon, verify you have the following items:
       --generate-ssh-keys
     ```
 
-    A successful creation of an AKS-managed Microsoft Entra ID cluster has the following section in the response body.
+    A successful creation of an Microsoft Entra ID cluster has the following section in the response body.
 
     ```output
     "AADProfile": {
@@ -80,7 +80,7 @@ To install the AKS addon, verify you have the following items:
 
 ### Use an existing cluster
 
-Enable AKS-managed Microsoft Entra integration on your existing Kubernetes RBAC enabled cluster using the [`az aks update`][az-aks-update] command. Make sure to set your admin group to keep access on your cluster.
+Enable Microsoft Entra integration on your existing Kubernetes RBAC enabled cluster using the [`az aks update`][az-aks-update] command. Make sure to set your admin group to keep access on your cluster.
 
 ```azurecli-interactive
 az aks update \
@@ -91,7 +91,7 @@ az aks update \
   --aad-tenant-id <id>
 ```
 
-A successful activation of an AKS-managed Microsoft Entra ID cluster has the following section in the response body:
+A successful activation of an Microsoft Entra ID cluster has the following section in the response body:
 
 ```output
 "AADProfile": {
@@ -108,7 +108,7 @@ A successful activation of an AKS-managed Microsoft Entra ID cluster has the fol
 
 ### Migrate legacy cluster to integration
 
-If your cluster uses legacy Microsoft Entra integration, you can upgrade to AKS-managed Microsoft Entra integration through the [`az aks update`][az-aks-update] command.
+If your cluster uses legacy Microsoft Entra integration, you can upgrade to Microsoft Entra integration through the [`az aks update`][az-aks-update] command.
 
 > [!WARNING]
 > Free tier clusters might experience API server downtime during the upgrade. We recommend upgrading during your nonbusiness hours.
@@ -123,7 +123,7 @@ az aks update \
   --aad-tenant-id <id>
 ```
 
-A successful migration of an AKS-managed Microsoft Entra ID cluster has the following section in the response body:
+A successful migration of an Microsoft Entra ID cluster has the following section in the response body:
 
 ```output
 "AADProfile": {
@@ -195,7 +195,7 @@ If you lack administrative access to a valid Microsoft Entra group, you can foll
 - Learn about [Microsoft Entra integration with Kubernetes RBAC][kubernetes-rbac-entra-id].
 - Learn more about [AKS and Kubernetes identity concepts][aks-concepts-identity].
 - Learn how to [use kubelogin][kubelogin-authentication] for all supported Microsoft Entra authentication methods in AKS.
-- Use [Azure Resource Manager templates][aks-arm-template] to create AKS-managed Microsoft Entra ID enabled clusters.
+- Use [Azure Resource Manager templates][aks-arm-template] to create Microsoft Entra ID enabled clusters.
 
 
 <!-- LINKS - external -->

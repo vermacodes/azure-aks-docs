@@ -1,5 +1,5 @@
 ---
-title: Control cluster and node access using Privileged Identity Management (PIM) with AKS-managed Microsoft Entra integration
+title: Control cluster and node access using Privileged Identity Management (PIM) with Microsoft Entra integration
 titleSuffix: Azure Kubernetes Service
 description: Learn how to access clusters and nodes using Privileged Identity Management (PIM) when integrating Microsoft Entra ID in your Azure Kubernetes Service (AKS) clusters.
 ms.topic: how-to
@@ -417,7 +417,7 @@ When `kubelogin` tries to [get tokens from the Microsoft identity platform][get-
 
 For more information, see the following articles:
 
-- [Control cluster access using Conditional Access with AKS-managed Microsoft Entra integration][conditional-access]
+- [Control cluster access using Conditional Access with Microsoft Entra integration][conditional-access]
 - [Microsoft Entra Privileged Identity Management overview][what-is-pim]
 - [Use Kubernetes role-based access control with Microsoft Entra ID in AKS][aks-rbac]
 

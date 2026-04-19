@@ -51,7 +51,7 @@ While AKS structured authentication allows any OIDC-compliant identity provider,
 - **Custom identity solutions**: Organization-specific OIDC implementations.
 
 > [!NOTE]
-> Microsoft Entra ID isn't supported as an external identity provider through structured authentication. Use the existing [AKS-managed Microsoft Entra integration][aks-managed-entra-id] for Microsoft Entra ID authentication.
+> Microsoft Entra ID isn't supported as an external identity provider through structured authentication. Use the existing [Microsoft Entra integration][aks-managed-entra-id] for Microsoft Entra ID authentication.
 
 ### Requirements for external identity providers
 
