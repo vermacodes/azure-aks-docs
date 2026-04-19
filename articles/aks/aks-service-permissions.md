@@ -61,7 +61,7 @@ The following permissions are used by the AKS cluster identity, which is created
 > | `Microsoft.Compute/snapshots/delete` <br/> `Microsoft.Compute/snapshots/read` <br/> `Microsoft.Compute/snapshots/write` | Required to configure snapshots for AzureDisk. |
 > | `Microsoft.Compute/locations/vmSizes/read` <br/> `Microsoft.Compute/locations/operations/read` | Required to find virtual machine sizes for finding AzureDisk volume limits. |
 
-## Additional cluster identity permissions
+## Additional AKS cluster identity permissions
 
 When creating a cluster with specific attributes, you will need the following additional permissions for the cluster identity. Since these permissions are not automatically assigned, you must add them to the cluster identity after it's created.
 
@@ -74,13 +74,9 @@ When creating a cluster with specific attributes, you will need the following ad
 > | `Microsoft.Network/virtualNetworks/subnets/read` | Required if using an internal load balancer in another resource group. Required to verify if a subnet already exists for the internal load balancer in the resource group. |
 > | `Microsoft.Network/privatednszones/*` | Required if using a private DNS zone in another resource group such as a custom privateDNSZone. |
 
-## AKS node access
+## AKS node mapped identity
 
-By default, node access isn't required for AKS. The following access is needed for the node if a specific component is leveraged.
-
-| Access | Reason |
-|---|---|
-| Kubelet managed identity | Required to pull images from Azure Container Registry. |
+The kubelet managed identity assigned to AKS nodes is used to pull images from Azure Container Registry.
 
 ## Next steps
 
