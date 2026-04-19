@@ -46,9 +46,9 @@ For details, see [Manage local accounts in AKS](local-accounts.md).
 
 Beyond authenticating to the Kubernetes API, you might also need to authenticate directly to a node over SSH for troubleshooting. AKS supports three SSH access modes that you set per cluster or node pool:
 
-* **Disabled SSH (preview).** Block SSH access to nodes entirely. Recommended for production where node-level access is governed only through `kubectl debug` or other Kubernetes-native paths.
-* **Microsoft Entra ID based SSH (preview).** Sign in to nodes using Microsoft Entra identities, with no SSH keys to manage. This mode is consistent with the rest of cluster authentication: it inherits Conditional Access and multifactor authentication from Entra ID, supports just-in-time elevation through Azure RBAC and Privileged Identity Management, and centralizes audit through Entra ID sign-in logs.
-* **Local user SSH.** Traditional SSH key–based access. Use this only when Entra ID based SSH isn't an option, and rotate keys regularly.
+* **Disabled SSH (preview)**: Block SSH access to nodes entirely. Recommended for production where node-level access is governed only through `kubectl debug` or other Kubernetes-native paths.
+* **Microsoft Entra ID based SSH (preview)**: Sign in to nodes using Microsoft Entra identities, with no SSH keys to manage. This mode is consistent with the rest of cluster authentication: it inherits Conditional Access and multifactor authentication from Entra ID, supports just-in-time elevation through Azure RBAC and Privileged Identity Management, and centralizes audit through Entra ID sign-in logs.
+* **Local user SSH**: Traditional SSH key–based access. Use this only when Entra ID based SSH isn't an option, and rotate keys regularly.
 
 For setup and per-mode configuration steps, see [Manage SSH access on AKS cluster nodes](manage-ssh-node-access.md).
 
