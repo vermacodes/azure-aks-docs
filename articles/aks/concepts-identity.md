@@ -21,7 +21,7 @@ AKS uses identity in five distinct scenarios. Each scenario answers a different 
 |---|---|---|
 | **A. Kubernetes control-plane authentication** | Who is the caller hitting the Kubernetes API? | [Cluster authentication concepts](concepts-cluster-authentication.md), [external identity providers](external-identity-provider-authentication-overview.md) |
 | **B. Kubernetes control-plane authorization** | What is the caller allowed to do once authenticated to the Kubernetes API? | [Cluster authorization concepts](concepts-cluster-authorization.md) |
-| **C. AKS resource authorization (Azure Resource Manager)** | Who can manage the AKS resource itself — scale, upgrade, or pull `kubeconfig`? | [Limit access to cluster configuration file](control-kubeconfig-access.md), [Azure built-in roles](/azure/role-based-access-control/built-in-roles#containers) |
+| **C. AKS resource authorization (Azure Resource Manager)** | Who can perform Azure-level operations on the AKS resource, such as pulling `kubeconfig`? | [Limit access to cluster configuration file](control-kubeconfig-access.md), [Azure built-in roles](/azure/role-based-access-control/built-in-roles#containers) |
 | **D. Cluster identity (cluster → Azure)** | How does the AKS cluster act on Azure to manage resources on your behalf? | [Managed identities in AKS](use-managed-identity.md) |
 | **E. Workload identity (pod → Azure)** | How do pods authenticate to Azure services such as Key Vault or Storage? | [Microsoft Entra Workload ID overview](workload-identity-overview.md) |
 
@@ -52,7 +52,7 @@ For a side-by-side comparison and guidance on when to use each model, see [Clust
 
 ## C. AKS resource authorization (Azure Resource Manager)
 
-In addition to authorizing calls to the Kubernetes API, you also need to authorize calls to Azure Resource Manager that manage the AKS resource itself — for example, scaling or upgrading the cluster, or pulling the `kubeconfig`. This is standard Azure RBAC against the `Microsoft.ContainerService` resource provider, separate from authorizing the Kubernetes API. See [Limit access to the cluster configuration file](control-kubeconfig-access.md) and the built-in roles in [Azure built-in roles](/azure/role-based-access-control/built-in-roles#containers).
+In addition to authorizing calls to the Kubernetes API, you also need to authorize Azure-level operations on the AKS resource itself. The most common example is controlling who can pull a cluster's `kubeconfig`, which is a standalone Azure Resource Manager operation that you can govern granularly with Azure RBAC. This is standard Azure RBAC against the `Microsoft.ContainerService` resource provider, separate from authorizing the Kubernetes API. See [Limit access to the cluster configuration file](control-kubeconfig-access.md) and the built-in roles in [Azure built-in roles](/azure/role-based-access-control/built-in-roles#containers).
 
 ## D. Cluster identity (cluster → Azure)
 
