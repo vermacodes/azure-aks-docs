@@ -773,7 +773,7 @@
               href: manage-entra-id-authorization.md
             - name: Use Kubernetes RBAC with Microsoft Entra integration
               href: kubernetes-rbac-entra-id.md
-        - name: Cluster identity (managed identities and service principals)
+        - name: AKS component identity (managed identities and service principals)
           items:
             - name: Managed identities overview
               href: managed-identity-overview.md

@@ -1,6 +1,6 @@
 ---
 title: Concepts - Access and identity in Azure Kubernetes Service (AKS)
-description: Learn the four identity scenarios in Azure Kubernetes Service (AKS) — control-plane authentication and authorization, cluster identity, and workload identity — and where to find the right deep-dive doc for each.
+description: Learn the four identity scenarios in Azure Kubernetes Service (AKS) — control-plane authentication and authorization, AKS component identity, and workload identity — and where to find the right deep-dive doc for each.
 ms.topic: concept-article
 ms.subservice: aks-security
 ms.date: 04/18/2026
@@ -21,7 +21,7 @@ AKS uses identity in four distinct scenarios. Each scenario answers a different 
 |---|---|---|
 | **A. Control-plane authentication** | Who is the caller hitting the Kubernetes API? | [Cluster authentication concepts](concepts-cluster-authentication.md), [external identity providers](external-identity-provider-authentication-overview.md) |
 | **B. Control-plane authorization** | What is the caller allowed to do once authenticated? | [Cluster authorization concepts](concepts-cluster-authorization.md) |
-| **C. Cluster identity (cluster → Azure)** | How does the AKS cluster act on Azure to manage resources on your behalf? | [Managed identities in AKS](use-managed-identity.md) |
+| **C. AKS component identity (AKS components → Azure)** | How do AKS components act on Azure to manage resources on your behalf? | [Managed identities in AKS](use-managed-identity.md) |
 | **D. Workload identity (pod → Azure)** | How do pods authenticate to Azure services such as Key Vault or Storage? | [Microsoft Entra Workload ID overview](workload-identity-overview.md) |
 
 The rest of this article gives a brief orientation to each scenario.
@@ -53,13 +53,13 @@ For a side-by-side comparison and guidance on when to use each model, see [Clust
 
 In addition to authorizing calls to the Kubernetes API, you also need to authorize calls to Azure Resource Manager that manage the AKS resource itself — for example, scaling or upgrading the cluster, or pulling the `kubeconfig`. This is standard Azure RBAC against the `Microsoft.ContainerService` resource provider, separate from authorizing the Kubernetes API. See [Limit access to the cluster configuration file](control-kubeconfig-access.md) and the built-in roles in [Azure built-in roles](/azure/role-based-access-control/built-in-roles#containers).
 
-## C. Cluster identity (cluster → Azure)
+## C. AKS component identity (AKS components → Azure)
 
-AKS clusters use Azure managed identities to act on Azure resources on your behalf — for example, to create load balancers, attach disks, or pull images from Azure Container Registry. The main identities are:
+AKS components use Azure managed identities to act on Azure resources on your behalf — for example, to create load balancers, attach disks, or pull images from Azure Container Registry. The main identities are:
 
 * **Control-plane identity.** Used by the cluster control plane to manage Azure resources for the cluster.
 * **Kubelet identity.** Used by the kubelet on each node to authenticate to services such as Azure Container Registry.
-* **Add-on identities.** Some AKS add-ons use their own managed identities.
+* **Add-ons/extensions identity.** Some AKS add-ons and extensions use their own managed identities.
 
 For details on each identity type and how to use system-assigned vs user-assigned identities, see [Managed identities in AKS](use-managed-identity.md).
 
