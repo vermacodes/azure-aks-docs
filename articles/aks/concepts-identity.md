@@ -34,23 +34,7 @@ Control-plane authentication establishes the identity of a user or service princ
 * **Local accounts.** A built-in cluster admin certificate that bypasses Entra ID. We recommend disabling local accounts in production. See [Manage local accounts](local-accounts.md).
 * **External identity providers.** Use an OIDC-compliant identity provider other than Microsoft Entra ID. See [External identity provider authentication](external-identity-provider-authentication-overview.md).
 
-<a name='azure-ad-integration'></a>
-
-### Microsoft Entra integration
-
-Microsoft Entra ID is a cloud identity service that combines directory services, application access management, and identity protection. With AKS-managed Entra integration, you can grant Entra users or groups access to Kubernetes resources within a namespace or across the cluster.
-
-![Microsoft Entra integration with AKS clusters](media/concepts-identity/aad-integration.png)
-
-Authentication uses OpenID Connect on top of OAuth 2.0. The Kubernetes API server validates incoming tokens through a webhook against Microsoft Entra ID. The high-level flow is:
-
-1. `kubectl` signs in the user with the Microsoft Entra client application.
-1. Microsoft Entra ID issues an access token.
-1. `kubectl` sends the token to the API server.
-1. The API server's authentication webhook verifies the token signature against Microsoft Entra public signing keys.
-1. The API server makes an authorization decision (see [Cluster authorization concepts](concepts-cluster-authorization.md)).
-
-For setup, see [Use AKS-managed Microsoft Entra integration](entra-id-control-plane-authentication.md). For Conditional Access and Privileged Identity Management with cluster access, see [Cluster and node access control with Conditional Access](access-control-managed-azure-ad.md) and [Cluster and node access control with PIM](privileged-identity-management.md).
+For an in-depth look at how AKS authenticates Kubernetes API requests, see [Cluster authentication concepts](concepts-cluster-authentication.md).
 
 ## B. Control-plane authorization
 
