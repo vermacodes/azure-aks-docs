@@ -743,7 +743,7 @@
           items:
             - name: Cluster authentication concepts
               href: concepts-cluster-authentication.md
-            - name: Microsoft Entra ID authentication to cluster
+            - name: Microsoft Entra ID authentication to cluster control plane
               href: entra-id-control-plane-authentication.md
             - name: Microsoft Entra ID authentication to cluster control plane (Legacy)
               href: azure-ad-integration-cli.md
@@ -751,6 +751,8 @@
               href: access-control-managed-azure-ad.md
             - name: Privileged Identity Management for cluster and node access
               href: privileged-identity-management.md
+            - name: Manage SSH access to nodes
+              href: manage-ssh-node-access.md
             - name: Group Managed Service Accounts (Windows)
               href: use-group-managed-service-accounts.md
             - name: Authenticate with kubelogin
