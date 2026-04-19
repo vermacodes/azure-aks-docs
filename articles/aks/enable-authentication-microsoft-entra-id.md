@@ -5,8 +5,8 @@ ms.topic: how-to
 ms.subservice: aks-security
 ms.date: 10/07/2025
 ms.custom: devx-track-azurecli
-author: davidsmatlak
-ms.author: davidsmatlak
+author: shashankbarsin
+ms.author: shasb
 
 # Customer intent: As an Azure Kubernetes Service (AKS) administrator, I want to enable AKS-managed Microsoft Entra integration for my AKS cluster with kubelogin and configure Kubernetes role-based access control (Kubernetes RBAC).
 ---

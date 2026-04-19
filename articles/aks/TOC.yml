@@ -836,6 +836,9 @@
       items:
         - name: Access and identity concepts
           href: concepts-identity.md
+          items:
+            - name: Kubernetes API authorization concepts
+              href: concepts-kubernetes-api-authorization.md
         - name: Authentication and authorization best practices
           href: operator-best-practices-identity.md
         - name: Use managed identities
@@ -858,8 +861,8 @@
               href: azure-ad-integration-cli.md
             - name: Enable GMSA integration
               href: use-group-managed-service-accounts.md
-        - name: Use Azure RBAC for Kubernetes authorization
-          href: manage-azure-rbac.md
+        - name: Use Microsoft Entra ID authorization for the Kubernetes API
+          href: manage-entra-id-authorization.md
         - name: Use Kubernetes RBAC with Microsoft Entra integration
           href: azure-ad-rbac.md
         - name: Update cluster credentials
