@@ -189,6 +189,8 @@ To use the break-glass path, you need the [Azure Kubernetes Service Contributor]
 
 ## Next steps
 
+- Strengthen sign-in to your cluster with [Conditional Access for cluster and node access][conditional-access].
+- Use just-in-time elevated access with [Privileged Identity Management for cluster and node access][privileged-identity-management].
 - Learn about [Microsoft Entra integration with Kubernetes RBAC][kubernetes-rbac-entra-id].
 - Learn more about [AKS and Kubernetes identity concepts][aks-concepts-identity].
 - Learn how to [use kubelogin][kubelogin-authentication] for all supported Microsoft Entra authentication methods in AKS.
@@ -208,3 +210,5 @@ To use the break-glass path, you need the [Azure Kubernetes Service Contributor]
 [az-group-create]: /cli/azure/group#az-group-create
 [az-aks-update]: /cli/azure/aks#az-aks-update
 [kubelogin-authentication]: kubelogin-authentication.md
+[conditional-access]: access-control-managed-azure-ad.md
+[privileged-identity-management]: privileged-identity-management.md
