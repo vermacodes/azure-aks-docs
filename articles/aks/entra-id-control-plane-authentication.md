@@ -16,25 +16,20 @@ ai-usage: ai-assisted
 
 The Microsoft Entra integration simplifies the Microsoft Entra integration process. Previously, you were required to create a client and server app, and the Microsoft Entra tenant had to assign [Directory Readers][directory-readers-rbac-role] role permissions. Now, the Azure Kubernetes Service (AKS) resource provider manages the client and server apps for you.
 
-Cluster administrators can configure Kubernetes role-based access control (Kubernetes RBAC) based on a user's identity or directory group membership. Microsoft Entra authentication is provided to AKS clusters with OpenID Connect. OpenID Connect is an identity layer built on top of the OAuth 2.0 protocol. For more information on OpenID Connect, see the [OpenID Connect documentation][open-id-connect].
+Cluster administrators can configure Kubernetes role-based access control (Kubernetes RBAC) based on a user's identity or directory group membership.
 
 Learn more about the Microsoft Entra integration flow in the [Microsoft Entra documentation](concepts-cluster-authentication.md).
 
 ## Limitations
 
-The following are constraints to integrate authentication on AKS:
-
-- Integration can't be disabled after being added.
-- Downgrades from an integrated cluster to the legacy Microsoft Entra ID clusters aren't supported.
-- Clusters without Kubernetes RBAC support are unable to add the integration.
+Microsoft Entra integration can't be disabled after it's enabled on a cluster.
 
 ## Before you begin
 
 To install the AKS addon, verify you have the following items:
 
 - You have Azure CLI version 2.29.0 or later installed and configured. To find the version, run the `az --version` command. If you need to install or upgrade, see [Install Azure CLI](/cli/azure/install-azure-cli).
-- You need `kubectl` with a minimum version of [1.18.1](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.18.md#v1181) or [`kubelogin`][kubelogin]. With the Azure CLI and the Azure PowerShell module, these two commands are included and automatically managed. Meaning, they're upgraded by default and running `az aks install-cli` isn't required or recommended. If you're using an automated pipeline, you need to manage upgrades for the correct or latest version. The difference between the minor versions of Kubernetes and `kubectl` shouldn't be more than *one* version. Otherwise, authentication issues occur on the wrong version.
-- If you're using [helm](https://github.com/helm/helm), you need a minimum version of helm 3.3.
+- You need `kubectl` with a minimum version of [1.18.1](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.18.md#v1181) or [`kubelogin`][kubelogin]. With the Azure CLI and the Azure PowerShell module, these two commands are included and automatically managed. Meaning, they're upgraded by default and running [`az aks install-cli`](/cli/azure/aks#az-aks-install-cli) isn't required or recommended. If you're using an automated pipeline, you need to manage upgrades for the correct or latest version. The difference between the minor versions of Kubernetes and `kubectl` shouldn't be more than *one* version. Otherwise, authentication issues occur on the wrong version.
 - This configuration requires you have a Microsoft Entra group for your cluster. This group is registered as an admin group on the cluster to grant admin permissions. If you don't have an existing Microsoft Entra group, you can create one using the [`az ad group create`](/cli/azure/ad/group#az-ad-group-create) command.
 
 > [!NOTE]
@@ -43,23 +38,33 @@ To install the AKS addon, verify you have the following items:
 
 ## Enable the integration on your AKS cluster
 
+First, set environment variables for the resource group, cluster name, Microsoft Entra admin group object IDs, and tenant ID. Reuse these variables in the commands that follow.
+
+```azurecli-interactive
+export RESOURCE_GROUP="myResourceGroup"
+export CLUSTER_NAME="myManagedCluster"
+export AAD_ADMIN_GROUP_OBJECT_IDS="<group-object-id>"  # comma-separated for multiple groups
+export AAD_TENANT_ID="<tenant-id>"
+export LOCATION="centralus"
+```
+
 ### Create a new cluster
 
 1. Create an Azure resource group using the [`az group create`][az-group-create] command.
 
     ```azurecli-interactive
-    az group create --name myResourceGroup --location centralus
+    az group create --name $RESOURCE_GROUP --location $LOCATION
     ```
 
 1. Create an AKS cluster and enable administration access for your Microsoft Entra group using the [`az aks create`][az-aks-create] command.
 
     ```azurecli-interactive
     az aks create \
-      --resource-group myResourceGroup \
-      --name myManagedCluster \
+      --resource-group $RESOURCE_GROUP \
+      --name $CLUSTER_NAME \
       --enable-aad \
-      --aad-admin-group-object-ids <id> \
-      --aad-tenant-id <id> \
+      --aad-admin-group-object-ids $AAD_ADMIN_GROUP_OBJECT_IDS \
+      --aad-tenant-id $AAD_TENANT_ID \
       --generate-ssh-keys
     ```
 
@@ -84,11 +89,11 @@ Enable Microsoft Entra integration on your existing Kubernetes RBAC enabled clus
 
 ```azurecli-interactive
 az aks update \
-  --resource-group MyResourceGroup \
-  --name myManagedCluster \
+  --resource-group $RESOURCE_GROUP \
+  --name $CLUSTER_NAME \
   --enable-aad \
-  --aad-admin-group-object-ids <id-1>,<id-2> \
-  --aad-tenant-id <id>
+  --aad-admin-group-object-ids $AAD_ADMIN_GROUP_OBJECT_IDS \
+  --aad-tenant-id $AAD_TENANT_ID
 ```
 
 A successful activation of an Microsoft Entra ID cluster has the following section in the response body:
@@ -116,11 +121,11 @@ If your cluster uses legacy Microsoft Entra integration, you can upgrade to Micr
 
 ```azurecli-interactive
 az aks update \
-  --resource-group myResourceGroup \
-  --name myManagedCluster \
+  --resource-group $RESOURCE_GROUP \
+  --name $CLUSTER_NAME \
   --enable-aad \
-  --aad-admin-group-object-ids <id> \
-  --aad-tenant-id <id>
+  --aad-admin-group-object-ids $AAD_ADMIN_GROUP_OBJECT_IDS \
+  --aad-tenant-id $AAD_TENANT_ID
 ```
 
 A successful migration of an Microsoft Entra ID cluster has the following section in the response body:
@@ -143,7 +148,7 @@ A successful migration of an Microsoft Entra ID cluster has the following sectio
 1. Get the user credentials to access your cluster using the [`az aks get-credentials`][az-aks-get-credentials] command.
 
     ```azurecli-interactive
-    az aks get-credentials --resource-group myResourceGroup --name myManagedCluster
+    az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
     ```
 
 1. Follow your sign in instructions.
@@ -210,6 +215,5 @@ If you lack administrative access to a valid Microsoft Entra group, you can foll
 [az-aks-create]: /cli/azure/aks#az-aks-create
 [az-aks-get-credentials]: /cli/azure/aks#az-aks-get-credentials
 [az-group-create]: /cli/azure/group#az-group-create
-[open-id-connect]: /entra/identity-platform/v2-protocols-oidc
 [az-aks-update]: /cli/azure/aks#az-aks-update
 [kubelogin-authentication]: kubelogin-authentication.md
