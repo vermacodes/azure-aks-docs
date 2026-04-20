@@ -143,17 +143,17 @@ A successful migration of an Microsoft Entra ID cluster has the following sectio
 
 1. Get the user credentials to access your cluster using the [`az aks get-credentials`][az-aks-get-credentials] command.
 
-    ```azurecli-interactive
-    az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
-    ```
+  ```azurecli-interactive
+  az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
+  ```
 
 1. Follow your sign in instructions.
 
 1. View the nodes in the cluster with the `kubectl get nodes` command.
 
-    ```azurecli-interactive
-    kubectl get nodes
-    ```
+  ```azurecli-interactive
+  kubectl get nodes
+  ```
 
 Clusters running Kubernetes 1.24 or later automatically use the `kubelogin` exec-plugin format, so no manual `kubeconfig` conversion is needed for interactive Azure CLI sign-in. For non-interactive scenarios such as CI pipelines, or to use a different authentication method (service principal, managed identity, workload identity, or device code), see [Use kubelogin to authenticate users in AKS][kubelogin-authentication].
 
@@ -171,23 +171,23 @@ To use the break-glass path, you need the [Azure Kubernetes Service Contributor]
 
 1. If [local accounts](local-accounts.md) are disabled on the cluster, re-enable them temporarily.
 
-    ```azurecli-interactive
-    az aks update --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --enable-local-accounts
-    ```
+  ```azurecli-interactive
+  az aks update --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --enable-local-accounts
+  ```
 
 1. Retrieve the local cluster-admin credential using the [`az aks get-credentials`][az-aks-get-credentials] command with the `--admin` flag. This credential is a certificate-based kubeconfig that bypasses Microsoft Entra.
 
-    ```azurecli-interactive
-    az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --admin
-    ```
+  ```azurecli-interactive
+  az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --admin
+  ```
 
 1. Use `kubectl` to operate the cluster while Microsoft Entra is unavailable.
 
 Once Microsoft Entra sign-in is working again, [disable local accounts](local-accounts.md#disable-local-accounts) to return the cluster to its secure baseline.
 
-```azurecli-interactive
-az aks update --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --disable-local-accounts
-```
+  ```azurecli-interactive
+  az aks update --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --disable-local-accounts
+  ```
 
 ## Next steps
 
