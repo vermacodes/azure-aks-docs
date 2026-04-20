@@ -179,7 +179,7 @@ Use this feature when you want to:
 
 * Restrict which CRD groups or kinds an assignee can list or get.
 * Centrally enforce custom resource access boundaries from Microsoft Entra ID without managing Kubernetes RBAC `Role` and `RoleBinding` objects on every cluster.
-* Distinguish between CRDs published by different operators (for example, allow `templates.gatekeeper.sh` while blocking `kyverno.io`).
+* Distinguish between CRDs published by different operators (for example, allow `secrets-store.csi.x-k8s.io` while blocking `security.istio.io`).
 
 ### Available condition attributes
 
@@ -187,8 +187,8 @@ The following request attributes are available when authoring conditions for the
 
 | Attribute | Description |
 |---|---|
-| `Microsoft.ContainerService/managedClusters/customResources:group` | The API group of the custom resource being accessed (for example, `templates.gatekeeper.sh`). |
-| `Microsoft.ContainerService/managedClusters/customResources:kind` | The kind of the custom resource being accessed (for example, `constrainttemplates`). |
+| `Microsoft.ContainerService/managedClusters/customResources:group` | The API group of the custom resource being accessed (for example, `secrets-store.csi.x-k8s.io`). |
+| `Microsoft.ContainerService/managedClusters/customResources:kind` | The kind of the custom resource being accessed (for example, `secretproviderclasses`). |
 
 ### Add an ABAC condition to a role assignment
 
