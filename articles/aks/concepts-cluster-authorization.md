@@ -69,14 +69,14 @@ For custom permission patterns, you can author custom role definitions that targ
 
 ### Comparison
 
-| Capability | Kubernetes RBAC | Entra ID authorization | Entra ID authorization with ABAC conditions |
-|---|---|---|---|
-| Identity source | Kubernetes users, groups, service accounts | Microsoft Entra ID identities | Microsoft Entra ID identities |
-| Scope of a single grant | One cluster | Resource, resource group, subscription, or management group | Resource, resource group, subscription, or management group |
-| Multi-cluster governance | Apply manifests to each cluster (typically GitOps) | One role assignment at a higher scope governs many clusters | One role assignment at a higher scope governs many clusters |
-| Conditional Access / PIM | Not supported | Inherited from Entra ID | Inherited from Entra ID |
-| Audit trail | Cluster audit log | Azure Activity Log | Azure Activity Log |
-| Filter access by CRD group or kind | Author per-CRD `Role` objects | Use wildcard roles (broad) | Use ABAC condition attributes |
+| Capability | Kubernetes RBAC | Entra ID authorization |
+|---|---|---|
+| Identity source | Kubernetes users, groups, service accounts | Microsoft Entra ID identities |
+| Scope of a single grant | One cluster | Resource, resource group, subscription, or management group |
+| Multi-cluster governance | Apply manifests to each cluster (typically GitOps) | One role assignment at a higher scope governs many clusters |
+| Conditional Access / PIM | Not supported | Inherited from Entra ID |
+| Audit trail | Cluster audit log | Azure Activity Log |
+| Filter access by CRD group or kind | Author per-CRD `Role` objects | Use ABAC condition attributes on the role assignment |
 
 ## Restrict custom resource access with ABAC conditions
 
