@@ -76,6 +76,11 @@
             "redirect_document_id": false
         },
         {
+            "source_path_from_root": "/articles/aks/manage-entra-id-authorization.md",
+            "redirect_url": "/azure/aks/entra-id-authorization",
+            "redirect_document_id": false
+        },
+        {
             "source_path_from_root": "/articles/aks/azure-ad-v2.md",
             "redirect_url": "/azure/aks/managed-aad",
             "redirect_document_id": true

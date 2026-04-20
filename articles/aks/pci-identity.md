@@ -42,7 +42,7 @@ You don't have to manage separate user identities and credentials for Kubernetes
 
 By default, Azure RBAC is set to deny all access, so a resource can't be accessed without permissions being granted. AKS limits SSH access to AKS worker nodes and uses AKS network policy to control access to workloads in the pods.
 
-For more information, see [Use Microsoft Entra ID authorization for the Kubernetes API](./manage-entra-id-authorization.md) and [Secure your cluster with Azure Policy](/azure/aks/use-pod-security-on-azure-policy).
+For more information, see [Use Microsoft Entra ID authorization for the Kubernetes API](./entra-id-authorization.md) and [Secure your cluster with Azure Policy](/azure/aks/use-pod-security-on-azure-policy).
 
 #### Your responsibilities
 

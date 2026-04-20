@@ -65,7 +65,7 @@ AKS provides the following built-in roles for Entra ID authorization:
 | Azure Kubernetes Service RBAC Admin | Read/write access to most resources in a namespace, plus the ability to create roles and role bindings within the namespace. |
 | Azure Kubernetes Service RBAC Cluster Admin | Full control over every resource in the cluster, across all namespaces. |
 
-For custom permission patterns, you can author custom role definitions that target specific Kubernetes API groups using the `Microsoft.ContainerService` resource provider's data actions. For step-by-step setup and custom role examples, see [Use Microsoft Entra ID authorization for the Kubernetes API](manage-entra-id-authorization.md).
+For custom permission patterns, you can author custom role definitions that target specific Kubernetes API groups using the `Microsoft.ContainerService` resource provider's data actions. For step-by-step setup and custom role examples, see [Use Microsoft Entra ID authorization for the Kubernetes API](entra-id-authorization.md).
 
 ### Comparison
 
@@ -89,11 +89,11 @@ For Kubernetes API authorization, you can filter access to custom resources by t
 * `Microsoft.ContainerService/managedClusters/customResources:group`
 * `Microsoft.ContainerService/managedClusters/customResources:kind`
 
-For background on Azure ABAC, see [What are Azure role assignment conditions?](/azure/role-based-access-control/conditions-overview). For step-by-step setup, see [Restrict custom resource access using ABAC conditions](manage-entra-id-authorization.md#restrict-custom-resource-access-using-abac-conditions-preview).
+For background on Azure ABAC, see [What are Azure role assignment conditions?](/azure/role-based-access-control/conditions-overview). For step-by-step setup, see [Restrict custom resource access using ABAC conditions](entra-id-authorization.md#restrict-custom-resource-access-using-abac-conditions-preview).
 
 ## Next steps
 
-* [Use Microsoft Entra ID authorization for the Kubernetes API](manage-entra-id-authorization.md)
+* [Use Microsoft Entra ID authorization for the Kubernetes API](entra-id-authorization.md)
 * [Use Kubernetes RBAC with Microsoft Entra integration](kubernetes-rbac-entra-id.md)
 * [Cluster authentication concepts](concepts-cluster-authentication.md)
 * [What are Azure role assignment conditions?](/azure/role-based-access-control/conditions-overview)

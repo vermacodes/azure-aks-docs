@@ -15,7 +15,7 @@ ai-usage: ai-assisted
 
 # Use Microsoft Entra ID authorization for the Kubernetes API in AKS
 
-This article shows how to authorize calls to the Kubernetes API in Azure Kubernetes Service (AKS) using Microsoft Entra ID identities. Entra ID authorization for the Kubernetes API uses Azure RBAC role assignments under the hood and can be optionally extended with Azure ABAC conditions to filter access to specific custom resource types.
+This article shows how to authorize calls to the Kubernetes API in Azure Kubernetes Service (AKS) using Microsoft Entra ID identities. Entra ID authorization for the Kubernetes API uses Azure RBAC role assignments to grant access to Kubernetes resources. For built-in Kubernetes resources, assign one of the AKS built-in roles (such as *Azure Kubernetes Service RBAC Reader*) at the cluster or namespace scope. For custom resources (CRDs), assign a custom role with Azure ABAC conditions that specify which CRD groups or kinds the assignee can access. The two role assignments compose: one grants access to standard Kubernetes resources, and the other grants conditional access to specific custom resources.
 
 For a conceptual overview of the available Kubernetes API authorization options in AKS, see [Cluster authorization concepts](concepts-cluster-authorization.md).
 
@@ -27,7 +27,6 @@ For a conceptual overview of the available Kubernetes API authorization options 
 * You need the Azure CLI version 2.24.0 or later installed and configured. Run `az --version` to find the version. If you need to install or upgrade, see [Install Azure CLI][install-azure-cli].
 * You need `kubectl`, with a minimum version of [1.18.3](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.18.md#v1183).
 * You need managed Microsoft Entra integration enabled on your cluster before you can add Entra ID authorization for the Kubernetes API. If you need to enable managed Microsoft Entra integration, see [Use Microsoft Entra ID in AKS](managed-azure-ad.md).
-* For custom role definitions that need to cover custom resources (CRDs), use `Microsoft.ContainerService/managedClusters/*/read`. For built-in resources, you can use the specific API groups, such as `Microsoft.ContainerService/apps/deployments/read`. To filter access to specific CRD groups or kinds, use the [ABAC conditions](#restrict-custom-resource-access-using-abac-conditions-preview) section later in this article.
 * New role assignments can take *up to five minutes* to propagate and be updated by the authorization server.
 * Entra ID authorization for the Kubernetes API requires that the Microsoft Entra tenant configured for authentication is the same as the tenant for the subscription that holds your AKS cluster.
 
@@ -77,17 +76,6 @@ For a conceptual overview of the available Kubernetes API authorization options 
 
     ```azurecli-interactive
     az aks update --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --enable-azure-rbac
-    ```
-
-    > [!NOTE]
-    > To use [ABAC conditions for custom resources](#restrict-custom-resource-access-using-abac-conditions-preview), enable Entra ID authorization at cluster creation rather than on an existing cluster. Some clusters that have Entra ID authorization enabled post-creation might not pick up the ABAC condition evaluation feature in the authorization webhook.
-
-## Disable Entra ID authorization for the Kubernetes API
-
-* Remove Entra ID authorization for the Kubernetes API from an existing AKS cluster using the [`az aks update`][az-aks-update] command with the `--disable-azure-rbac` flag.
-
-    ```azurecli-interactive
-    az aks update --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --disable-azure-rbac
     ```
 
 ## AKS built-in roles
@@ -147,7 +135,7 @@ AKS provides the following built-in roles:
 
 ## Create custom roles definitions
 
-The following example custom role definition allows a user to only read deployments and nothing else. For the full list of possible actions, see [Microsoft.ContainerService operations](/azure/role-based-access-control/resource-provider-operations#microsoftcontainerservice).
+For built-in Kubernetes resources, custom role definitions reference the corresponding API group action under `Microsoft.ContainerService/managedClusters/`. The following example allows a user to only read deployments and nothing else. For the full list of possible actions, see [Microsoft.ContainerService operations](/azure/role-based-access-control/resource-provider-operations#microsoftcontainerservice). To filter access to specific custom resource (CRD) groups or kinds, see [Restrict custom resource access using ABAC conditions](#restrict-custom-resource-access-using-abac-conditions-preview) later in this article.
 
 1. To create your own custom role definitions, copy the following file, replacing `<YOUR SUBSCRIPTION ID>` with your own subscription ID, and then save it as `deploy-view.json`.
 
@@ -183,21 +171,21 @@ The following example custom role definition allows a user to only read deployme
 
 [!INCLUDE [preview features callout](~/reusable-content/ce-skilling/azure/includes/aks/includes/preview/preview-callout.md)]
 
-ABAC conditions let you filter Entra ID role assignments to specific custom resource (CRD) groups and kinds. Use ABAC conditions when you want to grant a broad read role across the Kubernetes API but restrict which CRDs the assignee can access, without writing per-cluster Kubernetes RBAC manifests. For background on Azure ABAC, see [What are Azure role assignment conditions?](/azure/role-based-access-control/conditions-overview).
+ABAC conditions let you filter Entra ID role assignments to specific custom resource (CRD) groups and kinds — centrally, from Microsoft Entra ID, without writing per-cluster Kubernetes RBAC `Role` and `RoleBinding` manifests. For background on Azure ABAC, see [What are Azure role assignment conditions?](/azure/role-based-access-control/conditions-overview).
 
 ### When to use ABAC conditions
 
 Use this feature when you want to:
 
-* Grant read access to most Kubernetes resources but restrict which CRD groups or kinds an assignee can list or get.
+* Restrict which CRD groups or kinds an assignee can list or get.
 * Centrally enforce custom resource access boundaries from Microsoft Entra ID without managing Kubernetes RBAC `Role` and `RoleBinding` objects on every cluster.
 * Distinguish between CRDs published by different operators (for example, allow `templates.gatekeeper.sh` while blocking `kyverno.io`).
 
 ### Prerequisites
 
-* The cluster must have Entra ID authorization enabled. Enable it **at cluster creation** using `--enable-azure-rbac`. Some clusters that have Entra ID authorization enabled post-creation might not pick up ABAC condition evaluation.
+* The cluster must have Entra ID authorization enabled. To enable it, see [Create a new AKS cluster with managed Microsoft Entra integration and Entra ID authorization](#create-a-new-aks-cluster-with-managed-microsoft-entra-integration-and-entra-id-authorization) or [Enable Entra ID authorization on an existing AKS cluster](#enable-entra-id-authorization-on-an-existing-aks-cluster).
 * Conditions must use condition syntax version `2.0`.
-* The role assignment must include a Data Action that targets the Kubernetes API, such as `Microsoft.ContainerService/managedClusters/*/read` or `Microsoft.ContainerService/managedClusters/customresources/read`.
+* The role assignment must include the `Microsoft.ContainerService/managedClusters/customresources/read` Data Action, which is the action that ABAC conditions on custom resources target.
 
 ### Available condition attributes
 
@@ -210,7 +198,31 @@ The following request attributes are available when authoring conditions for the
 
 ### Add an ABAC condition to a role assignment
 
-The following example creates a role assignment using the *AKS CRD Reader* custom role with `Microsoft.ContainerService/managedClusters/*/read` and attaches a condition that only allows access to `constrainttemplates` in the `templates.gatekeeper.sh` group.
+The following example creates an *AKS CRD Reader* custom role that grants read access to custom resources, then assigns it with a condition that only allows access to `constrainttemplates` in the `templates.gatekeeper.sh` group.
+
+1. Save the following role definition to a file named `crd-reader.json`, replacing `<YOUR SUBSCRIPTION ID>` with your own subscription ID.
+
+    ```json
+    {
+        "Name": "AKS CRD Reader",
+        "Description": "Lets you read custom resources in the cluster.",
+        "Actions": [],
+        "NotActions": [],
+        "DataActions": [
+            "Microsoft.ContainerService/managedClusters/customresources/read"
+        ],
+        "NotDataActions": [],
+        "assignableScopes": [
+            "/subscriptions/<YOUR SUBSCRIPTION ID>"
+        ]
+    }
+    ```
+
+1. Create the role definition using the [`az role definition create`][az-role-definition-create] command.
+
+    ```azurecli-interactive
+    az role definition create --role-definition @crd-reader.json
+    ```
 
 1. Save the following condition to a file named `abac-condition.txt`. The condition allows non-custom-resource reads to pass through unchanged, and restricts custom resource reads to a specific group and kind.
 
@@ -244,83 +256,35 @@ You can also add a condition through the Azure portal. On the **Add role assignm
 
 ### Verify the condition
 
-After the role assignment propagates (up to five minutes), confirm the assignee can read the allowed CRD but not other CRDs.
+After the role assignment propagates (up to five minutes), sign in as the assignee and confirm they can read the allowed CRD but not other CRDs.
 
-```bash
-# Get a Microsoft Entra access token for the AKS audience.
-TOKEN=$(az account get-access-token --resource 6dae42f8-4368-4678-94ff-3960e28e3630 --query accessToken --output tsv)
-APISERVER=$(kubectl config view --minify --output jsonpath='{.clusters[0].cluster.server}')
-
-# Allowed by the condition: returns 200 (or 404 if the CRD isn't installed).
-curl -s -o /dev/null -w "%{http_code}\n" \
-    -H "Authorization: Bearer $TOKEN" \
-    "$APISERVER/apis/templates.gatekeeper.sh/v1/constrainttemplates"
-
-# Blocked by the condition (different group): returns 403.
-curl -s -o /dev/null -w "%{http_code}\n" \
-    -H "Authorization: Bearer $TOKEN" \
-    "$APISERVER/apis/kyverno.io/v1/clusterpolicies"
-```
-
-### Troubleshoot
-
-If the ABAC condition isn't enforced as expected, check the following:
-
-* **Cluster creation flag.** Confirm Entra ID authorization was enabled at cluster creation. Some clusters that had it enabled post-creation might not evaluate ABAC conditions in the authorization webhook.
-* **Condition version.** The role assignment must specify `--condition-version "2.0"`.
-* **Attribute spelling.** The attribute names use camelCase: `customResources:group`, `customResources:kind`. The action match uses lowercase: `customresources/read`.
-* **Propagation delay.** Wait up to five minutes after creating or updating the role assignment.
-
-## Use Entra ID authorization with `kubectl`
-
-1. Make sure you have the [Azure Kubernetes Service Cluster User](/azure/role-based-access-control/built-in-roles#azure-kubernetes-service-cluster-user-role) built-in role, and then get the kubeconfig of your AKS cluster using the [`az aks get-credentials`][az-aks-get-credentials] command.
+1. Get the cluster credentials using the [`az aks get-credentials`][az-aks-get-credentials] command.
 
     ```azurecli-interactive
     az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
     ```
 
-2. You can now use `kubectl` to manage your cluster. For example, you can list the nodes in your cluster using `kubectl get nodes`.
+1. List `constrainttemplates` from the `templates.gatekeeper.sh` group, which the condition allows. The command should succeed and return either the existing resources or an empty list (or a not-found error if the CRD isn't installed on the cluster).
 
-    ```azurecli-interactive
-    kubectl get nodes
+    ```bash
+    kubectl get constrainttemplates.templates.gatekeeper.sh
     ```
 
-    Example output:
+1. List `clusterpolicies` from the `kyverno.io` group, which the condition blocks. The command should fail with a `Forbidden` error from the Entra ID authorization webhook (assuming the Kyverno CRD is installed on the cluster; otherwise `kubectl` returns a not-found error before the API server reaches the authorization webhook).
 
-    ```output
-    NAME                                STATUS   ROLES   AGE    VERSION
-    aks-nodepool1-93451573-vmss000000   Ready    agent   3h6m   v1.15.11
-    aks-nodepool1-93451573-vmss000001   Ready    agent   3h6m   v1.15.11
-    aks-nodepool1-93451573-vmss000002   Ready    agent   3h6m   v1.15.11
-    ```
-
-## Use Entra ID authorization with `kubelogin`
-
-AKS created the [`kubelogin`](https://github.com/Azure/kubelogin) plugin to help unblock scenarios such as non-interactive logins, older `kubectl` versions, or using SSO across multiple clusters without the need to sign in to a new cluster.
-
-1. Use the `kubelogin` plugin by running the following command:
-
-    ```azurecli-interactive
-    export KUBECONFIG=/path/to/kubeconfig
-    kubelogin convert-kubeconfig
-    ```
-
-2. You can now use `kubectl` to manage your cluster. For example, you can list the nodes in your cluster using `kubectl get nodes`.
-
-    ```azurecli-interactive
-    kubectl get nodes
-    ```
-
-    Example output:
-
-    ```output
-    NAME                                STATUS   ROLES   AGE    VERSION
-    aks-nodepool1-93451573-vmss000000   Ready    agent   3h6m   v1.15.11
-    aks-nodepool1-93451573-vmss000001   Ready    agent   3h6m   v1.15.11
-    aks-nodepool1-93451573-vmss000002   Ready    agent   3h6m   v1.15.11
+    ```bash
+    kubectl get clusterpolicies.kyverno.io
     ```
 
 ## Clean up resources
+
+### Disable Entra ID authorization
+
+* Remove Entra ID authorization for the Kubernetes API from an existing AKS cluster using the [`az aks update`][az-aks-update] command with the `--disable-azure-rbac` flag.
+
+    ```azurecli-interactive
+    az aks update --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --disable-azure-rbac
+    ```
 
 ### Delete role assignment
 

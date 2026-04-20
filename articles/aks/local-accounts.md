@@ -133,5 +133,5 @@ You can disable local accounts using the parameter `disable-local-accounts`. The
 [az-aks-create]: /cli/azure/aks#az-aks-create
 [az-aks-update]: /cli/azure/aks#az-aks-update
 [az-aks-get-credentials]: /cli/azure/aks#az-aks-get-credentials
-[azure-rbac-integration]: manage-entra-id-authorization.md
+[azure-rbac-integration]: entra-id-authorization.md
 

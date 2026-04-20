@@ -75,8 +75,8 @@ Don't use the deprecated [Microsoft Entra pod-managed identity](use-azure-ad-pod
 | Goal | Use these docs |
 |---|---|
 | Sign users into the cluster with Microsoft Entra ID | [Enable Microsoft Entra integration](entra-id-control-plane-authentication.md) |
-| Govern who can do what in the Kubernetes API across many clusters | [Use Microsoft Entra ID authorization for the Kubernetes API](manage-entra-id-authorization.md) |
-| Restrict access to specific custom resource types | [ABAC conditions in Entra ID authorization](manage-entra-id-authorization.md#restrict-custom-resource-access-using-abac-conditions-preview) |
+| Govern who can do what in the Kubernetes API across many clusters | [Use Microsoft Entra ID authorization for the Kubernetes API](entra-id-authorization.md) |
+| Restrict access to specific custom resource types | [ABAC conditions in Entra ID authorization](entra-id-authorization.md#restrict-custom-resource-access-using-abac-conditions-preview) |
 | Author per-cluster, per-namespace permissions as Kubernetes objects | [Use Kubernetes RBAC with Entra integration](kubernetes-rbac-entra-id.md) |
 | Let the cluster pull from ACR or attach disks | [Managed identities in AKS](use-managed-identity.md) |
 | Let pods reach Key Vault or Storage without secrets | [Microsoft Entra Workload ID overview](workload-identity-overview.md) |
@@ -92,7 +92,7 @@ For the Azure permissions used by AKS — the identity creating the cluster, the
 
 * [Cluster authentication concepts](concepts-cluster-authentication.md)
 * [Cluster authorization concepts](concepts-cluster-authorization.md)
-* [Use Microsoft Entra ID authorization for the Kubernetes API](manage-entra-id-authorization.md)
+* [Use Microsoft Entra ID authorization for the Kubernetes API](entra-id-authorization.md)
 * [Managed identities in AKS](use-managed-identity.md)
 * [Microsoft Entra Workload ID overview](workload-identity-overview.md)
 
