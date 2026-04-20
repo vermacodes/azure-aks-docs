@@ -72,7 +72,12 @@
         },
         {
             "source_path_from_root": "/articles/aks/azure-ad-integration.md",
-            "redirect_url": "/azure/aks/azure-ad-integration-cli",
+            "redirect_url": "/azure/aks/entra-id-control-plane-authentication",
+            "redirect_document_id": false
+        },
+        {
+            "source_path_from_root": "/articles/aks/azure-ad-integration-cli.md",
+            "redirect_url": "/azure/aks/entra-id-control-plane-authentication",
             "redirect_document_id": false
         },
         {

@@ -763,8 +763,6 @@
               href: external-identity-provider-authentication-overview.md
             - name: Set up external identity provider authentication to cluster
               href: external-identity-provider-authentication-configure.md
-            - name: Microsoft Entra ID authentication to cluster control plane (Legacy)
-              href: azure-ad-integration-cli.md
         - name: Cluster authorization
           items:
             - name: Cluster authorization concepts
