@@ -46,7 +46,7 @@ For background on the Kubernetes RBAC model, see the [upstream Kubernetes RBAC d
 
 With Entra ID authorization, AKS deploys an authorization webhook that delegates Kubernetes API authorization decisions to Microsoft Entra ID. When a request reaches the API server, the webhook calls the Entra ID `checkaccess` API to evaluate the caller's Azure role assignments (and any attached ABAC conditions) and returns an allow or deny decision.
 
-![Entra ID authorization webhook flow for the Kubernetes API](media/concepts-identity/azure-rbac-k8s-authz-flow.png)
+![Diagram that shows the Entra ID authorization webhook flow for the Kubernetes API.](media/concepts-identity/azure-rbac-k8s-authz-flow.png)
 
 Entra ID authorization gives you the following benefits over managing Kubernetes RBAC manifests on every cluster:
 

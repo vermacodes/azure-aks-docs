@@ -32,7 +32,7 @@ Kubernetes itself doesn't provide an identity directory. Without an external ide
 
 We recommend deploying AKS clusters with [Microsoft Entra ID authentication for the control plane][entra-id-cp-auth]. With this integration, the cluster validates incoming Kubernetes API requests against Microsoft Entra ID and uses the caller's Entra identity for authorization decisions. Microsoft Entra ID centralizes the identity layer — any change in user or group status is automatically reflected in cluster access — and enables Conditional Access, multifactor authentication, and Privileged Identity Management.
 
-![Microsoft Entra integration with AKS clusters](media/concepts-identity/aad-integration.png)
+![Diagram that shows Microsoft Entra integration with AKS clusters for authentication.](media/concepts-identity/aad-integration.png)
 
 For setup, see [Enable Microsoft Entra ID authentication for the AKS control plane][entra-id-cp-auth]. Note the following:
 
